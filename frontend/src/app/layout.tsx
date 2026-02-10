@@ -27,6 +27,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const theme = localStorage.getItem('trofy-theme');
+                  const validThemes = ['NEON', 'STOIC', 'MINIMAL', 'FOREST', 'DARK_GLASS', 'SUNSET', 'MYTHOLOGY', 'BERSERK', 'CYBERPUNK', 'OCEAN', 'BLACK_GLOSS'];
+                  if (theme && validThemes.includes(theme)) {
+                    document.documentElement.setAttribute('data-theme', theme.toLowerCase().replace('_', '-'));
+                  } else {
+                    document.documentElement.setAttribute('data-theme', 'neon');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
         <StyledComponentsRegistry>
           <Providers>

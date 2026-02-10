@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { SettingsModal } from '@/components/SettingsModal'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import {
   HeaderContainer,
   HeaderContent,
@@ -24,7 +26,6 @@ import {
   MobileMenuActions,
   MobileMenuActionButton,
 } from './Header.styled'
-import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 
 const links = [
   { name: 'Профиль', href: '/' },
@@ -38,6 +39,7 @@ export const Header = () => {
   const router = useRouter()
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [user] = useState({
     username: 'GamerPro',
     level: 4,
@@ -69,7 +71,7 @@ export const Header = () => {
             </NavLinks>
           </HeaderLeft>
           <HeaderRight>
-            <ThemeSwitcher />
+            <ThemeSwitcher onOpenSettings={() => setIsSettingsOpen(true)} />
             <CreateButton onClick={() => console.log('create')}>
               <span>+</span> Свое Достижение
             </CreateButton>
@@ -90,7 +92,7 @@ export const Header = () => {
                 <div onClick={() => { router.push('/profile'); setShowProfileMenu(false) }}>
                   Профиль
                 </div>
-                <div onClick={() => { router.push('/settings'); setShowProfileMenu(false) }}>
+                <div onClick={() => { setIsSettingsOpen(true); setShowProfileMenu(false) }}>
                   Настройки
                 </div>
                 <div onClick={() => setShowProfileMenu(false)}>Выйти</div>
@@ -118,7 +120,7 @@ export const Header = () => {
               </div>
             </div>
             <MobileMenuActions>
-              <MobileMenuActionButton onClick={() => router.push('/settings')}>
+              <MobileMenuActionButton onClick={() => setIsSettingsOpen(true)}>
                 ⚙️
               </MobileMenuActionButton>
               <MobileMenuActionButton onClick={() => console.log('logout')}>
@@ -144,6 +146,13 @@ export const Header = () => {
 
         </MobileMenu>
       )}
+
+      <SettingsModal
+        key={isSettingsOpen ? 'theme' : 'categories'}
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        initialView="theme"
+      />
     </>
   )
 }

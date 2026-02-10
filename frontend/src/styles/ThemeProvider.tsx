@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo } from 'react'
 import { ThemeProvider as StyledThemeProvider } from 'styled-components'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store'
-import { ThemeName } from './themes'
 import { getTheme } from './themes'
 import { createAppTheme, defaultTheme } from './theme'
 import { GlobalStyle } from './GlobalStyle'
@@ -15,20 +14,16 @@ interface ThemeProviderProps {
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const storeThemeName = useSelector((state: RootState) => state.theme.currentTheme)
-  const [mounted, setMounted] = useState(false)
 
-  // На сервере и при первом клиентском рендере используем NEON
-  // После монтирования переключаемся на сохраненную тему
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const themeName = mounted ? storeThemeName : 'NEON'
+  // На сервере всегда используем NEON, на клиенте - сохраненную тему
+  const isClient = typeof window !== 'undefined'
+  const themeName = isClient ? storeThemeName : 'NEON'
 
   // Обновляем data-theme атрибут при изменении темы
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof window !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', themeName.toLowerCase())
+      const themeAttr = themeName.toLowerCase().replace('_', '-')
+      document.documentElement.setAttribute('data-theme', themeAttr)
     }
   }, [themeName])
 
@@ -40,13 +35,13 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
         return defaultTheme
       }
       return createAppTheme(themeData)
-    } catch (e) {
+    } catch {
       return defaultTheme
     }
   }, [themeName])
 
   return (
-    <StyledThemeProvider theme={theme} key={mounted ? themeName : 'server'}>
+    <StyledThemeProvider theme={theme} key={isClient ? themeName : 'server'}>
       <GlobalStyle />
       {children}
     </StyledThemeProvider>
