@@ -9,7 +9,6 @@ import {
   SwitchOption,
   TrophiesList,
   TrophiesScrollTrack,
-  DuplicateItems,
   TrophyItem,
   TrophyContent,
   TrophyHeader,

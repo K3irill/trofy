@@ -7,15 +7,15 @@ export const DetailContainer = styled.div`
 `
 
 export const DetailSection = styled.div`
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   border-radius: 16px;
   padding: 1.5rem;
-  border: 2px solid rgba(55, 65, 81, 0.5);
+  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
 `
 
 export const SectionTitle = styled.h3`
   font-size: 1.25rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
   margin: 0 0 1rem 0;
 
@@ -29,7 +29,7 @@ export const InfoRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(55, 65, 81, 0.3);
+  border-bottom: 1px solid ${(props) => props.theme.colors.dark[600]}4d;
 
   &:last-child {
     border-bottom: none;
@@ -37,12 +37,12 @@ export const InfoRow = styled.div`
 `
 
 export const InfoLabel = styled.span`
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.875rem;
 `
 
 export const InfoValue = styled.span`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 0.875rem;
   font-weight: 600;
 `
@@ -55,11 +55,11 @@ export const DifficultyStars = styled.div`
 export const Star = styled.span<{ filled: boolean }>`
   font-size: 1.25rem;
   opacity: ${props => props.filled ? 1 : 0.3};
-  filter: ${props => props.filled ? 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.5))' : 'none'};
+  filter: ${props => props.filled ? `drop-shadow(${props.theme.shadows.glow.gold})` : 'none'};
 `
 
 export const ImpressionsText = styled.p`
-  color: #d1d5db;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 1rem;
   line-height: 1.6;
   margin: 0;
@@ -83,14 +83,14 @@ export const PhotoItem = styled.div`
   aspect-ratio: 1;
   border-radius: 12px;
   overflow: hidden;
-  border: 2px solid rgba(55, 65, 81, 0.5);
+  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
   cursor: pointer;
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #00d4ff;
+    border-color: ${(props) => props.theme.colors.primary};
     transform: scale(1.05);
-    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.2);
+    box-shadow: ${(props) => props.theme.shadows.glass.light};
   }
 
   img {

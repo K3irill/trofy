@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { SectionMarker } from '@/components/SectionMarker'
 import {
   Container,
   SectionHeader,
@@ -40,18 +40,7 @@ export const RecentTrophiesSection = () => {
     >
       <SectionHeader>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <motion.div
-            initial={{ opacity: 0, scaleY: 0 }}
-            animate={{ opacity: 1, scaleY: 1 }}
-            transition={{ duration: 0.3 }}
-            style={{
-              width: '4px',
-              height: '32px',
-              background: 'linear-gradient(180deg, #00d4ff 0%, #00a8cc 100%)',
-              borderRadius: '2px',
-              boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)'
-            }}
-          />
+          <SectionMarker />
           <SectionTitle>Мои последние <b>достижения</b></SectionTitle>
         </div>
         <ShowAllButton whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>

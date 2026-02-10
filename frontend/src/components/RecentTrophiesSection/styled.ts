@@ -2,13 +2,13 @@ import styled from 'styled-components'
 import { motion } from 'framer-motion'
 
 export const Container = styled(motion.section)`
-  background: rgba(26, 32, 44, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: ${(props) => props.theme.glass.bg};
+  backdrop-filter: ${(props) => props.theme.glass.blur};
+  -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
+  border: ${(props) => props.theme.glass.border};
   border-radius: 24px;
   padding: 2rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: ${(props) => props.theme.shadows.glass.heavy};
 
   @media (max-width: 768px) {
     padding: 1.5rem;
@@ -31,13 +31,13 @@ export const SectionHeader = styled.div`
 `
 
 export const SectionTitle = styled.h3`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
 
   b{
-    color: #00d4ff;
+    color: ${(props) => props.theme.colors.primary};
   }
 
   @media (max-width: 768px) {
@@ -46,11 +46,11 @@ export const SectionTitle = styled.h3`
 `
 
 export const ShowAllButton = styled(motion.button)`
-  background: rgba(0, 212, 255, 0.1);
-  border: 1px solid rgba(0, 212, 255, 0.3);
+  background: ${(props) => `${props.theme.colors.primary}1a`};
+  border: 1px solid ${(props) => `${props.theme.colors.primary}4d`};
   border-radius: 12px;
   padding: 0.625rem 1.25rem;
-  color: #00d4ff;
+  color: ${(props) => props.theme.colors.primary};
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -58,8 +58,8 @@ export const ShowAllButton = styled(motion.button)`
   white-space: nowrap;
 
   &:hover {
-    background: rgba(0, 212, 255, 0.2);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    background: ${(props) => `${props.theme.colors.primary}33`};
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 
   @media (max-width: 768px) {
@@ -84,17 +84,14 @@ export const TrophiesGrid = styled.div`
 `
 
 export const TrophyItem = styled(motion.div) <{ rarity: string }>`
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
+  border: 1px solid ${(props) => props.theme.colors.neomorphLight};
   border-radius: 20px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 4px 4px 8px rgba(0, 0, 0, 0.2),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.02);
+  box-shadow: ${(props) => props.theme.shadows.neomorph.flat};
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -108,13 +105,7 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
     right: 0;
     height: 3px;
     background: ${(props) => {
-    const colors = {
-      base: '#1dd469',
-      rare: '#3b82f6',
-      epic: '#a855f7',
-      legendary: '#ffd700',
-    }
-    return colors[props.rarity as keyof typeof colors] || '#9ca3af'
+    return props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
   }};
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -126,15 +117,10 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
 
   &:hover {
     box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.4),
+      ${(props) => props.theme.shadows.glass.medium},
       0 0 25px ${(props) => {
-    const colors = {
-      base: 'rgba(5, 178, 74, 0.2)',
-      rare: 'rgba(59, 130, 246, 0.2)',
-      epic: 'rgba(168, 85, 247, 0.2)',
-      legendary: 'rgba(255, 215, 0, 0.2)',
-    }
-    return colors[props.rarity as keyof typeof colors] || 'rgba(156, 163, 175, 0.2)'
+    const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    return `${rarityColor}33`
   }};
   }
 
@@ -148,13 +134,8 @@ export const TrophyIcon = styled.div <{ rarity: string }>`
   font-size: 3rem;
   align-self: flex-start;
   filter: drop-shadow(0 0 15px ${(props) => {
-    const colors = {
-      base: 'rgba(6, 158, 47, 0.4)',
-      rare: 'rgba(59, 130, 246, 0.4)',
-      epic: 'rgba(168, 85, 247, 0.4)',
-      legendary: 'rgba(255, 215, 0, 0.4)',
-    }
-    return colors[props.rarity as keyof typeof colors] || 'rgba(156, 163, 175, 0.4)'
+    const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    return `${rarityColor}66`
   }});
 
   @media (max-width: 768px) {
@@ -169,7 +150,7 @@ export const TrophyContent = styled.div`
 `
 
 export const TrophyName = styled.div`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1.125rem;
   font-weight: 700;
 
@@ -179,7 +160,7 @@ export const TrophyName = styled.div`
 `
 
 export const TrophyDate = styled.div`
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.8125rem;
 `
 
@@ -188,25 +169,14 @@ export const TrophyRarity = styled.div <{ rarity: string }>`
   font-size: 0.6875rem;
   font-weight: 700;
   color: ${(props) => {
-    const colors = {
-      base: '#1dd469',
-      rare: '#3b82f6',
-      epic: '#a855f7',
-      legendary: '#ffd700',
-    }
-    return colors[props.rarity as keyof typeof colors] || '#9ca3af'
+    return props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
   }};
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0.25rem 0.75rem;
   background: ${(props) => {
-    const colors = {
-      base: 'rgba(9, 179, 89, 0.1)',
-      rare: 'rgba(59, 130, 246, 0.1)',
-      epic: 'rgba(168, 85, 247, 0.1)',
-      legendary: 'rgba(255, 215, 0, 0.1)',
-    }
-    return colors[props.rarity as keyof typeof colors] || 'rgba(156, 163, 175, 0.1)'
+    const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    return `${rarityColor}1a`
   }};
   border-radius: 6px;
 `

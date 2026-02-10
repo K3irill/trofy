@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { SectionMarker } from '@/components/SectionMarker'
 import {
   Container,
   Content,
@@ -57,18 +58,7 @@ export const InviteFriendSection = () => {
       transition={{ duration: 0.5 }}
     >
       <Header>
-        <motion.div
-          initial={{ opacity: 0, scaleY: 0 }}
-          animate={{ opacity: 1, scaleY: 1 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            width: '4px',
-            height: '32px',
-            background: 'linear-gradient(180deg, #00d4ff 0%, #00a8cc 100%)',
-            borderRadius: '2px',
-            boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)'
-          }}
-        />
+        <SectionMarker />
         <Title>Приведи друзей</Title>
       </Header>
       <Content>

@@ -24,6 +24,7 @@ import {
   MobileMenuActions,
   MobileMenuActionButton,
 } from './Header.styled'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 
 const links = [
   { name: 'Профиль', href: '/' },
@@ -68,6 +69,7 @@ export const Header = () => {
             </NavLinks>
           </HeaderLeft>
           <HeaderRight>
+            <ThemeSwitcher />
             <CreateButton onClick={() => console.log('create')}>
               <span>+</span> Свое Достижение
             </CreateButton>

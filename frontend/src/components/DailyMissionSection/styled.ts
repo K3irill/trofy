@@ -2,15 +2,15 @@ import styled from 'styled-components'
 import { motion } from 'framer-motion'
 
 export const Container = styled(motion.section)`
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(255, 0, 255, 0.05) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: linear-gradient(135deg, ${(props) => `${props.theme.colors.rarity.epic}1a`} 0%, ${(props) => `${props.theme.colors.accent}0d`} 100%);
+  backdrop-filter: ${(props) => props.theme.glass.blur};
+  -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
+  border: 1px solid ${(props) => `${props.theme.colors.rarity.epic}33`};
   border-radius: 24px;
   padding: 2.5rem;
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(168, 85, 247, 0.1);
+    ${(props) => props.theme.shadows.glass.heavy},
+    0 0 40px ${(props) => `${props.theme.colors.rarity.epic}1a`};
   position: relative;
   overflow: hidden;
 
@@ -24,11 +24,11 @@ export const Container = styled(motion.section)`
     background: conic-gradient(
       from 0deg,
       transparent 0deg,
-      rgba(168, 85, 247, 0.05) 60deg,
+      ${(props) => `${props.theme.colors.rarity.epic}0d`} 60deg,
       transparent 120deg,
-      rgba(255, 0, 255, 0.05) 180deg,
+      ${(props) => `${props.theme.colors.accent}0d`} 180deg,
       transparent 240deg,
-      rgba(168, 85, 247, 0.05) 300deg,
+      ${(props) => `${props.theme.colors.rarity.epic}0d`} 300deg,
       transparent 360deg
     );
     animation: rotate 15s linear infinite;
@@ -58,20 +58,21 @@ export const Header = styled.div`
   margin-bottom: 1rem;
 `
 
+
 export const Badge = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(168, 85, 247, 0.2);
-  border: 1px solid rgba(168, 85, 247, 0.4);
+  background: ${(props) => `${props.theme.colors.rarity.epic}33`};
+  border: 1px solid ${(props) => `${props.theme.colors.rarity.epic}66`};
   border-radius: 12px;
   padding: 0.5rem 1rem;
-  color: #a855f7;
+  color: ${(props) => props.theme.colors.rarity.epic};
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 15px ${(props) => `${props.theme.colors.rarity.epic}4d`};
 
   @media (max-width: 768px) {
     padding: 0.4rem 0.75rem;
@@ -89,7 +90,7 @@ export const Content = styled.div`
 `
 
 export const MissionTitle = styled.h3`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
@@ -116,13 +117,13 @@ export const GlitchText = styled.span`
   }
 
   &::before {
-    color: #00d4ff;
+    color: ${(props) => props.theme.colors.primary};
     animation: glitch-1 2s infinite linear alternate-reverse;
     clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
   }
 
   &::after {
-    color: #ff00ff;
+    color: ${(props) => props.theme.colors.accent};
     animation: glitch-2 3s infinite linear alternate-reverse;
     clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
   }
@@ -145,7 +146,7 @@ export const GlitchText = styled.span`
 `
 
 export const MissionDescription = styled.p`
-  color: #d1d5db;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 1.125rem;
   line-height: 1.6;
   margin: 0;
@@ -162,20 +163,19 @@ export const MissionStats = styled.div`
 `
 
 export const StatItem = styled.div`
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
+  border: 1px solid ${(props) => `${props.theme.colors.rarity.epic}33`};
   border-radius: 16px;
   padding: 1.25rem;
   text-align: center;
-  box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.02);
+  box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: rgba(168, 85, 247, 0.4);
+    border-color: ${(props) => `${props.theme.colors.rarity.epic}66`};
     box-shadow: 
-      inset 4px 4px 8px rgba(0, 0, 0, 0.3),
-      inset -4px -4px 8px rgba(255, 255, 255, 0.02),
-      0 0 20px rgba(168, 85, 247, 0.2);
+      ${(props) => props.theme.shadows.neomorph.dark},
+      0 0 20px ${(props) => `${props.theme.colors.rarity.epic}33`};
   }
 
   @media (max-width: 768px) {
@@ -185,10 +185,10 @@ export const StatItem = styled.div`
 `
 
 export const StatValue = styled.div`
-  color: #a855f7;
+  color: ${(props) => props.theme.colors.rarity.epic};
   font-size: 1.75rem;
   font-weight: 700;
-  text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  text-shadow: 0 0 20px ${(props) => `${props.theme.colors.rarity.epic}80`};
   font-family: 'Courier New', monospace;
 
   @media (max-width: 768px) {
@@ -197,7 +197,7 @@ export const StatValue = styled.div`
 `
 
 export const StatLabel = styled.div`
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -210,37 +210,44 @@ export const ProgressContainer = styled.div`
   gap: 0.5rem;
 `
 
+export const ProgressText = styled.div`
+  color: ${(props) => props.theme.colors.primary};
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+`
+
 export const ProgressBar = styled.div`
   width: 100%;
   height: 12px;
-  background: rgba(0, 0, 0, 0.5);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
 `
 
 export const ProgressFill = styled(motion.div)`
   height: 100%;
-  background: linear-gradient(90deg, #a855f7 0%, #ff00ff 100%);
+  background: linear-gradient(90deg, ${(props) => props.theme.colors.rarity.epic} 0%, ${(props) => props.theme.colors.accent} 100%);
   border-radius: 12px;
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 15px ${(props) => `${props.theme.colors.rarity.epic}80`};
 `
 
 export const CTAButton = styled(motion.button)`
   align-self: flex-start;
-  background: linear-gradient(135deg, #a855f7 0%, #ff00ff 100%);
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.rarity.epic} 0%, ${(props) => props.theme.colors.accent} 100%);
+  border: 1px solid ${(props) => `${props.theme.colors.rarity.epic}4d`};
   border-radius: 12px;
   padding: 1rem 2rem;
-  color: #0a0e17;
+  color: ${(props) => props.theme.colors.dark.bg};
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 20px ${(props) => `${props.theme.colors.rarity.epic}66`};
   transition: all 0.3s ease;
 
   &:hover {
-    background: linear-gradient(135deg, #b46eff 0%, #ff33ff 100%);
+    background: linear-gradient(135deg, ${(props) => props.theme.colors.rarity.epic}dd 0%, ${(props) => props.theme.colors.accent}dd 100%);
   }
 
   @media (max-width: 768px) {

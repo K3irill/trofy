@@ -2,13 +2,13 @@ import styled from 'styled-components'
 import { motion } from 'framer-motion'
 
 export const ProfileContainer = styled(motion.div)`
-  background: rgba(26, 32, 44, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: ${(props) => props.theme.glass.bg};
+  backdrop-filter: ${(props) => props.theme.glass.blur};
+  -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
+  border: ${(props) => props.theme.glass.border};
   border-radius: 24px;
   padding: 2.5rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: ${(props) => props.theme.shadows.glass.heavy};
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -20,7 +20,7 @@ export const ProfileContainer = styled(motion.div)`
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+    background: radial-gradient(circle at 20% 20%, ${(props) => `${props.theme.colors.primary}0d`} 0%, transparent 50%);
     pointer-events: none;
   }
 
@@ -225,18 +225,27 @@ export const Avatar = styled.div`
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   margin: 0 auto 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 3.5rem;
-  border: 4px solid rgba(255, 255, 255, 0.1);
+  border: 4px solid ${(props) => props.theme.colors.neomorphLight};
   box-shadow: 
-    0 0 30px rgba(0, 212, 255, 0.4),
-    inset 0 0 20px rgba(255, 255, 255, 0.1);
+    ${(props) => props.theme.shadows.glow.primary},
+    inset 0 0 20px ${(props) => props.theme.colors.neomorphLight};
   position: relative;
   z-index: 1;
+  overflow: hidden;
+
+  img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+
+  }
 
   @media (max-width: 768px) {
     width: 100px;
@@ -246,7 +255,7 @@ export const Avatar = styled.div`
 `
 
 export const Username = styled.h2`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
@@ -260,14 +269,14 @@ export const Username = styled.h2`
 
 export const Level = styled.div`
   display: inline-block;
-  background: linear-gradient(135deg, #ffd700 0%, #ffec8b 100%);
-  color: #0a0e17;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.gold} 0%, ${(props) => props.theme.colors.goldLight} 100%);
+  color: ${(props) => props.theme.colors.dark.bg};
   padding: 0.5rem 1.5rem;
   border-radius: 12px;
   font-weight: 700;
   margin-bottom: 1.5rem;
   font-size: 1rem;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  box-shadow: ${(props) => props.theme.shadows.glow.gold};
   position: relative;
   z-index: 1;
 
@@ -294,24 +303,24 @@ export const LevelRing = styled.div`
 export const XPBar = styled.div`
   width: 100%;
   height: 12px;
-  background: rgba(0, 0, 0, 0.3);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 1rem;
   position: relative;
   z-index: 1;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
 `
 
 export const XPProgress = styled(motion.div)`
   height: 100%;
-  background: linear-gradient(90deg, #00d4ff 0%, #00a8cc 100%);
+  background: linear-gradient(90deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
 `
 
 export const XPText = styled.p`
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.875rem;
   margin-bottom: 2rem;
   position: relative;
@@ -340,14 +349,12 @@ export const Stats = styled.div`
 `
 
 export const StatItem = styled.div`
-  background: rgba(0, 0, 0, 0.3);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
   padding: 1.25rem;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid ${(props) => props.theme.colors.neomorphLight};
   backdrop-filter: blur(10px);
-  box-shadow: 
-    inset 4px 4px 8px rgba(0, 0, 0, 0.4),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.02);
+  box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -358,8 +365,8 @@ export const StatItem = styled.div`
 export const StatValue = styled(motion.div)`
   font-size: 1.75rem;
   font-weight: 700;
-  color: #00d4ff;
-  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  color: ${(props) => props.theme.colors.primary};
+  text-shadow: ${(props) => props.theme.shadows.glow.primary};
   font-family: 'Courier New', monospace;
 
   @media (max-width: 768px) {
@@ -369,7 +376,7 @@ export const StatValue = styled(motion.div)`
 
 export const StatLabel = styled.div`
   font-size: 0.6875rem;
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 0.25rem;
@@ -386,11 +393,11 @@ export const StatusContainer = styled.div`
 `
 
 export const StatusInput = styled.input`
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
+  border: 1px solid ${(props) => props.theme.colors.neomorphLight};
   border-radius: 12px;
   padding: 0.5rem 1rem;
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.875rem;
   text-align: center;
   width: 100%;
@@ -399,13 +406,13 @@ export const StatusInput = styled.input`
   outline: none;
 
   &:focus {
-    border-color: rgba(0, 212, 255, 0.3);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-    color: #f3f4f6;
+    border-color: ${(props) => `${props.theme.colors.primary}4d`};
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
+    color: ${(props) => props.theme.colors.light[100]};
   }
 
   &::placeholder {
-    color: rgba(156, 163, 175, 0.5);
+    color: ${(props) => `${props.theme.colors.light[300]}80`};
   }
 `
 
@@ -458,7 +465,7 @@ export const Badge = styled(motion.div) <{ rarity: string }>`
 `
 
 export const SectionTitle = styled.h3`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -494,14 +501,14 @@ export const RareTrophiesGrid = styled.div`
 `
 
 export const TrophyCard = styled(motion.div) <{ isNew: boolean }>`
-  background: rgba(0, 0, 0, 0.3);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 16px;
   padding: 1rem;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid ${(props) => props.theme.colors.neomorphLight};
 
   ${props => props.isNew && `
     animation: pulse-border 2s infinite;
@@ -509,19 +516,19 @@ export const TrophyCard = styled(motion.div) <{ isNew: boolean }>`
 
   @keyframes pulse-border {
     0%, 100% {
-      border-color: rgba(0, 212, 255, 0.3);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+      border-color: ${(props) => `${props.theme.colors.primary}4d`};
+      box-shadow: ${(props) => props.theme.shadows.glow.primary};
     }
     50% {
-      border-color: rgba(0, 212, 255, 0.8);
-      box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+      border-color: ${(props) => `${props.theme.colors.primary}cc`};
+      box-shadow: ${(props) => props.theme.shadows.glow.primary};
     }
   }
 
   &:hover {
     transform: translateY(-5px) rotateY(10deg);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    border-color: rgba(0, 212, 255, 0.3);
+    box-shadow: ${(props) => props.theme.shadows.glass.medium};
+    border-color: ${(props) => `${props.theme.colors.primary}4d`};
   }
 
   @media (max-width: 768px) {
@@ -553,7 +560,7 @@ export const TrophyIcon = styled(motion.div) <{ rarity: string }>`
 `
 
 export const TrophyTitle = styled.div`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 0.6875rem;
   font-weight: 600;
   text-align: center;
@@ -575,11 +582,11 @@ export const CurrentGoalsSection = styled.div`
 `
 
 export const GoalItem = styled(motion.div)`
-  background: rgba(0, 0, 0, 0.3);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid ${(props) => props.theme.colors.neomorphLight};
 
   &:last-child {
     margin-bottom: 0;
@@ -599,13 +606,13 @@ export const GoalHeader = styled.div`
 `
 
 export const GoalTitle = styled.div`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 0.8125rem;
   font-weight: 500;
 `
 
 export const GoalProgress = styled.div`
-  color: #00d4ff;
+  color: ${(props) => props.theme.colors.primary};
   font-size: 0.75rem;
   font-weight: 600;
 `
@@ -613,14 +620,14 @@ export const GoalProgress = styled.div`
 export const GoalBar = styled.div`
   width: 100%;
   height: 6px;
-  background: rgba(0, 0, 0, 0.4);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 6px;
   overflow: hidden;
 `
 
 export const GoalProgressBar = styled(motion.div)`
   height: 100%;
-  background: linear-gradient(90deg, #00d4ff 0%, #00a8cc 100%);
+  background: linear-gradient(90deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   border-radius: 6px;
 `
 
@@ -668,10 +675,10 @@ export const ShareButton = styled(motion.button)`
   gap: 0.5rem;
   width: 100%;
   padding: 0.875rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
+  border: 1px solid ${(props) => props.theme.colors.neomorphLight};
   border-radius: 12px;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -681,9 +688,9 @@ export const ShareButton = styled(motion.button)`
   z-index: 1;
 
   &:hover {
-    background: rgba(0, 212, 255, 0.1);
-    border-color: rgba(0, 212, 255, 0.3);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    background: ${(props) => `${props.theme.colors.primary}1a`};
+    border-color: ${(props) => `${props.theme.colors.primary}4d`};
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 
   @media (max-width: 768px) {
@@ -735,18 +742,18 @@ export const QuickActionButton = styled(motion.button)`
   justify-content: center;
   gap: 0.5rem;
   padding: 1rem 0.75rem;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(7, 122, 126, 0.705);
-  box-shadow: inset 0px 0px 15px rgba(7, 122, 126, 0.705);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
+  border: 1px solid ${(props) => `${props.theme.colors.primary}80`};
+  box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
   border-radius: 16px;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   cursor: pointer;
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(0, 212, 255, 0.1);
-    border-color: rgba(0, 212, 255, 0.3);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+    background: ${(props) => `${props.theme.colors.primary}1a`};
+    border-color: ${(props) => `${props.theme.colors.primary}4d`};
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 
   @media (max-width: 768px) {

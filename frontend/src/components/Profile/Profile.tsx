@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useMemo } from 'react'
 import { Rarity } from '@/types'
 import { ProfileProps } from './types'
+import { SectionMarker } from '@/components/SectionMarker'
 import {
   ProfileContainer,
   Avatar,
@@ -130,18 +131,7 @@ export const Profile = ({ user }: ProfileProps) => {
       </ParticlesContainer>
 
       <ProfileTitleWrap>
-        <motion.div
-          initial={{ opacity: 0, scaleY: 0 }}
-          animate={{ opacity: 1, scaleY: 1 }}
-          transition={{ duration: 0.3 }}
-          style={{
-            width: '4px',
-            height: '32px',
-            background: 'linear-gradient(180deg, #00d4ff 0%, #00a8cc 100%)',
-            borderRadius: '2px',
-            boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)'
-          }}
-        />
+        <SectionMarker />
         <h2 style={{ color: '#f3f4f6', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Профиль</h2>
       </ProfileTitleWrap>
       <MainInfoWrap>
@@ -149,7 +139,7 @@ export const Profile = ({ user }: ProfileProps) => {
 
 
           <div style={{ position: 'relative', display: 'inline-block' }}>
-            <Avatar>👤</Avatar>
+            <Avatar>{user.avatar ? <img src={user.avatar} alt="" /> : '👤'}</Avatar>
           </div>
 
           <Username>{user.username}</Username>

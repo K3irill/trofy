@@ -31,46 +31,46 @@ export const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' | 
     switch (props.variant) {
       case 'primary':
         return `
-          background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
-          border-color: #00d4ff;
-          color: #0a0e17;
-          box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+          background: linear-gradient(135deg, ${props.theme.colors.primary} 0%, ${props.theme.colors.secondary} 100%);
+          border-color: ${props.theme.colors.primary};
+          color: ${props.theme.colors.dark.bg};
+          box-shadow: ${props.theme.shadows.glow.primary};
 
           &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+            box-shadow: ${props.theme.shadows.glow.primary}, ${props.theme.shadows.glass.medium};
           }
         `
       case 'active':
         return `
-          background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 168, 204, 0.1) 100%);
-          border-color: #00d4ff;
-          color: #00d4ff;
+          background: linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}1a 100%);
+          border-color: ${props.theme.colors.primary};
+          color: ${props.theme.colors.primary};
 
           &:hover {
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3) 0%, rgba(0, 168, 204, 0.2) 100%);
+            background: linear-gradient(135deg, ${props.theme.colors.primary}4d 0%, ${props.theme.colors.secondary}33 100%);
           }
         `
       case 'warning':
         return `
-          background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%);
-          border-color: #ef4444;
-          color: #ef4444;
+          background: linear-gradient(135deg, ${props.theme.colors.danger}33 0%, ${props.theme.colors.danger}1a 100%);
+          border-color: ${props.theme.colors.danger};
+          color: ${props.theme.colors.danger};
 
           &:hover {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.2) 100%);
+            background: linear-gradient(135deg, ${props.theme.colors.danger}4d 0%, ${props.theme.colors.danger}33 100%);
           }
         `
       default:
         return `
-          background: rgba(17, 24, 39, 0.8);
-          border-color: rgba(55, 65, 81, 0.5);
-          color: #9ca3af;
+          background: ${props.theme.colors.dark[800]}cc;
+          border-color: ${props.theme.colors.dark[600]}80;
+          color: ${props.theme.colors.light[300]};
 
           &:hover {
-            border-color: #00d4ff;
-            color: #00d4ff;
-            background: rgba(0, 212, 255, 0.1);
+            border-color: ${props.theme.colors.primary};
+            color: ${props.theme.colors.primary};
+            background: ${props.theme.colors.primary}1a;
           }
         `
     }

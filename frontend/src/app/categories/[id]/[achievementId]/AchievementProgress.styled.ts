@@ -2,10 +2,10 @@ import styled from 'styled-components'
 import { motion } from 'framer-motion'
 
 export const ProgressContainer = styled.div`
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   border-radius: 16px;
   padding: 1.5rem;
-  border: 2px solid rgba(55, 65, 81, 0.5);
+  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
 `
 
 export const ProgressInfo = styled.div`
@@ -16,7 +16,7 @@ export const ProgressInfo = styled.div`
 `
 
 export const ProgressText = styled.span`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1rem;
   font-weight: 600;
 
@@ -28,7 +28,7 @@ export const ProgressText = styled.span`
 export const ProgressBar = styled.div`
   width: 100%;
   height: 12px;
-  background: rgba(55, 65, 81, 0.5);
+  background: ${(props) => props.theme.colors.dark[600]}80;
   border-radius: 8px;
   overflow: hidden;
   position: relative;

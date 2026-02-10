@@ -63,9 +63,9 @@ export const SectionHeader = styled.div`
 export const SectionMarker = styled(motion.div)`
   width: 4px;
   height: 32px;
-  background: linear-gradient(180deg, #00d4ff 0%, #00a8cc 100%);
+  background: linear-gradient(180deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   border-radius: 2px;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
 
   @media (max-width: 768px) {
     height: 28px;
@@ -73,7 +73,7 @@ export const SectionMarker = styled(motion.div)`
 `
 
 export const SectionTitle = styled.h2`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;

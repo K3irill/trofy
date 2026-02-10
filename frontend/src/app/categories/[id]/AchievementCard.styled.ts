@@ -1,11 +1,11 @@
 import styled from 'styled-components'
 
 export const AchievementCardContainer = styled.div<{ unlocked: boolean }>`
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.5rem;
-  border: 2px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.5)' : 'rgba(55, 65, 81, 0.5)'};
+  border: 2px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -24,16 +24,16 @@ export const AchievementCardContainer = styled.div<{ unlocked: boolean }>`
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #00d4ff 0%, #00a8cc 100%);
+    background: linear-gradient(90deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
     opacity: ${props => props.unlocked ? 1 : 0};
     transition: opacity 0.3s ease;
   }
 
   &:hover {
-    border-color: ${props => props.unlocked ? '#00d4ff' : '#4b5563'};
+    border-color: ${props => props.unlocked ? props.theme.colors.primary : props.theme.colors.dark[600]};
     box-shadow: ${props => props.unlocked
-    ? '0 20px 40px rgba(0, 212, 255, 0.2), 0 0 20px rgba(0, 212, 255, 0.1)'
-    : '0 10px 20px rgba(0, 0, 0, 0.2)'};
+    ? `${props.theme.shadows.glass.medium}, ${props.theme.shadows.glow.primary}`
+    : props.theme.shadows.glass.light};
   }
 
   &:active {
@@ -51,16 +51,16 @@ export const AchievementIcon = styled.div<{ unlocked: boolean }>`
   height: 80px;
   border-radius: 16px;
   background: ${props => props.unlocked
-    ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 168, 204, 0.1) 100%)'
-    : 'linear-gradient(135deg, rgba(55, 65, 81, 0.5) 0%, rgba(31, 41, 55, 0.7) 100%)'};
-  border: 2px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.5)' : 'rgba(75, 85, 99, 0.5)'};
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}1a 100%)`
+    : `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`};
+  border: 2px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2.5rem;
   position: relative;
   transition: all 0.3s ease;
-  filter: ${props => props.unlocked ? 'drop-shadow(0 0 15px rgba(0, 212, 255, 0.4))' : 'grayscale(0.6) brightness(0.7)'};
+  filter: ${props => props.unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.6) brightness(0.7)'};
   transform: translateZ(20px);
 
   @media (max-width: 768px) {
@@ -76,16 +76,16 @@ export const UnlockedBadge = styled.div`
   right: -8px;
   width: 24px;
   height: 24px;
-  background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #0a0e17;
-  border: 2px solid #0a0e17;
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  color: ${(props) => props.theme.colors.dark.bg};
+  border: 2px solid ${(props) => props.theme.colors.dark.bg};
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
   transform: translateZ(30px);
 
   @media (max-width: 768px) {
@@ -108,7 +108,7 @@ export const AchievementInfo = styled.div`
 
 export const AchievementName = styled.h3`
   font-size: 1rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-weight: 600;
   margin: 0;
 
@@ -119,7 +119,7 @@ export const AchievementName = styled.h3`
 
 export const AchievementStatus = styled.span<{ unlocked: boolean }>`
   font-size: 0.75rem;
-  color: ${props => props.unlocked ? '#00d4ff' : '#9ca3af'};
+  color: ${props => props.unlocked ? props.theme.colors.primary : props.theme.colors.light[300]};
   font-weight: 500;
 
   @media (max-width: 768px) {

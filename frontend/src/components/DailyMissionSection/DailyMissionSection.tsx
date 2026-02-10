@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { SectionMarker } from '@/components/SectionMarker'
 import {
   Container,
   Header,
@@ -15,6 +16,7 @@ import {
   ProgressContainer,
   ProgressBar,
   ProgressFill,
+  ProgressText,
   CTAButton,
   GlitchText,
 } from './styled'
@@ -39,17 +41,10 @@ export const DailyMissionSection = ({
       transition={{ duration: 0.5 }}
     >
       <Header>
-        <motion.div
+        <SectionMarker
           initial={{ opacity: 0, scaleY: 0 }}
           animate={{ opacity: 1, scaleY: 1 }}
           transition={{ duration: 0.3 }}
-          style={{
-            width: '4px',
-            height: '32px',
-            background: 'linear-gradient(180deg, #00d4ff 0%, #00a8cc 100%)',
-            borderRadius: '2px',
-            boxShadow: '0 0 10px rgba(0, 212, 255, 0.5)'
-          }}
         />
         <Badge>
           <motion.span
@@ -91,13 +86,13 @@ export const DailyMissionSection = ({
               transition={{ duration: 1.5, delay: 0.3 }}
             />
           </ProgressBar>
-          <div style={{ color: '#00d4ff', fontSize: '0.875rem', fontWeight: 600, marginTop: '0.5rem' }}>
+          <ProgressText>
             {progress}% участников уже выполнили
-          </div>
+          </ProgressText>
         </ProgressContainer>
 
         <CTAButton
-          whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0, 212, 255, 0.6)' }}
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           Участвовать

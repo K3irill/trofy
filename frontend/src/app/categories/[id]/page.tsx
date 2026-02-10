@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Header } from '@/components/Header/Header'
 
 import {
-
   Header as PageHeader,
   BackButton,
   CategoryInfo,
@@ -16,6 +15,7 @@ import {
   CategoryStats,
   Stat,
   StatValue,
+  StatLabelText,
   AchievementGrid,
   AchievementListContainer,
   AchievementListItem,
@@ -50,7 +50,7 @@ export default function CategoryPage() {
       <Container>
         <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <div style={{ fontSize: '4rem' }}>🔍</div>
-          <div style={{ color: '#9ca3af', fontSize: '1.125rem' }}>Категория не найдена</div>
+          <div style={{ fontSize: '1.125rem' }}>Категория не найдена</div>
         </div>
       </Container>
     )
@@ -118,15 +118,15 @@ export default function CategoryPage() {
             <CategoryStats>
               <Stat>
                 <StatValue>{category.unlocked}</StatValue>
-                <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>Разблокировано</div>
+                <StatLabelText>Разблокировано</StatLabelText>
               </Stat>
               <Stat>
                 <StatValue>{category.total}</StatValue>
-                <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>Всего</div>
+                <StatLabelText>Всего</StatLabelText>
               </Stat>
               <Stat>
                 <StatValue>{Math.round((category.unlocked / category.total) * 100)}%</StatValue>
-                <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>Прогресс</div>
+                <StatLabelText>Прогресс</StatLabelText>
               </Stat>
             </CategoryStats>
           </CategoryDetails>

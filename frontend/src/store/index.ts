@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer from './slices/authSlice'
 import achievementsReducer from './slices/achievementsSlice'
+import themeReducer from './slices/themeSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     achievements: achievementsReducer,
+    theme: themeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

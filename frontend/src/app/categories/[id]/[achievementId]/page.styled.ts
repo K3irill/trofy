@@ -8,8 +8,8 @@ export const PageContainer = styled.div`
 `
 
 export const BackButton = styled(motion.button)`
-  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-  color: #f3f4f6;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.dark[600]} 0%, ${(props) => props.theme.colors.dark[700]} 100%);
+  color: ${(props) => props.theme.colors.light[100]};
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -22,7 +22,7 @@ export const BackButton = styled(motion.button)`
   margin-bottom: 2rem;
 
   &:hover {
-    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    background: linear-gradient(135deg, ${(props) => props.theme.colors.dark[700]} 0%, ${(props) => props.theme.colors.dark[600]} 100%);
     transform: translateX(-5px);
   }
 
@@ -38,9 +38,9 @@ export const AchievementHeader = styled.div`
   gap: 2rem;
   margin-bottom: 2rem;
   padding: 2rem;
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   border-radius: 20px;
-  border: 2px solid rgba(55, 65, 81, 0.5);
+  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -55,14 +55,14 @@ export const AchievementIcon = styled.div<{ unlocked: boolean }>`
   height: 200px;
   border-radius: 24px;
   background: ${props => props.unlocked
-    ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 168, 204, 0.1) 100%)'
-    : 'linear-gradient(135deg, rgba(55, 65, 81, 0.5) 0%, rgba(31, 41, 55, 0.7) 100%)'};
-  border: 3px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.5)' : 'rgba(75, 85, 99, 0.5)'};
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}1a 100%)`
+    : `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`};
+  border: 3px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 6rem;
-  filter: ${props => props.unlocked ? 'drop-shadow(0 0 30px rgba(0, 212, 255, 0.4))' : 'grayscale(0.6) brightness(0.7)'};
+  filter: ${props => props.unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.6) brightness(0.7)'};
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -78,7 +78,7 @@ export const AchievementIcon = styled.div<{ unlocked: boolean }>`
     right: 0;
     bottom: 0;
     background: ${props => props.unlocked
-    ? 'radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%)'
+    ? `radial-gradient(circle at center, ${props.theme.colors.primary}1a 0%, transparent 70%)`
     : 'transparent'};
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -87,10 +87,10 @@ export const AchievementIcon = styled.div<{ unlocked: boolean }>`
 
   &:hover {
     transform: translateZ(20px) scale(1.05);
-    border-color: ${props => props.unlocked ? '#00d4ff' : '#9ca3af'};
+    border-color: ${props => props.unlocked ? props.theme.colors.primary : props.theme.colors.light[300]};
     box-shadow: ${props => props.unlocked
-    ? '0 20px 60px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.2)'
-    : '0 10px 30px rgba(0, 0, 0, 0.3)'};
+    ? `${props.theme.shadows.glass.heavy}, ${props.theme.shadows.glow.primary}`
+    : props.theme.shadows.glass.medium};
 
     &::before {
       opacity: 1;
@@ -111,7 +111,7 @@ export const AchievementIcon = styled.div<{ unlocked: boolean }>`
 
 export const AchievementTitle = styled.h1`
   font-size: 2.5rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
   margin: 0;
 
@@ -122,13 +122,13 @@ export const AchievementTitle = styled.h1`
 
 export const AchievementDescription = styled.p`
   font-size: 1.125rem;
-  color: #d1d5db;
+  color: ${(props) => props.theme.colors.light[300]};
   line-height: 1.6;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   border-radius: 16px;
-  border: 2px solid rgba(55, 65, 81, 0.5);
+  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
 
   @media (max-width: 768px) {
     font-size: 1rem;

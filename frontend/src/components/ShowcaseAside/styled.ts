@@ -2,13 +2,13 @@ import styled from 'styled-components'
 import { motion } from 'framer-motion'
 
 export const ShowcaseContainer = styled(motion.aside)`
-  background: rgba(26, 32, 44, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: ${(props) => props.theme.glass.bg};
+  backdrop-filter: ${(props) => props.theme.glass.blur};
+  -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
+  border: ${(props) => props.theme.glass.border};
   border-radius: 24px;
   padding: 2rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: ${(props) => props.theme.shadows.glass.heavy};
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -33,7 +33,7 @@ export const ShowcaseHeader = styled.div`
 `
 
 export const ShowcaseTitle = styled.h3`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
@@ -46,12 +46,10 @@ export const ShowcaseTitle = styled.h3`
 export const ToggleContainer = styled.div`
   position: relative;
   display: flex;
-  background: rgba(0, 0, 0, 0.4);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 20px;
   padding: 4px;
-  box-shadow: 
-    inset 2px 2px 4px rgba(0, 0, 0, 0.5),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.02);
+  box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
 `
 
 export const SwitchOption = styled(motion.button) <{ active: boolean; position: 'left' | 'center' | 'right' }>`
@@ -61,7 +59,7 @@ export const SwitchOption = styled(motion.button) <{ active: boolean; position: 
   background: transparent;
   border: none;
   border-radius: 16px;
-  color: ${(props) => props.active ? '#ffffff' : '#9ca3af'};
+  color: ${(props) => props.active ? props.theme.colors.light[100] : props.theme.colors.light[300]};
   font-size: 0.6875rem;
   font-weight: 700;
   cursor: pointer;
@@ -69,7 +67,7 @@ export const SwitchOption = styled(motion.button) <{ active: boolean; position: 
   white-space: nowrap;
 
   &:hover {
-    color: #f3f4f6;
+    color: ${(props) => props.theme.colors.light[100]};
   }
 
   @media (max-width: 768px) {
@@ -87,9 +85,9 @@ export const SwitchOption = styled(motion.button) <{ active: boolean; position: 
     top: 0;
     left: 0;
     z-index: -1;
-    background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
+    background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
     border-radius: 16px;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
 
@@ -164,16 +162,13 @@ export const DuplicateItems = styled(motion.div)`
 `
 
 export const TrophyItem = styled(motion.div) <{ rarity: string }>`
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
+  border: 1px solid ${(props) => props.theme.colors.dark.neomorphLight};
   border-radius: 20px;
   padding: 1rem;
   display: flex;
   gap: 1rem;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 4px 4px 8px rgba(0, 0, 0, 0.2),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.02);
+  box-shadow: ${(props) => props.theme.shadows.neomorph.flat};
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -188,13 +183,7 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
     width: 100%;
     height: 4px;
     background: ${(props) => {
-    const colors = {
-      base: '#1dd469',
-      rare: '#3b82f6',
-      epic: '#a855f7',
-      legendary: '#ffd700',
-    }
-    return colors[props.rarity as keyof typeof colors] || '#9ca3af'
+    return props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
   }};
     border-radius: 20px;
     opacity: 0;
@@ -207,15 +196,10 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
 
   &:hover {
     box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.4),
+      ${(props) => props.theme.shadows.glass.medium},
       0 0 25px ${(props) => {
-    const colors = {
-      base: 'rgba(5, 190, 64, 0.2)',
-      rare: 'rgba(59, 130, 246, 0.2)',
-      epic: 'rgba(168, 85, 247, 0.2)',
-      legendary: 'rgba(255, 215, 0, 0.2)',
-    }
-    return colors[props.rarity as keyof typeof colors] || 'rgba(156, 163, 175, 0.2)'
+    const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    return `${rarityColor}33`
   }};
   }
 
@@ -245,10 +229,10 @@ export const TrophyHeader = styled.div <{ rarity: string }>`
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.4);
+    background: ${(props) => props.theme.colors.dark.neomorphDark};
     flex-shrink: 0;
-    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.4), inset -2px -2px 4px rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
+    border: 1px solid ${(props) => props.theme.colors.dark.neomorphLight};
     border-radius: 14px;
     width: 56px;
     height: 56px;
@@ -269,7 +253,7 @@ export const TrophyHeader = styled.div <{ rarity: string }>`
 
 export const TrophyIcon = styled.span`
   font-size: 2rem;
-  filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.4));
+  filter: drop-shadow(${(props) => props.theme.shadows.glow.primary});
 
   @media (max-width: 768px) {
     font-size: 1.75rem;
@@ -300,7 +284,7 @@ export const TrophyInfo = styled.div`
 `
 
 export const TrophyName = styled.div`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1rem;
   font-weight: 700;
 
@@ -313,25 +297,14 @@ export const TrophyRarity = styled.div <{ rarity: string }>`
   font-size: 0.625rem;
   font-weight: 700;
   color: ${(props) => {
-    const colors = {
-      base: '#1dd469',
-      rare: '#3b82f6',
-      epic: '#a855f7',
-      legendary: '#ffd700',
-    }
-    return colors[props.rarity as keyof typeof colors] || '#9ca3af'
+    return props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
   }};
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0.1875rem 0.5rem;
   background: ${(props) => {
-    const colors = {
-      common: 'rgba(16, 184, 75, 0.1)',
-      rare: 'rgba(59, 130, 246, 0.1)',
-      epic: 'rgba(168, 85, 247, 0.1)',
-      legendary: 'rgba(255, 215, 0, 0.1)',
-    }
-    return colors[props.rarity as keyof typeof colors] || 'rgba(156, 163, 175, 0.1)'
+    const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    return `${rarityColor}1a`
   }};
   border-radius: 6px;
 
@@ -341,7 +314,7 @@ export const TrophyRarity = styled.div <{ rarity: string }>`
 `
 
 export const TrophyOwner = styled.div`
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.8125rem;
 
   @media (max-width: 768px) {
@@ -351,7 +324,7 @@ export const TrophyOwner = styled.div`
 `
 
 export const TrophyDate = styled.div`
-  color: #6b7280;
+  color: ${(props) => props.theme.colors.dark[600]};
   font-size: 0.75rem;
 
   @media (max-width: 768px) {

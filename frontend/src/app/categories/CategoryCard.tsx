@@ -55,7 +55,7 @@ export const CategoryCardComponent = ({ category, onClick }: CategoryCardProps) 
         {unlockedCount > 0 && (
           <PreviewItem
             unlocked={true}
-            style={{ opacity: 1, transform: 'scale(1)', background: 'linear-gradient(145deg, rgba(0, 212, 255, 0.3) 0%, rgba(0, 168, 204, 0.2) 100%)' }}
+            style={{ opacity: 1, transform: 'scale(1)' }}
           >
             🔒
             <AchievementCount>+{unlockedCount}</AchievementCount>

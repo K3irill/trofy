@@ -7,11 +7,11 @@ export const HeaderContainer = styled(motion.header)`
   left: 0;
   right: 0;
   z-index: 1000;
-  background: rgba(26, 32, 44, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: ${(props) => props.theme.glass.bg};
+  backdrop-filter: ${(props) => props.theme.glass.blur};
+  -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
+  border-bottom: ${(props) => props.theme.glass.border};
+  box-shadow: ${(props) => props.theme.shadows.glass.light};
   padding: 0;
 `
 
@@ -56,18 +56,18 @@ position: relative;
   gap: 0.5rem;
   font-size: 1.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   cursor: pointer;
   transition: all 0.3s ease;
-  text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  text-shadow: ${(props) => props.theme.shadows.glow.primary};
   margin-right: 20px;
 
   &:hover {
     transform: scale(1.05);
-    text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+    text-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 
   @media (max-width: 768px) {
@@ -85,7 +85,7 @@ export const LogoSymbol = styled.span`
     inset: 0;
     display: block;
     z-index: -1;
-    filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5));
+    filter: drop-shadow(${(props) => props.theme.shadows.glow.primary});
   }
 `
 
@@ -100,7 +100,7 @@ export const NavLinks = styled.div`
 `
 
 export const NavLink = styled(motion.a) <{ active: boolean }>`
-  color: ${(props) => props.active ? '#00d4ff' : '#d1d5db'};
+  color: ${(props) => props.active ? props.theme.colors.primary : props.theme.colors.light[300]};
   text-decoration: none;
   font-weight: 600;
   font-size: 0.875rem;
@@ -109,14 +109,14 @@ export const NavLink = styled(motion.a) <{ active: boolean }>`
   transition: all 0.3s ease;
   position: relative;
   white-space: nowrap;
-  background: ${(props) => props.active ? 'rgba(0, 212, 255, 0.1)' : 'transparent'};
-  border: 1px solid ${(props) => props.active ? 'rgba(0, 212, 255, 0.3)' : 'transparent'};
+  background: ${(props) => props.active ? `${props.theme.colors.primary}1a` : 'transparent'};
+  border: 1px solid ${(props) => props.active ? `${props.theme.colors.primary}4d` : 'transparent'};
 
   &:hover {
-    color: #00d4ff;
-    background: rgba(0, 212, 255, 0.1);
-    border-color: rgba(0, 212, 255, 0.2);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => `${props.theme.colors.primary}1a`};
+    border-color: ${(props) => `${props.theme.colors.primary}33`};
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 
   @media (max-width: 768px) {
@@ -135,7 +135,7 @@ export const UserSection = styled.div`
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(45, 55, 72, 0.5);
+    background: ${(props) => props.theme.colors.dark.glassLight};
   }
 
   @media (max-width: 1024px) {
@@ -147,13 +147,13 @@ export const Avatar = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.125rem;
-  border: 2px solid rgba(0, 212, 255, 0.3);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+  border: 2px solid ${(props) => `${props.theme.colors.primary}4d`};
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
 
   @media (max-width: 768px) {
     width: 32px;
@@ -163,13 +163,13 @@ export const Avatar = styled.div`
 `
 
 export const LevelBadge = styled.div`
-  background: linear-gradient(135deg, #ffd700 0%, #ffec8b 100%);
-  color: #0a0e17;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.gold} 0%, ${(props) => props.theme.colors.goldLight} 100%);
+  color: ${(props) => props.theme.colors.dark.bg};
   padding: 0.25rem 0.75rem;
   border-radius: 8px;
   font-size: 0.6875rem;
   font-weight: 700;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  box-shadow: ${(props) => props.theme.shadows.glow.gold};
   height: fit-content;  width: fit-content;
 
   @media (max-width: 768px) {
@@ -179,7 +179,7 @@ export const LevelBadge = styled.div`
 `
 
 export const UserName = styled.div`
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-weight: 600;
   font-size: 0.8125rem;
 
@@ -213,13 +213,13 @@ export const NotificationIcon = styled(motion.button)`
     right: 8px;
     width: 8px;
     height: 8px;
-    background: #ff4444;
+    background: ${(props) => props.theme.colors.danger};
     border-radius: 50%;
-    box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+    box-shadow: 0 0 10px ${(props) => `${props.theme.colors.danger}80`};
   }
 
   &:hover {
-    background: rgba(45, 55, 72, 0.5);
+    background: ${(props) => props.theme.colors.dark.glassLight};
     transform: scale(1.1);
   }
 
@@ -237,14 +237,14 @@ export const CreateButton = styled(motion.button)`
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
-  border: 1px solid rgba(0, 212, 255, 0.3);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
+  border: 1px solid ${(props) => `${props.theme.colors.primary}4d`};
   border-radius: 12px;
-  color: #0a0e17;
+  color: ${(props) => props.theme.colors.dark.bg};
   font-weight: 700;
   font-size: 0.875rem;
   cursor: pointer;
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
   transition: all 0.3s ease;
 
   span {
@@ -256,7 +256,7 @@ export const CreateButton = styled(motion.button)`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 
   @media (max-width: 1024px) {
@@ -270,19 +270,19 @@ export const UserProfileMenu = styled(motion.div)`
   position: absolute;
   top: 82px;
   right: 1.5rem;
-  background: rgba(26, 32, 44, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: ${(props) => props.theme.colors.dark.glass};
+  backdrop-filter: ${(props) => props.theme.glass.blur};
+  -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
+  border: ${(props) => props.theme.glass.border};
   border-radius: 16px;
   padding: 0.75rem;
   min-width: 180px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: ${(props) => props.theme.shadows.glass.heavy};
   z-index: 1001;
 
   div {
     padding: 0.75rem 1rem;
-    color: #f3f4f6;
+    color: ${(props) => props.theme.colors.light[100]};
     font-size: 0.875rem;
     font-weight: 500;
     border-radius: 8px;
@@ -290,8 +290,8 @@ export const UserProfileMenu = styled(motion.div)`
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(0, 212, 255, 0.1);
-      color: #00d4ff;
+      background: ${(props) => `${props.theme.colors.primary}1a`};
+      color: ${(props) => props.theme.colors.primary};
     }
 
     &:not(:last-child) {
@@ -306,8 +306,8 @@ export const UserProfileMenu = styled(motion.div)`
 
 export const HamburgerButton = styled(motion.button)`
   display: none;
-  background: rgba(45, 55, 72, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: ${(props) => props.theme.colors.dark.glassLight};
+  border: ${(props) => props.theme.glass.border};
   width: 40px;
   height: 40px;
   border-radius: 12px;
@@ -315,13 +315,13 @@ export const HamburgerButton = styled(motion.button)`
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(0, 212, 255, 0.1);
-    border-color: rgba(0, 212, 255, 0.3);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    background: ${(props) => `${props.theme.colors.primary}1a`};
+    border-color: ${(props) => `${props.theme.colors.primary}4d`};
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 
   @media (max-width: 1024px) {
@@ -336,14 +336,14 @@ export const MobileMenu = styled(motion.div)`
   top: 64px;
   left: 0;
   right: 0;
-  background: rgba(26, 32, 44, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: ${(props) => props.theme.colors.dark.glass};
+  backdrop-filter: ${(props) => props.theme.glass.blur};
+  -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
+  border-bottom: ${(props) => props.theme.glass.border};
   padding: 1.5rem;
   flex-direction: column;
   gap: 1rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: ${(props) => props.theme.shadows.glass.heavy};
   max-height: calc(100vh - 64px);
   overflow-y: auto;
 
@@ -380,18 +380,18 @@ export const MobileMenuActionButton = styled(motion.button)`
   width: fit-content;
   padding: 5px 10px;
   height: 40px;
-  background: rgba(45, 55, 72, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: ${(props) => props.theme.colors.dark.glassLight};
+  border: ${(props) => props.theme.glass.border};
   border-radius: 12px;
   cursor: pointer;
   font-size: 1.25rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(0, 212, 255, 0.1);
-    border-color: rgba(0, 212, 255, 0.3);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    background: ${(props) => `${props.theme.colors.primary}1a`};
+    border-color: ${(props) => `${props.theme.colors.primary}4d`};
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 `
 

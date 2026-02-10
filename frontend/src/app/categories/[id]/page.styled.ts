@@ -23,7 +23,7 @@ export const PageHeaderWrap = styled.div`
 export const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.success} 0%, ${(props) => props.theme.colors.primary} 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -48,10 +48,10 @@ export const Grid = styled.div`
 `
 
 export const CategoryCard = styled(motion.div)`
-  background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]} 0%, ${(props) => props.theme.colors.dark[800]} 100%);
   border-radius: 20px;
   padding: 2rem;
-  border: 2px solid #374151;
+  border: 2px solid ${(props) => props.theme.colors.dark[600]};
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -64,15 +64,15 @@ export const CategoryCard = styled(motion.div)`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #00ff88 0%, #00d4ff 100%);
+    background: linear-gradient(90deg, ${(props) => props.theme.colors.success} 0%, ${(props) => props.theme.colors.primary} 100%);
     transform: scaleX(0);
     transition: transform 0.3s ease;
   }
 
   &:hover {
-    border-color: #00ff88;
+    border-color: ${(props) => props.theme.colors.success};
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+    box-shadow: ${(props) => props.theme.shadows.glass.medium};
 
     &::before {
       transform: scaleX(1);
@@ -88,13 +88,13 @@ export const CategoryIcon = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.dark[600]} 0%, ${(props) => props.theme.colors.dark[700]} 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2.5rem;
   margin-bottom: 1rem;
-  border: 2px solid #4b5563;
+  border: 2px solid ${(props) => props.theme.colors.dark[600]};
 
   @media (max-width: 768px) {
     width: 64px;
@@ -105,7 +105,7 @@ export const CategoryIcon = styled.div`
 
 export const CategoryName = styled.h3`
   font-size: 1.5rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
   margin-bottom: 0.5rem;
 
@@ -125,7 +125,7 @@ export const CategoryStats = styled.div`
 `
 
 export const StatItem = styled.div`
-  background: rgba(0, 255, 136, 0.1);
+  background: ${(props) => `${props.theme.colors.success}1a`};
   padding: 0.5rem 1rem;
   border-radius: 8px;
   display: flex;
@@ -138,7 +138,7 @@ export const StatItem = styled.div`
 `
 
 export const StatLabel = styled.span`
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.875rem;
 
   @media (max-width: 768px) {
@@ -147,7 +147,7 @@ export const StatLabel = styled.span`
 `
 
 export const StatValue = styled.span`
-  color: #00ff88;
+  color: ${(props) => props.theme.colors.success};
   font-weight: 700;
   font-size: 1rem;
 
@@ -174,13 +174,13 @@ export const ProgressRing = styled.svg`
 
 export const ProgressCircle = styled.circle`
   fill: none;
-  stroke: #374151;
+  stroke: ${(props) => props.theme.colors.dark[600]};
   stroke-width: 3;
 `
 
 export const ProgressFill = styled.circle<{ progress: number }>`
   fill: none;
-  stroke: #00ff88;
+  stroke: ${(props) => props.theme.colors.success};
   stroke-width: 3;
   stroke-linecap: round;
   stroke-dasharray: 2 * Math.PI * 26;
@@ -189,7 +189,7 @@ export const ProgressFill = styled.circle<{ progress: number }>`
 `
 
 export const ProgressText = styled.text`
-  fill: #f3f4f6;
+  fill: ${(props) => props.theme.colors.light[100]};
   font-size: 0.75rem;
   font-weight: 700;
 
@@ -213,8 +213,8 @@ export const PreviewItem = styled.div<{ unlocked: boolean }>`
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: linear-gradient(145deg, ${(props) => props.unlocked ? '#1f2937' : '#374151'} 0%, ${(props) => props.unlocked ? '#111827' : '#1f2937'} 100%);
-  border: 2px solid ${(props) => props.unlocked ? '#00ff88' : '#4b5563'};
+  background: linear-gradient(145deg, ${(props) => props.unlocked ? props.theme.colors.dark[700] : props.theme.colors.dark[600]} 0%, ${(props) => props.unlocked ? props.theme.colors.dark[800] : props.theme.colors.dark[700]} 100%);
+  border: 2px solid ${(props) => props.unlocked ? props.theme.colors.success : props.theme.colors.dark[600]};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,8 +232,8 @@ export const AchievementCount = styled.span`
   position: absolute;
   bottom: -8px;
   right: -8px;
-  background: #00ff88;
-  color: #0a0e17;
+  background: ${(props) => props.theme.colors.success};
+  color: ${(props) => props.theme.colors.dark.bg};
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -242,7 +242,7 @@ export const AchievementCount = styled.span`
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 700;
-  border: 2px solid #0a0e17;
+  border: 2px solid ${(props) => props.theme.colors.dark.bg};
 
   @media (max-width: 768px) {
     width: 20px;
@@ -252,8 +252,8 @@ export const AchievementCount = styled.span`
 `
 
 export const BackButton = styled(motion.button)`
-  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-  color: #f3f4f6;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.dark[600]} 0%, ${(props) => props.theme.colors.dark[700]} 100%);
+  color: ${(props) => props.theme.colors.light[100]};
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -265,7 +265,7 @@ export const BackButton = styled(motion.button)`
   transition: all 0.3s ease;
 
   &:hover {
-    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    background: linear-gradient(135deg, ${(props) => props.theme.colors.dark[700]} 0%, ${(props) => props.theme.colors.dark[600]} 100%);
     transform: translateX(-5px);
   }
 
@@ -276,10 +276,10 @@ export const BackButton = styled(motion.button)`
 `
 
 export const CategoryInfo = styled.div`
-  background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]} 0%, ${(props) => props.theme.colors.dark[800]} 100%);
   border-radius: 20px;
   padding: 2rem;
-  border: 2px solid #374151;
+  border: 2px solid ${(props) => props.theme.colors.dark[600]};
   margin-bottom: 2rem;
   display: flex;
   gap: 2rem;
@@ -295,12 +295,12 @@ export const CategoryIconLarge = styled.div`
   width: 120px;
   height: 120px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.dark[600]} 0%, ${(props) => props.theme.colors.dark[700]} 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 4rem;
-  border: 2px solid #4b5563;
+  border: 2px solid ${(props) => props.theme.colors.dark[600]};
 
   @media (max-width: 768px) {
     width: 96px;
@@ -315,7 +315,7 @@ export const CategoryDetails = styled.div`
 
 export const CategoryNameLarge = styled.h1`
   font-size: 2rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
   margin-bottom: 0.5rem;
 
@@ -334,7 +334,7 @@ export const CategoryStatsLarge = styled.div`
 `
 
 export const Stat = styled.div`
-  background: rgba(0, 255, 136, 0.1);
+  background: ${(props) => `${props.theme.colors.success}1a`};
   padding: 1rem 1.5rem;
   border-radius: 12px;
 
@@ -346,7 +346,7 @@ export const Stat = styled.div`
 export const StatValueLarge = styled.div`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #00ff88;
+  color: ${(props) => props.theme.colors.success};
 
   @media (max-width: 768px) {
     font-size: 1.25rem;
@@ -354,7 +354,7 @@ export const StatValueLarge = styled.div`
 `
 
 export const StatLabelLarge = styled.div`
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.875rem;
   margin-top: 0.25rem;
 
@@ -365,7 +365,7 @@ export const StatLabelLarge = styled.div`
 
 export const SectionTitle = styled.h2`
   font-size: 1.5rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
@@ -426,11 +426,11 @@ export const AchievementListContainer = styled.div`
 `
 
 export const AchievementListItem = styled(motion.div) <{ unlocked: boolean }>`
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
-  border: 2px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.5)' : 'rgba(55, 65, 81, 0.5)'};
+  border: 2px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -446,15 +446,15 @@ export const AchievementListItem = styled(motion.div) <{ unlocked: boolean }>`
     top: 0;
     bottom: 0;
     width: 4px;
-    background: linear-gradient(180deg, #00d4ff 0%, #00a8cc 100%);
+    background: linear-gradient(180deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
     opacity: ${props => props.unlocked ? 0.8 : 0};
     transition: opacity 0.3s ease;
   }
 
   &:hover {
-    border-color: ${props => props.unlocked ? '#00d4ff' : '#4b5563'};
+    border-color: ${props => props.unlocked ? props.theme.colors.primary : props.theme.colors.dark[600]};
     transform: translateX(8px);
-    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+    box-shadow: ${(props) => props.theme.shadows.glass.light};
 
     &::before {
       opacity: 1;
@@ -476,15 +476,15 @@ export const AchievementListIcon = styled.div<{ unlocked: boolean }>`
   height: 64px;
   border-radius: 12px;
   background: ${props => props.unlocked
-    ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 168, 204, 0.1) 100%)'
-    : 'linear-gradient(135deg, rgba(55, 65, 81, 0.5) 0%, rgba(31, 41, 55, 0.7) 100%)'};
-  border: 2px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.5)' : 'rgba(75, 85, 99, 0.5)'};
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}26 0%, ${props.theme.colors.secondary}1a 100%)`
+    : `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`};
+  border: 2px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
   flex-shrink: 0;
-  filter: ${props => props.unlocked ? 'drop-shadow(0 0 15px rgba(0, 212, 255, 0.4))' : 'grayscale(0.6) brightness(0.7)'};
+  filter: ${props => props.unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.6) brightness(0.7)'};
 
   @media (max-width: 768px) {
     width: 52px;
@@ -502,7 +502,7 @@ export const AchievementListContent = styled.div`
 
 export const AchievementListName = styled.h3`
   font-size: 1.25rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
   margin: 0;
 
@@ -513,7 +513,7 @@ export const AchievementListName = styled.h3`
 
 export const AchievementListStatus = styled.span<{ unlocked: boolean }>`
   font-size: 0.875rem;
-  color: ${props => props.unlocked ? '#00d4ff' : '#9ca3af'};
+  color: ${props => props.unlocked ? props.theme.colors.primary : props.theme.colors.light[300]};
   font-weight: 500;
 
   @media (max-width: 768px) {
@@ -532,7 +532,7 @@ export const LockedSection = styled(motion.section)`
 export const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
-  color: #9ca3af;
+  color: ${(props) => props.theme.colors.light[300]};
   font-size: 1.125rem;
 
   @media (max-width: 768px) {
@@ -544,4 +544,9 @@ export const EmptyState = styled.div`
 export const EmptyIcon = styled.div`
   font-size: 4rem;
   margin-bottom: 1rem;
+`
+
+export const StatLabelText = styled.div`
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 0.875rem;
 `

@@ -3,9 +3,10 @@ import { Achievement, Rarity } from '@/types'
 export const mockUser = {
   id: '1',
   vk_id: '123456',
-  username: 'justLive_26',
-  bio: 'потихоньку живем 👾',
+  username: 'K3irill',
+  bio: 'Если к пропасти приду я, заглядевшись на звезду, Буду падать, не жалея, что на камни упаду',
   xp: 1250,
+  avatar: '/avatar.jpg',
   level: 4,
   profile_theme: {
     profile_color: 'dark'
