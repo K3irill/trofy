@@ -1,7 +1,7 @@
-import { motion } from 'framer-motion';
-import Tilt from 'react-parallax-tilt';
-import { Rarity } from '@/types';
-import { AchievementCardProps } from './types';
+import { motion } from 'framer-motion'
+import Tilt from 'react-parallax-tilt'
+import { Rarity } from '@/types'
+import { AchievementCardProps } from './types'
 import {
   CardContainer,
   CardBody,
@@ -10,15 +10,15 @@ import {
   Description,
   XPReward,
   RarityBadge,
-} from './styled';
+} from './styled'
 
 export const AchievementCard = ({ achievement, unlocked = false, onClick }: AchievementCardProps) => {
   const icons = {
-    [Rarity.COMMON]: '🏆',
+    [Rarity.BASE]: '🧑‍💼',
     [Rarity.RARE]: '💎',
     [Rarity.EPIC]: '⚡',
     [Rarity.LEGENDARY]: '👑',
-  };
+  }
 
   return (
     <CardContainer onClick={onClick}>
@@ -45,5 +45,5 @@ export const AchievementCard = ({ achievement, unlocked = false, onClick }: Achi
         </CardBody>
       </Tilt>
     </CardContainer>
-  );
-};
+  )
+}

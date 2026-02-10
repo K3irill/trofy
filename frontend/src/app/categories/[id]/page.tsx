@@ -1,12 +1,13 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Header } from '@/components/Header/Header'
 
 import {
-  Container,
+
   Header as PageHeader,
-  Title,
   BackButton,
   CategoryInfo,
   CategoryIconLarge,
@@ -15,25 +16,34 @@ import {
   CategoryStats,
   Stat,
   StatValue,
-  StatLabel,
-  SectionTitle,
-  SectionIcon,
   AchievementGrid,
-  UnlockedSection,
-  LockedSection,
+  AchievementListContainer,
+  AchievementListItem,
+  AchievementListIcon,
+  AchievementListContent,
+  AchievementListName,
+  AchievementListStatus,
+  PageHeaderWrap,
 } from './page.styled'
 import { categories } from '../page.constants'
-import { CategoryCardComponent } from '../CategoryCard'
+import { AchievementCard } from './AchievementCard'
+import { ViewModeSelector, AchievementViewMode } from './ViewModeSelector'
+import Container from '@/components/Container/Container'
 
-interface PageProps {
-  params: {
-    id: string
-  }
-}
-
-export default function CategoryPage({ params }: PageProps) {
+export default function CategoryPage() {
   const router = useRouter()
-  const category = categories.find((cat) => cat.id === params.id)
+  const params = useParams()
+  const [viewMode, setViewMode] = useState<AchievementViewMode>('grid6')
+
+  const categoryId = params?.id as string
+  const category = categories.find((cat) => cat.id === categoryId)
+
+  // Отладка
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Category ID:', categoryId)
+    console.log('Available categories:', categories.map(c => c.id))
+    console.log('Found category:', category)
+  }
 
   if (!category) {
     return (
@@ -46,17 +56,59 @@ export default function CategoryPage({ params }: PageProps) {
     )
   }
 
-  const unlockedAchievements = category.achievements.filter((a) => a.unlocked)
-  const lockedAchievements = category.achievements.filter((a) => !a.unlocked)
+  const allAchievements = category.achievements
+
+  const renderAchievements = (achievements: typeof allAchievements) => {
+    if (viewMode === 'list') {
+      return (
+        <AchievementListContainer>
+          {achievements.map((achievement) => (
+            <AchievementListItem
+              key={achievement.id}
+              unlocked={achievement.unlocked}
+              onClick={() => router.push(`/categories/${category.id}/${achievement.id}`)}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <AchievementListIcon unlocked={achievement.unlocked}>
+                {achievement.icon}
+              </AchievementListIcon>
+              <AchievementListContent>
+                <AchievementListName>{achievement.name || `Достижение ${achievement.id}`}</AchievementListName>
+                <AchievementListStatus unlocked={achievement.unlocked}>
+                  {achievement.unlocked ? 'Разблокировано' : 'Заблокировано'}
+                </AchievementListStatus>
+              </AchievementListContent>
+            </AchievementListItem>
+          ))}
+        </AchievementListContainer>
+      )
+    }
+
+    return (
+      <AchievementGrid mode={viewMode}>
+        {achievements.map((achievement) => (
+          <AchievementCard
+            key={achievement.id}
+            achievement={achievement}
+            onClick={() => router.push(`/categories/${category.id}/${achievement.id}`)}
+          />
+        ))}
+      </AchievementGrid>
+    )
+  }
 
   return (
     <>
-      <Header />
       <Container>
         <PageHeader>
-          <BackButton onClick={() => router.back()} initial={{ x: -20 }} animate={{ x: 0 }}>
-            ← Назад
-          </BackButton>
+          <PageHeaderWrap>
+            <BackButton onClick={() => router.back()} initial={{ x: -20 }} animate={{ x: 0 }}>
+              ← Назад
+            </BackButton>
+            <ViewModeSelector mode={viewMode} onChange={setViewMode} />
+          </PageHeaderWrap>
         </PageHeader>
 
         <CategoryInfo>
@@ -80,43 +132,17 @@ export default function CategoryPage({ params }: PageProps) {
           </CategoryDetails>
         </CategoryInfo>
 
-        {unlockedAchievements.length > 0 && (
-          <UnlockedSection initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <SectionTitle>
-              <SectionIcon>✅</SectionIcon>
-              Выполненные ({unlockedAchievements.length}/{category.total})
-            </SectionTitle>
-            <AchievementGrid>
-              {unlockedAchievements.map((achievement) => (
-                <CategoryCardComponent
-                  key={achievement.id}
-                  category={category}
-                  achievement={achievement}
-                  unlocked={true}
-                />
-              ))}
-            </AchievementGrid>
-          </UnlockedSection>
-        )}
-
-        {lockedAchievements.length > 0 && (
-          <LockedSection initial={{ opacity: 0, y: 20 }} animate={{ opacity: 0.6, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
-            <SectionTitle>
-              <SectionIcon>🔒</SectionIcon>
-              Недоступные ({lockedAchievements.length}/{category.total - category.unlocked})
-            </SectionTitle>
-            <AchievementGrid>
-              {lockedAchievements.map((achievement) => (
-                <CategoryCardComponent
-                  key={achievement.id}
-                  category={category}
-                  achievement={achievement}
-                  unlocked={false}
-                />
-              ))}
-            </AchievementGrid>
-          </LockedSection>
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={viewMode}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {renderAchievements(allAchievements)}
+          </motion.div>
+        </AnimatePresence>
       </Container>
     </>
   )

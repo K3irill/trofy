@@ -1,20 +1,24 @@
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import styled from 'styled-components'
+import { motion } from 'framer-motion'
 
-export const Container = styled.div`
-  min-height: 100vh;
-  background: #0a0e17;
-  padding: 6rem 2rem 1rem;
 
-  @media (max-width: 768px) {
-    padding: 4rem 1rem 1rem;
-  }
-`;
 
 export const Header = styled.div`
   max-width: 1200px;
   margin: 0 auto 2rem;
-`;
+`
+
+export const PageHeaderWrap = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`
 
 export const Title = styled.h1`
   font-size: 2.5rem;
@@ -28,7 +32,7 @@ export const Title = styled.h1`
   @media (max-width: 768px) {
     font-size: 2rem;
   }
-`;
+`
 
 export const Grid = styled.div`
   display: grid;
@@ -41,7 +45,7 @@ export const Grid = styled.div`
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-`;
+`
 
 export const CategoryCard = styled(motion.div)`
   background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
@@ -78,7 +82,7 @@ export const CategoryCard = styled(motion.div)`
   @media (max-width: 768px) {
     padding: 1.5rem;
   }
-`;
+`
 
 export const CategoryIcon = styled.div`
   width: 80px;
@@ -97,7 +101,7 @@ export const CategoryIcon = styled.div`
     height: 64px;
     font-size: 2rem;
   }
-`;
+`
 
 export const CategoryName = styled.h3`
   font-size: 1.5rem;
@@ -108,7 +112,7 @@ export const CategoryName = styled.h3`
   @media (max-width: 768px) {
     font-size: 1.25rem;
   }
-`;
+`
 
 export const CategoryStats = styled.div`
   display: flex;
@@ -118,7 +122,7 @@ export const CategoryStats = styled.div`
   @media (max-width: 768px) {
     gap: 1rem;
   }
-`;
+`
 
 export const StatItem = styled.div`
   background: rgba(0, 255, 136, 0.1);
@@ -131,7 +135,7 @@ export const StatItem = styled.div`
   @media (max-width: 768px) {
     padding: 0.4rem 0.75rem;
   }
-`;
+`
 
 export const StatLabel = styled.span`
   color: #9ca3af;
@@ -140,7 +144,7 @@ export const StatLabel = styled.span`
   @media (max-width: 768px) {
     font-size: 0.8125rem;
   }
-`;
+`
 
 export const StatValue = styled.span`
   color: #00ff88;
@@ -150,7 +154,7 @@ export const StatValue = styled.span`
   @media (max-width: 768px) {
     font-size: 0.875rem;
   }
-`;
+`
 
 export const ProgressRing = styled.svg`
   position: absolute;
@@ -166,13 +170,13 @@ export const ProgressRing = styled.svg`
     top: 0.75rem;
     right: 0.75rem;
   }
-`;
+`
 
 export const ProgressCircle = styled.circle`
   fill: none;
   stroke: #374151;
   stroke-width: 3;
-`;
+`
 
 export const ProgressFill = styled.circle<{ progress: number }>`
   fill: none;
@@ -182,7 +186,7 @@ export const ProgressFill = styled.circle<{ progress: number }>`
   stroke-dasharray: 2 * Math.PI * 26;
   stroke-dashoffset: 2 * Math.PI * 26 * (1 - progress / 100);
   transition: stroke-dashoffset 0.5s ease;
-`;
+`
 
 export const ProgressText = styled.text`
   fill: #f3f4f6;
@@ -192,7 +196,7 @@ export const ProgressText = styled.text`
   @media (max-width: 768px) {
     font-size: 0.625rem;
   }
-`;
+`
 
 export const AchievementPreview = styled.div`
   display: flex;
@@ -203,7 +207,7 @@ export const AchievementPreview = styled.div`
   @media (max-width: 768px) {
     gap: 0.4rem;
   }
-`;
+`
 
 export const PreviewItem = styled.div<{ unlocked: boolean }>`
   width: 60px;
@@ -222,7 +226,7 @@ export const PreviewItem = styled.div<{ unlocked: boolean }>`
     height: 50px;
     font-size: 1.25rem;
   }
-`;
+`
 
 export const AchievementCount = styled.span`
   position: absolute;
@@ -245,7 +249,7 @@ export const AchievementCount = styled.span`
     height: 20px;
     font-size: 0.625rem;
   }
-`;
+`
 
 export const BackButton = styled(motion.button)`
   background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
@@ -269,7 +273,7 @@ export const BackButton = styled(motion.button)`
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
   }
-`;
+`
 
 export const CategoryInfo = styled.div`
   background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
@@ -285,7 +289,7 @@ export const CategoryInfo = styled.div`
     padding: 1.5rem;
     gap: 1rem;
   }
-`;
+`
 
 export const CategoryIconLarge = styled.div`
   width: 120px;
@@ -303,11 +307,11 @@ export const CategoryIconLarge = styled.div`
     height: 96px;
     font-size: 3rem;
   }
-`;
+`
 
 export const CategoryDetails = styled.div`
   flex: 1;
-`;
+`
 
 export const CategoryNameLarge = styled.h1`
   font-size: 2rem;
@@ -318,7 +322,7 @@ export const CategoryNameLarge = styled.h1`
   @media (max-width: 768px) {
     font-size: 1.5rem;
   }
-`;
+`
 
 export const CategoryStatsLarge = styled.div`
   display: flex;
@@ -327,7 +331,7 @@ export const CategoryStatsLarge = styled.div`
   @media (max-width: 768px) {
     gap: 1rem;
   }
-`;
+`
 
 export const Stat = styled.div`
   background: rgba(0, 255, 136, 0.1);
@@ -337,7 +341,7 @@ export const Stat = styled.div`
   @media (max-width: 768px) {
     padding: 0.75rem 1rem;
   }
-`;
+`
 
 export const StatValueLarge = styled.div`
   font-size: 1.5rem;
@@ -347,7 +351,7 @@ export const StatValueLarge = styled.div`
   @media (max-width: 768px) {
     font-size: 1.25rem;
   }
-`;
+`
 
 export const StatLabelLarge = styled.div`
   color: #9ca3af;
@@ -357,7 +361,7 @@ export const StatLabelLarge = styled.div`
   @media (max-width: 768px) {
     font-size: 0.8125rem;
   }
-`;
+`
 
 export const SectionTitle = styled.h2`
   font-size: 1.5rem;
@@ -370,30 +374,160 @@ export const SectionTitle = styled.h2`
   @media (max-width: 768px) {
     font-size: 1.25rem;
   }
-`;
+`
 
 export const SectionIcon = styled.span`
   font-size: 1.25rem;
-`;
+`
 
-export const AchievementGrid = styled.div`
+export const AchievementGrid = styled.div<{ mode?: 'grid6' | 'grid2' | 'list' }>`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
+  
+  ${props => {
+    if (props.mode === 'grid6') {
+      return `
+        grid-template-columns: repeat(6, 1fr);
+        @media (max-width: 1400px) {
+          grid-template-columns: repeat(5, 1fr);
+        }
+        @media (max-width: 1200px) {
+          grid-template-columns: repeat(4, 1fr);
+        }
+        @media (max-width: 900px) {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        @media (max-width: 600px) {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+      `
+    } else if (props.mode === 'grid2') {
+      return `
+        grid-template-columns: repeat(2, 1fr);
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+      `
+    } else {
+      return `
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      `
+    }
+  }}
+`
+
+export const AchievementListContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`
+
+export const AchievementListItem = styled(motion.div) <{ unlocked: boolean }>`
+  background: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  border: 2px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.5)' : 'rgba(55, 65, 81, 0.5)'};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #00d4ff 0%, #00a8cc 100%);
+    opacity: ${props => props.unlocked ? 0.8 : 0};
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    border-color: ${props => props.unlocked ? '#00d4ff' : '#4b5563'};
+    transform: translateX(8px);
+    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
+  }
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    padding: 1rem;
     gap: 1rem;
+
+    &:hover {
+      transform: translateX(4px);
+    }
   }
-`;
+`
+
+export const AchievementListIcon = styled.div<{ unlocked: boolean }>`
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: ${props => props.unlocked
+    ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 168, 204, 0.1) 100%)'
+    : 'linear-gradient(135deg, rgba(55, 65, 81, 0.5) 0%, rgba(31, 41, 55, 0.7) 100%)'};
+  border: 2px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.5)' : 'rgba(75, 85, 99, 0.5)'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+  filter: ${props => props.unlocked ? 'drop-shadow(0 0 15px rgba(0, 212, 255, 0.4))' : 'grayscale(0.6) brightness(0.7)'};
+
+  @media (max-width: 768px) {
+    width: 52px;
+    height: 52px;
+    font-size: 1.5rem;
+  }
+`
+
+export const AchievementListContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`
+
+export const AchievementListName = styled.h3`
+  font-size: 1.25rem;
+  color: #f3f4f6;
+  font-weight: 700;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 1.1rem;
+  }
+`
+
+export const AchievementListStatus = styled.span<{ unlocked: boolean }>`
+  font-size: 0.875rem;
+  color: ${props => props.unlocked ? '#00d4ff' : '#9ca3af'};
+  font-weight: 500;
+
+  @media (max-width: 768px) {
+    font-size: 0.8125rem;
+  }
+`
 
 export const UnlockedSection = styled(motion.section)`
   margin-bottom: 2rem;
-`;
+`
 
 export const LockedSection = styled(motion.section)`
   opacity: 0.6;
-`;
+`
 
 export const EmptyState = styled.div`
   text-align: center;
@@ -405,9 +539,9 @@ export const EmptyState = styled.div`
     padding: 3rem 1.5rem;
     font-size: 1rem;
   }
-`;
+`
 
 export const EmptyIcon = styled.div`
   font-size: 4rem;
   margin-bottom: 1rem;
-`;
+`

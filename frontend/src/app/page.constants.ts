@@ -1,12 +1,15 @@
-import { Achievement, Rarity } from '@/types';
+import { Achievement, Rarity } from '@/types'
 
 export const mockUser = {
   id: '1',
   vk_id: '123456',
-  username: 'GamerPro',
+  username: 'justLive_26',
+  bio: 'потихоньку живем 👾',
   xp: 1250,
   level: 4,
-  profile_theme: 'default',
+  profile_theme: {
+    profile_color: 'dark'
+  },
   privacy_settings: {
     show_achievements: true,
     show_level: true,
@@ -14,7 +17,7 @@ export const mockUser = {
   },
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
-};
+}
 
 export const mockAchievements: Achievement[] = [
   {
@@ -22,7 +25,7 @@ export const mockAchievements: Achievement[] = [
     title: 'Первые права',
     description: 'Получил права категории B',
     icon_url: '',
-    rarity: Rarity.COMMON,
+    rarity: Rarity.BASE,
     category_id: '1',
     xp_reward: 100,
     created_at: new Date().toISOString(),
@@ -57,4 +60,4 @@ export const mockAchievements: Achievement[] = [
     xp_reward: 1000,
     created_at: new Date().toISOString(),
   },
-];
+]

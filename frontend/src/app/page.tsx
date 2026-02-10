@@ -1,81 +1,38 @@
 'use client'
 
+import { useState } from 'react'
 import { Profile } from '@/components/Profile'
-
-import { Button } from '@/components/ui/Button/Button'
+import { ShowcaseAside } from '@/components/ShowcaseAside'
+import { RecentTrophiesSection } from '@/components/RecentTrophiesSection'
+import { InviteFriendSection } from '@/components/InviteFriendSection'
+import { DailyMissionSection } from '@/components/DailyMissionSection'
 import {
   Content,
-  Section,
-  SectionTitle,
-  AchievementsGrid,
-  TopAchievementsContainer,
-  TopAchievementItem,
-  TopAchievementRank,
-  TopAchievementInfo,
-  TopAchievementName,
-  TopAchievementUser,
-  TopAchievementXP,
+  MainSection,
+  AsideSection,
 } from './page.styled'
-import { mockUser, mockAchievements } from './page.constants'
-import { AchievementCard } from '@/components/AchievementCard/AchievementCard'
+import { mockUser } from './page.constants'
 import Container from '@/components/Container/Container'
 
-
-const topAchievements = [
-  { rank: 1, name: 'DragonSlayer', user: 'GamerPro', xp: 15000, title: 'Драконоборец' },
-  { rank: 2, name: 'NightOwl', user: 'ShadowNinja', xp: 12400, title: 'Ночной сов' },
-  { rank: 3, name: 'SpeedRunner', user: 'FlashGamer', xp: 9850, title: 'Спидраннер' },
-]
-
 export default function Home() {
+  const [showcaseFilter, setShowcaseFilter] = useState<'best' | 'recent' | 'mine'>('best')
+
   return (
     <Container>
       <Content>
-        <Section>
-          <SectionTitle>Профиль</SectionTitle>
+        <MainSection>
           <Profile user={mockUser} />
-        </Section>
+          <DailyMissionSection />
+          <RecentTrophiesSection />
+          <InviteFriendSection />
+        </MainSection>
 
-        <Section>
-          <SectionTitle>🏅 Лучшие достижения</SectionTitle>
-          <TopAchievementsContainer>
-            {topAchievements.map((achievement, index) => (
-              <TopAchievementItem
-                key={achievement.name}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <TopAchievementRank>{achievement.rank}</TopAchievementRank>
-                <TopAchievementInfo>
-                  <TopAchievementName>{achievement.title}</TopAchievementName>
-                  <TopAchievementUser>{achievement.user}</TopAchievementUser>
-                  <TopAchievementXP>+{achievement.xp.toLocaleString()} XP</TopAchievementXP>
-                </TopAchievementInfo>
-              </TopAchievementItem>
-            ))}
-          </TopAchievementsContainer>
-        </Section>
-
-        <Section>
-          <SectionTitle>Достижения</SectionTitle>
-          <AchievementsGrid>
-            {mockAchievements.map((achievement, index) => (
-              <AchievementCard
-                key={achievement.id}
-                achievement={achievement}
-                unlocked={index < 2}
-              />
-            ))}
-          </AchievementsGrid>
-        </Section>
-
-        <Section>
-          <SectionTitle>Начни свой путь</SectionTitle>
-          <Button size="lg" onClick={() => console.log('clicked')}>
-            Создать профиль
-          </Button>
-        </Section>
+        <AsideSection>
+          <ShowcaseAside
+            filter={showcaseFilter}
+            onFilterChange={setShowcaseFilter}
+          />
+        </AsideSection>
       </Content>
     </Container>
   )

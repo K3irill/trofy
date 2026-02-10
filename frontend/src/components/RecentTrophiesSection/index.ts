@@ -1,0 +1,1 @@
+export { RecentTrophiesSection } from './RecentTrophiesSection'

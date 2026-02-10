@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { Category } from './page.constants';
+import { Category } from './page.constants'
 import {
   CategoryCard,
   CategoryIcon,
@@ -10,41 +10,26 @@ import {
   StatLabel,
   StatValue,
   ProgressRing,
-  ProgressCircle,
-  ProgressFill,
-  ProgressText,
   AchievementPreview,
   PreviewItem,
   AchievementCount,
-} from './page.styled';
+} from './page.styled'
 
 interface CategoryCardProps {
-  category: Category;
-  onClick: () => void;
+  category: Category
+  onClick: () => void
 }
 
 export const CategoryCardComponent = ({ category, onClick }: CategoryCardProps) => {
-  const progress = Math.round((category.unlocked / category.total) * 100);
+  const progress = Math.round((category.unlocked / category.total) * 100)
+  const unlockedCount = category.achievements.filter(a => a.unlocked).length
 
   return (
     <CategoryCard
       onClick={onClick}
       style={{ opacity: 1, transform: 'translateY(0)' }}
     >
-      <ProgressRing>
-        <ProgressCircle cx="30" cy="30" r="26" />
-        <ProgressFill
-          cx="30"
-          cy="30"
-          r="26"
-          progress={progress}
-          transform="rotate(-90)"
-          transformOrigin="center"
-        />
-        <ProgressText x="30" y="32" textAnchor="middle">
-          {progress}%
-        </ProgressText>
-      </ProgressRing>
+      <ProgressRing progress={progress} />
       <CategoryIcon>{category.icon}</CategoryIcon>
       <CategoryName>{category.name}</CategoryName>
       <CategoryStats>
@@ -65,10 +50,18 @@ export const CategoryCardComponent = ({ category, onClick }: CategoryCardProps) 
             style={{ opacity: 1, transform: 'scale(1)' }}
           >
             {achievement.icon}
-            {achievement.unlocked && <AchievementCount>{category.achievements.filter(a => a.unlocked).length}</AchievementCount>}
           </PreviewItem>
         ))}
+        {unlockedCount > 0 && (
+          <PreviewItem
+            unlocked={true}
+            style={{ opacity: 1, transform: 'scale(1)', background: 'linear-gradient(145deg, rgba(0, 212, 255, 0.3) 0%, rgba(0, 168, 204, 0.2) 100%)' }}
+          >
+            🔒
+            <AchievementCount>+{unlockedCount}</AchievementCount>
+          </PreviewItem>
+        )}
       </AchievementPreview>
     </CategoryCard>
-  );
-};
+  )
+}

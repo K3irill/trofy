@@ -1,89 +1,773 @@
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import styled from 'styled-components'
+import { motion } from 'framer-motion'
 
 export const ProfileContainer = styled(motion.div)`
-  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[800]} 0%, ${(props) => props.theme.colors.dark[900]} 100%);
-  border-radius: 20px;
-  padding: 2rem;
-  border: 2px solid ${(props) => props.theme.colors.primary};
-  box-shadow: 0 0 40px rgba(0, 255, 136, 0.2);
+  background: rgba(26, 32, 44, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   text-align: center;
-`;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 20px;
+  }
+`
+export const ProfileTitleWrap = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+ `
+
+
+export const MainInfoWrap = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: auto;
+  }
+`
+
+export type ProfileThemeType =
+  | 'midnight'
+  | 'deepBlue'
+  | 'velvetPurple'
+  | 'forest'
+  | 'cosmic'
+  | 'sunset'
+  | 'nebula'
+  | 'aurora'
+  | 'gold'
+  | 'platinum'
+  | 'dragonScale'
+
+export type MainInfoProps = {
+  profileTheme?: ProfileThemeType
+}
+
+export const mapProfileColorToTheme = (color: string): ProfileThemeType => {
+  const colorMap: Record<string, ProfileThemeType> = {
+    'dark': 'midnight',
+    'blue': 'deepBlue',
+    'purple': 'velvetPurple',
+    'green': 'forest',
+    'orange': 'sunset',
+    'pink': 'nebula',
+    'red': 'aurora',
+    'yellow': 'gold'
+  }
+  return colorMap[color] || 'midnight'
+}
+
+const getThemeStyles = (theme: MainInfoProps['profileTheme'] = 'midnight') => {
+  const themes = {
+    midnight: {
+      gradient: 'linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
+      shadow: '0 8px 32px rgba(15, 23, 42, 0.4)',
+      accent: 'rgba(148, 163, 184, 0.15)',
+      border: '1px solid rgba(148, 163, 184, 0.1)',
+      overlay: 'rgba(15, 23, 42, 0.7)',
+      name: 'Полночь'
+    },
+    deepBlue: {
+      gradient: 'linear-gradient(145deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%)',
+      shadow: '0 8px 32px rgba(30, 58, 138, 0.35)',
+      accent: 'rgba(59, 130, 246, 0.2)',
+      border: '1px solid rgba(96, 165, 250, 0.2)',
+      overlay: 'rgba(30, 58, 138, 0.6)',
+      name: 'Глубокий синий'
+    },
+    velvetPurple: {
+      gradient: 'linear-gradient(145deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%)',
+      shadow: '0 8px 32px rgba(76, 29, 149, 0.35)',
+      accent: 'rgba(124, 58, 237, 0.2)',
+      border: '1px solid rgba(167, 139, 250, 0.2)',
+      overlay: 'rgba(76, 29, 149, 0.6)',
+      name: 'Бархатный фиолет'
+    },
+    forest: {
+      gradient: 'linear-gradient(145deg, #064e3b 0%, #059669 50%, #34d399 100%)',
+      shadow: '0 8px 32px rgba(6, 78, 59, 0.35)',
+      accent: 'rgba(5, 150, 105, 0.2)',
+      border: '1px solid rgba(52, 211, 153, 0.2)',
+      overlay: 'rgba(6, 78, 59, 0.6)',
+      name: 'Лес'
+    },
+
+    // Более уникальные с изюминкой
+    cosmic: {
+      gradient: 'linear-gradient(145deg, #1e1b4b 0%, #3730a3 50%, #818cf8 100%)',
+      shadow: '0 8px 32px rgba(30, 27, 75, 0.4), 0 0 24px rgba(129, 140, 248, 0.3)',
+      accent: 'rgba(129, 140, 248, 0.25)',
+      border: '1px solid rgba(129, 140, 248, 0.3)',
+      overlay: 'rgba(30, 27, 75, 0.7)',
+      name: 'Космос'
+    },
+    sunset: {
+      gradient: 'linear-gradient(145deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%)',
+      shadow: '0 8px 32px rgba(124, 45, 18, 0.35)',
+      accent: 'rgba(234, 88, 12, 0.2)',
+      border: '1px solid rgba(251, 146, 60, 0.2)',
+      overlay: 'rgba(124, 45, 18, 0.6)',
+      name: 'Закат'
+    },
+    nebula: {
+      gradient: 'linear-gradient(145deg, #500724 0%, #be185d 50%, #f472b6 100%)',
+      shadow: '0 8px 32px rgba(80, 7, 36, 0.4), 0 0 20px rgba(244, 114, 182, 0.2)',
+      accent: 'rgba(190, 24, 93, 0.25)',
+      border: '1px solid rgba(244, 114, 182, 0.25)',
+      overlay: 'rgba(80, 7, 36, 0.7)',
+      name: 'Туманность'
+    },
+    aurora: {
+      gradient: 'linear-gradient(145deg, #064e3b 0%, #0d9488 50%, #22d3ee 100%)',
+      shadow: '0 8px 32px rgba(6, 78, 59, 0.35)',
+      accent: 'rgba(13, 148, 136, 0.2)',
+      border: '1px solid rgba(34, 211, 238, 0.2)',
+      overlay: 'rgba(6, 78, 59, 0.6)',
+      name: 'Северное сияние'
+    },
+
+    // Премиум-темы (разблокируются за достижения)
+    gold: {
+      gradient: 'linear-gradient(145deg, #78350f 0%, #d97706 50%, #fbbf24 100%)',
+      shadow: '0 8px 40px rgba(120, 53, 15, 0.5), 0 0 30px rgba(251, 191, 36, 0.3)',
+      accent: 'rgba(217, 119, 6, 0.25)',
+      border: '1px solid rgba(251, 191, 36, 0.3)',
+      overlay: 'rgba(120, 53, 15, 0.7)',
+      name: 'Золото'
+    },
+    platinum: {
+      gradient: 'linear-gradient(145deg, #374151 0%, #9ca3af 50%, #d1d5db 100%)',
+      shadow: '0 8px 40px rgba(55, 65, 81, 0.5), 0 0 30px rgba(209, 213, 219, 0.2)',
+      accent: 'rgba(156, 163, 175, 0.25)',
+      border: '1px solid rgba(209, 213, 219, 0.3)',
+      overlay: 'rgba(55, 65, 81, 0.7)',
+      name: 'Платина'
+    },
+    dragonScale: {
+      gradient: 'linear-gradient(145deg, #064e3b 0%, #0891b2 50%, #7dd3fc 100%)',
+      shadow: '0 8px 40px rgba(6, 78, 59, 0.5), 0 0 30px rgba(125, 211, 252, 0.3)',
+      accent: 'rgba(8, 145, 178, 0.25)',
+      border: '1px solid rgba(125, 211, 252, 0.25)',
+      overlay: 'rgba(6, 78, 59, 0.7)',
+      name: 'Чешуя дракона'
+    }
+  }
+  return themes[theme] || themes.midnight
+}
+
+export const MainInfo = styled.div<MainInfoProps>`
+  padding: 1.5rem;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  background: ${props => getThemeStyles(props.profileTheme).gradient};
+  box-shadow: ${props => getThemeStyles(props.profileTheme).shadow};
+  border: ${props => getThemeStyles(props.profileTheme).border};
+
+
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: shimmer 8s infinite linear;
+    
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    100% {
+      transform: translate(-20%, -20%) rotate(5deg);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 20px;
+  }
+`
+
 
 export const Avatar = styled.div`
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
-  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
+  margin: 0 auto 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
-  border: 4px solid ${(props) => props.theme.colors.dark[700]};
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
-`;
+  font-size: 3.5rem;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 0 30px rgba(0, 212, 255, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    width: 100px;
+    height: 100px;
+    font-size: 3rem;
+  }
+`
 
 export const Username = styled.h2`
-  color: ${(props) => props.theme.colors.light[100]};
-  font-size: 1.5rem;
+  color: #f3f4f6;
+  font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-`;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`
 
 export const Level = styled.div`
   display: inline-block;
-  background: linear-gradient(135deg, ${(props) => props.theme.colors.accent} 0%, ${(props) => props.theme.colors.secondary} 100%);
-  color: ${(props) => props.theme.colors.dark[900]};
+  background: linear-gradient(135deg, #ffd700 0%, #ffec8b 100%);
+  color: #0a0e17;
   padding: 0.5rem 1.5rem;
-  border-radius: 20px;
+  border-radius: 12px;
   font-weight: 700;
-  margin-bottom: 1rem;
-`;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    padding: 0.4rem 1.25rem;
+    font-size: 0.875rem;
+  }
+`
+
+export const LevelRing = styled.div`
+  position: absolute;
+  bottom: 0;
+  right: -5px;
+  width: 40px;
+  height: 40px;
+
+  @media (max-width: 768px) {
+    width: 32px;
+    height: 32px;
+    right: -3px;
+  }
+`
 
 export const XPBar = styled.div`
   width: 100%;
-  height: 8px;
-  background: ${(props) => props.theme.colors.dark[700]};
-  border-radius: 4px;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
   overflow: hidden;
   margin-bottom: 1rem;
-`;
+  position: relative;
+  z-index: 1;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+`
 
 export const XPProgress = styled(motion.div)`
   height: 100%;
-  background: linear-gradient(90deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
-  border-radius: 4px;
-`;
+  background: linear-gradient(90deg, #00d4ff 0%, #00a8cc 100%);
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+`
 
 export const XPText = styled.p`
-  color: ${(props) => props.theme.colors.light[300]};
+  color: #9ca3af;
   font-size: 0.875rem;
-  margin-bottom: 1.5rem;
-`;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1.5rem;
+  }
+`
+export const StatsSection = styled.div``
+
 
 export const Stats = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
-`;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 1rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+`
 
 export const StatItem = styled.div`
-  background: ${(props) => props.theme.colors.dark[700]};
-  padding: 1rem;
-  border-radius: 12px;
-  border: 1px solid ${(props) => props.theme.colors.dark[600]};
-`;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    inset 4px 4px 8px rgba(0, 0, 0, 0.4),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.02);
 
-export const StatValue = styled.div`
-  font-size: 1.5rem;
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+`
+
+export const StatValue = styled(motion.div)`
+  font-size: 1.75rem;
   font-weight: 700;
-  color: ${(props) => props.theme.colors.primary};
-`;
+  color: #00d4ff;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+  font-family: 'Courier New', monospace;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`
 
 export const StatLabel = styled.div`
-  font-size: 0.75rem;
-  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 0.6875rem;
+  color: #9ca3af;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
   margin-top: 0.25rem;
-`;
+`
+
+export const StatusContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+`
+
+export const StatusInput = styled.input`
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  text-align: center;
+  width: 100%;
+  max-width: 300px;
+  transition: all 0.3s ease;
+  outline: none;
+
+  &:focus {
+    border-color: rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    color: #f3f4f6;
+  }
+
+  &::placeholder {
+    color: rgba(156, 163, 175, 0.5);
+  }
+`
+
+export const BadgesContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+`
+
+export const Badge = styled(motion.div) <{ rarity: string }>`
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  ${props => {
+    switch (props.rarity) {
+      case 'legendary':
+        return `
+          background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+          color: #fff;
+          box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        `
+      case 'epic':
+        return `
+          background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+          color: #fff;
+          box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+        `
+      case 'rare':
+        return `
+          background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+          color: #fff;
+          box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        `
+      default:
+        return `
+          background: rgba(156, 163, 175, 0.2);
+          color: #9ca3af;
+        `
+    }
+  }}
+`
+
+export const SectionTitle = styled.h3`
+  color: #f3f4f6;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    font-size: 0.875rem;
+  }
+`
+
+export const RareTrophiesSection = styled.div`
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1.5rem;
+  }
+`
+
+export const RareTrophiesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+  }
+`
+
+export const TrophyCard = styled(motion.div) <{ isNew: boolean }>`
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  padding: 1rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  ${props => props.isNew && `
+    animation: pulse-border 2s infinite;
+  `}
+
+  @keyframes pulse-border {
+    0%, 100% {
+      border-color: rgba(0, 212, 255, 0.3);
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+    50% {
+      border-color: rgba(0, 212, 255, 0.8);
+      box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+    }
+  }
+
+  &:hover {
+    transform: translateY(-5px) rotateY(10deg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    border-color: rgba(0, 212, 255, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
+`
+
+export const TrophyIcon = styled(motion.div) <{ rarity: string }>`
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  filter: ${props => {
+    switch (props.rarity) {
+      case 'legendary':
+        return 'drop-shadow(0 0 15px rgba(255, 107, 107, 0.8))'
+      case 'epic':
+        return 'drop-shadow(0 0 15px rgba(168, 85, 247, 0.8))'
+      case 'rare':
+        return 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.8))'
+      default:
+        return 'drop-shadow(0 0 10px rgba(156, 163, 175, 0.5))'
+    }
+  }};
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+`
+
+export const TrophyTitle = styled.div`
+  color: #f3f4f6;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 0.625rem;
+  }
+`
+
+export const CurrentGoalsSection = styled.div`
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    margin-bottom: 1.5rem;
+  }
+`
+
+export const GoalItem = styled(motion.div)`
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+`
+
+export const GoalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`
+
+export const GoalTitle = styled.div`
+  color: #f3f4f6;
+  font-size: 0.8125rem;
+  font-weight: 500;
+`
+
+export const GoalProgress = styled.div`
+  color: #00d4ff;
+  font-size: 0.75rem;
+  font-weight: 600;
+`
+
+export const GoalBar = styled.div`
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  overflow: hidden;
+`
+
+export const GoalProgressBar = styled(motion.div)`
+  height: 100%;
+  background: linear-gradient(90deg, #00d4ff 0%, #00a8cc 100%);
+  border-radius: 6px;
+`
+
+export const StreakContainer = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+`
+
+export const StreakFlame = styled(motion.span)`
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.8));
+`
+
+export const StreakText = styled.div`
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  font-weight: 600;
+`
+
+export const StreakDays = styled(motion.div)`
+  color: #f3f4f6;
+  font-size: 1.5rem;
+  font-weight: 700;
+`
+
+
+export const ShareButton = styled(motion.button)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #f3f4f6;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1.5rem;
+  position: relative;
+  z-index: 1;
+
+  &:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+  }
+`
+
+export const ParticlesContainer = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+`
+
+export const Particle = styled(motion.div) <{ color: string }>`
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${props => props.color};
+  box-shadow: 0 0 10px ${props => props.color};
+`
+
+export const QuickActionsSection = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+ 
+`
+
+export const QuickActionButton = styled(motion.button)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(7, 122, 126, 0.705);
+  box-shadow: inset 0px 0px 15px rgba(7, 122, 126, 0.705);
+  border-radius: 16px;
+  color: #f3f4f6;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 0.5rem;
+    border-radius: 12px;
+  }
+`
+
+export const ButtonIcon = styled.span`
+  font-size: 1.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+`
+
+export const ButtonText = styled.span`
+  font-size: 0.8125rem;
+  font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
+`

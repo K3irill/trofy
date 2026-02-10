@@ -31,7 +31,10 @@ export default function RootLayout({
         <StyledComponentsRegistry>
           <Providers>
             <Header />
-            {children}
+            <main>
+              {children}
+            </main>
+
           </Providers>
         </StyledComponentsRegistry>
       </body>

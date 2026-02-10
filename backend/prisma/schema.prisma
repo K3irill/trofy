@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String   @id @default(uuid())
+  vk_id            String   @unique
+  username         String
+  xp               Int      @default(0)
+  level            Int      @default(1)
+  profile_theme    String   @default("default")
+  privacy_settings Json     @default("{\"show_achievements\": true, \"show_level\": true, \"show_profile\": true}")
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  userAchievements UserAchievement[]
+  categories       Category[]
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  icon_url    String?
+  rarity      Rarity   @default(COMMON)
+  category_id String
+  xp_reward   Int      @default(100)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  category         Category          @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  userAchievements UserAchievement[]
+
+  @@index([category_id])
+}
+
+model Category {
+  id         String   @id @default(uuid())
+  name       String
+  icon_url   String?
+  is_custom  Boolean  @default(false)
+  creator_id String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  creator      User?         @relation(fields: [creator_id], references: [id], onDelete: SetNull)
+  achievements Achievement[]
+
+  @@index([creator_id])
+}
+
+model UserAchievement {
+  id             String   @id @default(uuid())
+  user_id        String
+  achievement_id String
+  unlocked_at    DateTime @default(now())
+  is_public      Boolean  @default(true)
+
+  user        User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievement_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, achievement_id])
+  @@index([user_id])
+  @@index([achievement_id])
+}
+
+model ProfileTheme {
+  id          String   @id @default(uuid())
+  name        String
+  preview_url String?
+  cost        Int      @default(0)
+  xp_required Int      @default(0)
+  created_at  DateTime @default(now())
+}
+
+enum Rarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
