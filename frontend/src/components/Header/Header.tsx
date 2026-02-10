@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { SettingsModal } from '@/components/SettingsModal'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
+import { mockUser } from '@/app/page.constants'
 import {
   HeaderContainer,
   HeaderContent,
@@ -40,10 +41,7 @@ export const Header = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [user] = useState({
-    username: 'GamerPro',
-    level: 4,
-  })
+  const [settingsInitialView, setSettingsInitialView] = useState<'categories' | 'theme'>('categories')
 
   return (
     <>
@@ -71,7 +69,10 @@ export const Header = () => {
             </NavLinks>
           </HeaderLeft>
           <HeaderRight>
-            <ThemeSwitcher onOpenSettings={() => setIsSettingsOpen(true)} />
+            <ThemeSwitcher onOpenSettings={() => {
+              setSettingsInitialView('theme')
+              setIsSettingsOpen(true)
+            }} />
             <CreateButton onClick={() => console.log('create')}>
               <span>+</span> Свое Достижение
             </CreateButton>
@@ -79,9 +80,9 @@ export const Header = () => {
               🔔
             </NotificationIcon>
             <UserSection onClick={() => setShowProfileMenu(!showProfileMenu)}>
-              <Avatar>👤</Avatar>
-              <LevelBadge>Lvl {user.level}</LevelBadge>
-              <UserName>{user.username}</UserName>
+              <Avatar>{mockUser.avatar ? <img src={mockUser.avatar} alt={mockUser.username} /> : '👤'}</Avatar>
+              <LevelBadge>Lvl {mockUser.level}</LevelBadge>
+              <UserName>{mockUser.username}</UserName>
             </UserSection>
             {showProfileMenu && (
               <UserProfileMenu
@@ -92,7 +93,11 @@ export const Header = () => {
                 <div onClick={() => { router.push('/profile'); setShowProfileMenu(false) }}>
                   Профиль
                 </div>
-                <div onClick={() => { setIsSettingsOpen(true); setShowProfileMenu(false) }}>
+                <div onClick={() => {
+                  setSettingsInitialView('categories')
+                  setIsSettingsOpen(true)
+                  setShowProfileMenu(false)
+                }}>
                   Настройки
                 </div>
                 <div onClick={() => setShowProfileMenu(false)}>Выйти</div>
@@ -113,14 +118,20 @@ export const Header = () => {
         >
           <MobileMenuHeader>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem' }}>👤</Avatar>
+              <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem' }}>
+                {mockUser.avatar ? <img src={mockUser.avatar} alt={mockUser.username} /> : '👤'}
+              </Avatar>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <LevelBadge>Lvl {user.level}</LevelBadge>
-                <UserName style={{ fontSize: '1.125rem' }}>{user.username}</UserName>
+                <LevelBadge>Lvl {mockUser.level}</LevelBadge>
+                <UserName style={{ fontSize: '1.125rem' }}>{mockUser.username}</UserName>
               </div>
             </div>
             <MobileMenuActions>
-              <MobileMenuActionButton onClick={() => setIsSettingsOpen(true)}>
+              <MobileMenuActionButton onClick={() => {
+                setSettingsInitialView('categories')
+                setIsSettingsOpen(true)
+                setShowProfileMenu(false)
+              }}>
                 ⚙️
               </MobileMenuActionButton>
               <MobileMenuActionButton onClick={() => console.log('logout')}>
@@ -148,10 +159,10 @@ export const Header = () => {
       )}
 
       <SettingsModal
-        key={isSettingsOpen ? 'theme' : 'categories'}
+        key={isSettingsOpen ? settingsInitialView : 'categories'}
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        initialView="theme"
+        initialView={settingsInitialView}
       />
     </>
   )

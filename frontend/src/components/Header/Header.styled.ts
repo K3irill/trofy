@@ -154,6 +154,17 @@ export const Avatar = styled.div`
   font-size: 1.125rem;
   border: 2px solid ${(props) => `${props.theme.colors.primary}4d`};
   box-shadow: ${(props) => props.theme.shadows.glow.primary};
+  position: relative;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
 
   @media (max-width: 768px) {
     width: 32px;

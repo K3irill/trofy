@@ -1,4 +1,4 @@
-export type ThemeName = 'NEON' | 'STOIC' | 'MINIMAL' | 'FOREST' | 'DARK_GLASS' | 'SUNSET' | 'MYTHOLOGY' | 'BERSERK' | 'CYBERPUNK' | 'OCEAN' | 'BLACK_GLOSS'
+export type ThemeName = 'NEON' | 'TWILIGHT' | 'STOIC' | 'MINIMAL' | 'FOREST' | 'DARK_GLASS' | 'SUNSET' | 'MYTHOLOGY' | 'BERSERK' | 'CYBERPUNK' | 'OCEAN' | 'BLACK_GLOSS' | 'BASALT'
 
 export interface ThemeColors {
   primary: string
@@ -894,9 +894,157 @@ export const blackGlossTheme: Theme = {
   },
 }
 
+// 10. Тема TWILIGHT - темные лунные цвета, серебристые и голубоватые оттенки
+export const twilightTheme: Theme = {
+  name: 'TWILIGHT',
+  displayName: 'СУМЕРКИ',
+  colors: {
+    primary: '#cbd5e1', // Серебристый лунный свет
+    secondary: '#94a3b8', // Голубовато-серый
+    gold: '#fde047', // Лунное золото
+    goldLight: '#fef08a',
+    accent: '#e2e8f0', // Светло-серебристый
+    danger: '#ef4444',
+    warning: '#f59e0b',
+    success: '#10b981',
+    dark: {
+      bg: '#020617', // Почти черный ночной фон
+      glass: 'rgba(15, 23, 42, 0.9)', // Темное лунное стекло
+      glassLight: 'rgba(30, 41, 59, 0.8)',
+      neomorphLight: 'rgba(203, 213, 225, 0.12)', // Лунный серебристый отблеск
+      neomorphDark: 'rgba(2, 6, 23, 0.6)',
+      900: '#020617',
+      800: '#0f172a', // Очень темно-синий
+      700: '#1e293b', // Темно-синий
+      600: '#334155', // Серо-синий
+    },
+    light: {
+      100: '#f8fafc', // Почти белый лунный
+      200: '#e2e8f0', // Серебристый
+      300: '#cbd5e1', // Голубовато-серый
+    },
+    rarity: {
+      base: '#94a3b8', // Голубовато-серый
+      rare: '#cbd5e1', // Серебристый
+      epic: '#e2e8f0', // Светло-серебристый
+      legendary: '#fde047', // Лунное золото
+    },
+  },
+  shadows: {
+    sm: '0 1px 3px rgba(2, 6, 23, 0.7)',
+    md: '0 4px 6px rgba(2, 6, 23, 0.7)',
+    lg: '0 10px 25px rgba(2, 6, 23, 0.8)',
+    xl: '0 20px 40px rgba(2, 6, 23, 0.9)',
+    glow: {
+      primary: '0 0 25px rgba(203, 213, 225, 0.4)', // Лунное серебристое свечение
+      secondary: '0 0 25px rgba(148, 163, 184, 0.4)', // Голубоватое свечение
+      gold: '0 0 30px rgba(253, 224, 71, 0.5)', // Лунное золотое свечение
+      accent: '0 0 20px rgba(226, 232, 240, 0.4)', // Светло-серебристое свечение
+    },
+    neomorph: {
+      light: '8px 8px 16px rgba(2, 6, 23, 0.6), -8px -8px 16px rgba(203, 213, 225, 0.1)',
+      dark: 'inset 4px 4px 8px rgba(2, 6, 23, 0.6), inset -4px -4px 8px rgba(203, 213, 225, 0.1)',
+      flat: '0 8px 32px rgba(2, 6, 23, 0.5)',
+    },
+    glass: {
+      light: '0 8px 32px rgba(2, 6, 23, 0.5)',
+      medium: '0 12px 40px rgba(2, 6, 23, 0.6)',
+      heavy: '0 20px 60px rgba(2, 6, 23, 0.7)',
+    },
+  },
+  neomorph: {
+    bg: '#020617',
+    radius: '16px',
+    radiusSm: '12px',
+    radiusLg: '24px',
+  },
+  glass: {
+    bg: 'rgba(15, 23, 42, 0.9)',
+    bgLight: 'rgba(30, 41, 59, 0.8)',
+    blur: 'blur(20px)',
+    radius: '20px',
+    border: '1px solid rgba(203, 213, 225, 0.2)',
+  },
+}
+
+// 11. Тема BASALT - вулканический базальт с зеленоватыми и коричневыми акцентами
+export const basaltTheme: Theme = {
+  name: 'BASALT',
+  displayName: 'БАЗАЛЬТ',
+  colors: {
+    primary: '#16a34a', // Вулканический зеленый
+    secondary: '#15803d', // Темно-зеленый
+    gold: '#b45309', // Медное золото
+    goldLight: '#d97706',
+    accent: '#78716c', // Каменный коричневый
+    danger: '#dc2626',
+    warning: '#d97706',
+    success: '#16a34a', // Зеленый
+    dark: {
+      bg: '#0c0a09', // Почти черный вулканический
+      glass: 'rgba(20, 15, 12, 0.9)', // Базальтовое стекло
+      glassLight: 'rgba(39, 35, 32, 0.8)',
+      neomorphLight: 'rgba(22, 163, 74, 0.15)', // Зеленоватый вулканический отблеск
+      neomorphDark: 'rgba(12, 10, 9, 0.6)',
+      900: '#0c0a09',
+      800: '#1c1917', // Темно-коричневый
+      700: '#292524', // Коричневый
+      600: '#3f3a37', // Светло-коричневый
+    },
+    light: {
+      100: '#f5f5f4', // Светло-бежевый
+      200: '#e7e5e4', // Бежевый
+      300: '#d6d3d1', // Серо-бежевый
+    },
+    rarity: {
+      base: '#78716c', // Каменный коричневый
+      rare: '#16a34a', // Вулканический зеленый
+      epic: '#15803d', // Темно-зеленый
+      legendary: '#b45309', // Медное золото
+    },
+  },
+  shadows: {
+    sm: '0 1px 3px rgba(12, 10, 9, 0.7)',
+    md: '0 4px 6px rgba(12, 10, 9, 0.7)',
+    lg: '0 10px 25px rgba(12, 10, 9, 0.8)',
+    xl: '0 20px 40px rgba(12, 10, 9, 0.9)',
+    glow: {
+      primary: '0 0 20px rgba(22, 163, 74, 0.4)', // Вулканическое зеленое свечение
+      secondary: '0 0 20px rgba(21, 128, 61, 0.4)', // Темно-зеленое свечение
+      gold: '0 0 25px rgba(180, 83, 9, 0.5)', // Медное свечение
+      accent: '0 0 15px rgba(120, 113, 108, 0.4)', // Каменное свечение
+    },
+    neomorph: {
+      light: '8px 8px 16px rgba(12, 10, 9, 0.6), -8px -8px 16px rgba(22, 163, 74, 0.1)',
+      dark: 'inset 4px 4px 8px rgba(12, 10, 9, 0.6), inset -4px -4px 8px rgba(22, 163, 74, 0.1)',
+      flat: '0 8px 32px rgba(12, 10, 9, 0.5)',
+    },
+    glass: {
+      light: '0 8px 32px rgba(12, 10, 9, 0.5)',
+      medium: '0 12px 40px rgba(12, 10, 9, 0.6)',
+      heavy: '0 20px 60px rgba(12, 10, 9, 0.7)',
+    },
+  },
+  neomorph: {
+    bg: '#0c0a09',
+    radius: '16px',
+    radiusSm: '12px',
+    radiusLg: '24px',
+  },
+  glass: {
+    bg: 'rgba(20, 15, 12, 0.9)',
+    bgLight: 'rgba(39, 35, 32, 0.8)',
+    blur: 'blur(20px)',
+    radius: '20px',
+    border: '1px solid rgba(22, 163, 74, 0.3)',
+  },
+}
+
+
 // Обновляем объект themes
 export const themes: Record<ThemeName, Theme> = {
   NEON: neonTheme,
+  TWILIGHT: twilightTheme,
   STOIC: stoicTheme,
   MINIMAL: minimalTheme,
   FOREST: forestTheme,
@@ -907,6 +1055,7 @@ export const themes: Record<ThemeName, Theme> = {
   CYBERPUNK: cyberpunkTheme,
   OCEAN: oceanTheme,
   BLACK_GLOSS: blackGlossTheme,
+  BASALT: basaltTheme,
 }
 
 export const getTheme = (themeName: ThemeName): Theme => {
