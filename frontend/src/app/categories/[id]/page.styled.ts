@@ -183,8 +183,8 @@ export const ProgressFill = styled.circle<{ progress: number }>`
   stroke: ${(props) => props.theme.colors.success};
   stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 2 * Math.PI * 26;
-  stroke-dashoffset: 2 * Math.PI * 26 * (1 - progress / 100);
+  stroke-dasharray: ${() => 2 * Math.PI * 26};
+  stroke-dashoffset: ${(props) => 2 * Math.PI * 26 * (1 - props.progress / 100)};
   transition: stroke-dashoffset 0.5s ease;
 `
 
@@ -209,17 +209,17 @@ export const AchievementPreview = styled.div`
   }
 `
 
-export const PreviewItem = styled.div<{ unlocked: boolean }>`
+export const PreviewItem = styled.div<{ $unlocked: boolean }>`
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: linear-gradient(145deg, ${(props) => props.unlocked ? props.theme.colors.dark[700] : props.theme.colors.dark[600]} 0%, ${(props) => props.unlocked ? props.theme.colors.dark[800] : props.theme.colors.dark[700]} 100%);
-  border: 2px solid ${(props) => props.unlocked ? props.theme.colors.success : props.theme.colors.dark[600]};
+  background: linear-gradient(145deg, ${(props) => props.$unlocked ? props.theme.colors.dark[700] : props.theme.colors.dark[600]} 0%, ${(props) => props.$unlocked ? props.theme.colors.dark[800] : props.theme.colors.dark[700]} 100%);
+  border: 2px solid ${(props) => props.$unlocked ? props.theme.colors.success : props.theme.colors.dark[600]};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  opacity: ${(props) => props.unlocked ? 1 : 0.4};
+  opacity: ${(props) => props.$unlocked ? 1 : 0.4};
 
   @media (max-width: 768px) {
     width: 50px;
@@ -301,6 +301,12 @@ export const CategoryIconLarge = styled.div`
   justify-content: center;
   font-size: 4rem;
   border: 2px solid ${(props) => props.theme.colors.dark[600]};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 
   @media (max-width: 768px) {
     width: 96px;
@@ -425,12 +431,12 @@ export const AchievementListContainer = styled.div`
   gap: 1rem;
 `
 
-export const AchievementListItem = styled(motion.div) <{ unlocked: boolean }>`
+export const AchievementListItem = styled(motion.div) <{ $unlocked: boolean }>`
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
-  border: 2px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
+  border: 2px solid ${props => props.$unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -447,12 +453,12 @@ export const AchievementListItem = styled(motion.div) <{ unlocked: boolean }>`
     bottom: 0;
     width: 4px;
     background: linear-gradient(180deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
-    opacity: ${props => props.unlocked ? 0.8 : 0};
+    opacity: ${props => props.$unlocked ? 0.8 : 0};
     transition: opacity 0.3s ease;
   }
 
   &:hover {
-    border-color: ${props => props.unlocked ? props.theme.colors.primary : props.theme.colors.dark[600]};
+    border-color: ${props => props.$unlocked ? props.theme.colors.primary : props.theme.colors.dark[600]};
     transform: translateX(8px);
     box-shadow: ${(props) => props.theme.shadows.glass.light};
 
@@ -471,20 +477,26 @@ export const AchievementListItem = styled(motion.div) <{ unlocked: boolean }>`
   }
 `
 
-export const AchievementListIcon = styled.div<{ unlocked: boolean }>`
+export const AchievementListIcon = styled.div<{ $unlocked: boolean }>`
   width: 64px;
   height: 64px;
   border-radius: 12px;
-  background: ${props => props.unlocked
+  background: ${props => props.$unlocked
     ? `linear-gradient(135deg, ${props.theme.colors.primary}26 0%, ${props.theme.colors.secondary}1a 100%)`
     : `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`};
-  border: 2px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
+  border: 2px solid ${props => props.$unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
   flex-shrink: 0;
-  filter: ${props => props.unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.6) brightness(0.7)'};
+  filter: ${props => props.$unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.6) brightness(0.7)'};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 
   @media (max-width: 768px) {
     width: 52px;
@@ -511,9 +523,9 @@ export const AchievementListName = styled.h3`
   }
 `
 
-export const AchievementListStatus = styled.span<{ unlocked: boolean }>`
+export const AchievementListStatus = styled.span<{ $unlocked: boolean }>`
   font-size: 0.875rem;
-  color: ${props => props.unlocked ? props.theme.colors.primary : props.theme.colors.light[300]};
+  color: ${props => props.$unlocked ? props.theme.colors.primary : props.theme.colors.light[300]};
   font-weight: 500;
 
   @media (max-width: 768px) {

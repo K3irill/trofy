@@ -84,6 +84,10 @@ export const achievementsApi = baseApi.injectEndpoints({
       query: (id) => `/achievements/categories/${id}`,
       providesTags: ['Category'],
     }),
+    getCategoryByIdWithStats: builder.query<CategoryWithStats, string>({
+      query: (id) => `/achievements/categories/${id}/with-stats`,
+      providesTags: ['Category'],
+    }),
     getAchievements: builder.query<GetAchievementsResponse, GetAchievementsParams | void>({
       query: (params) => ({
         url: '/achievements',
@@ -110,6 +114,7 @@ export const {
   useGetCategoriesQuery,
   useGetCategoriesWithStatsQuery,
   useGetCategoryByIdQuery,
+  useGetCategoryByIdWithStatsQuery,
   useGetAchievementsQuery,
   useGetAchievementsByCategoryQuery,
   useGetAchievementByIdQuery,

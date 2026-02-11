@@ -162,6 +162,53 @@ export class AchievementsService {
   }
 
   /**
+   * Получение категории по ID со статистикой пользователя
+   */
+  async getCategoryByIdWithStats(categoryId: string, userId?: string) {
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+      include: {
+        _count: {
+          select: {
+            achievements: true,
+          },
+        },
+      },
+    })
+
+    if (!category) {
+      throw ApiError.notFound('Category not found')
+    }
+
+    let unlockedCount = 0
+    if (userId) {
+      const userAchievements = await prisma.userAchievement.findMany({
+        where: {
+          user_id: userId,
+          achievement: {
+            category_id: categoryId,
+          },
+        },
+        select: {
+          achievement_id: true,
+        },
+      })
+      unlockedCount = userAchievements.length
+    }
+
+    return {
+      id: category.id,
+      name: category.name,
+      icon_url: category.icon_url,
+      is_custom: category.is_custom,
+      total: category._count.achievements,
+      unlocked: unlockedCount,
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+    }
+  }
+
+  /**
    * Получение достижений в категории
    */
   async getAchievementsByCategory(

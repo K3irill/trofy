@@ -19,6 +19,11 @@ router.get(
   achievementsController.getCategoryById.bind(achievementsController)
 )
 router.get(
+  '/categories/:id/with-stats',
+  optionalAuthenticate,
+  achievementsController.getCategoryByIdWithStats.bind(achievementsController)
+)
+router.get(
   '/categories/:categoryId/achievements',
   optionalAuthenticate,
   achievementsController.getAchievementsByCategory.bind(achievementsController)

@@ -3,7 +3,14 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Header } from '@/components/Header/Header'
+import { useAppSelector } from '@/store/hooks'
+import {
+  useGetCategoryByIdWithStatsQuery,
+  useGetCategoryByIdQuery,
+  useGetAchievementsByCategoryQuery,
+  type Achievement as ApiAchievement,
+} from '@/store/api/achievementsApi'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 import {
   Header as PageHeader,
@@ -25,7 +32,6 @@ import {
   AchievementListStatus,
   PageHeaderWrap,
 } from './page.styled'
-import { categories } from '../page.constants'
 import { AchievementCard } from './AchievementCard'
 import { ViewModeSelector, AchievementViewMode } from './ViewModeSelector'
 import Container from '@/components/Container/Container'
@@ -34,18 +40,45 @@ export default function CategoryPage() {
   const router = useRouter()
   const params = useParams()
   const [viewMode, setViewMode] = useState<AchievementViewMode>('grid6')
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
 
   const categoryId = params?.id as string
-  const category = categories.find((cat) => cat.id === categoryId)
 
-  // Отладка
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Category ID:', categoryId)
-    console.log('Available categories:', categories.map(c => c.id))
-    console.log('Found category:', category)
+  // Получаем категорию со статистикой для авторизованных, без статистики для неавторизованных
+  const { data: categoryWithStats, isLoading: isLoadingCategoryWithStats } = useGetCategoryByIdWithStatsQuery(
+    categoryId,
+    { skip: !categoryId || !isAuthenticated }
+  )
+  const { data: category, isLoading: isLoadingCategory } = useGetCategoryByIdQuery(categoryId, {
+    skip: !categoryId || isAuthenticated, // Пропускаем если авторизован (используем with-stats)
+  })
+
+  // Получаем достижения в категории
+  const { data: achievementsData, isLoading: isLoadingAchievements } = useGetAchievementsByCategoryQuery(
+    {
+      categoryId,
+      params: {
+        limit: 100,
+      },
+    },
+    { skip: !categoryId }
+  )
+
+  const activeCategory = categoryWithStats || category
+  const isLoading = isLoadingCategoryWithStats || isLoadingCategory
+
+  if (isLoading) {
+    return (
+      <Container>
+        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+          <div style={{ fontSize: '4rem' }}>⏳</div>
+          <div style={{ fontSize: '1.125rem' }}>Загрузка...</div>
+        </div>
+      </Container>
+    )
   }
 
-  if (!category) {
+  if (!activeCategory) {
     return (
       <Container>
         <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
@@ -56,28 +89,48 @@ export default function CategoryPage() {
     )
   }
 
-  const allAchievements = category.achievements
+  const achievements = achievementsData?.achievements || []
+  const unlockedCount = categoryWithStats?.unlocked || 0
+  const totalCount = categoryWithStats?.total || ('achievements_count' in activeCategory ? activeCategory.achievements_count : 0) || 0
+  const progress = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0
 
-  const renderAchievements = (achievements: typeof allAchievements) => {
+  const renderAchievements = (achievementsList: ApiAchievement[]) => {
+    if (isLoadingAchievements) {
+      return (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div>Загрузка достижений...</div>
+        </div>
+      )
+    }
+
+    if (achievementsList.length === 0) {
+      return (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📭</div>
+          <div>Достижения не найдены</div>
+        </div>
+      )
+    }
+
     if (viewMode === 'list') {
       return (
         <AchievementListContainer>
-          {achievements.map((achievement) => (
+          {achievementsList.map((achievement) => (
             <AchievementListItem
               key={achievement.id}
-              unlocked={achievement.unlocked}
-              onClick={() => router.push(`/categories/${category.id}/${achievement.id}`)}
+              $unlocked={achievement.unlocked}
+              onClick={() => router.push(`/categories/${activeCategory.id}/${achievement.id}`)}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <AchievementListIcon unlocked={achievement.unlocked}>
-                {achievement.icon}
+              <AchievementListIcon $unlocked={achievement.unlocked}>
+                {renderIcon(achievement.icon_url, '🏆')}
               </AchievementListIcon>
               <AchievementListContent>
-                <AchievementListName>{achievement.name || `Достижение ${achievement.id}`}</AchievementListName>
-                <AchievementListStatus unlocked={achievement.unlocked}>
-                  {achievement.unlocked ? 'Разблокировано' : 'Заблокировано'}
+                <AchievementListName>{achievement.title}</AchievementListName>
+                <AchievementListStatus $unlocked={achievement.unlocked}>
+                  {achievement.unlocked ? 'Разблокировано' : 'Не открыто'}
                 </AchievementListStatus>
               </AchievementListContent>
             </AchievementListItem>
@@ -88,11 +141,17 @@ export default function CategoryPage() {
 
     return (
       <AchievementGrid mode={viewMode}>
-        {achievements.map((achievement) => (
+        {achievementsList.map((achievement) => (
           <AchievementCard
             key={achievement.id}
-            achievement={achievement}
-            onClick={() => router.push(`/categories/${category.id}/${achievement.id}`)}
+            achievement={{
+              id: achievement.id,
+              icon: achievement.icon_url || '🏆',
+              unlocked: achievement.unlocked,
+              name: achievement.title,
+              description: achievement.description,
+            }}
+            onClick={() => router.push(`/categories/${activeCategory.id}/${achievement.id}`)}
           />
         ))}
       </AchievementGrid>
@@ -112,22 +171,33 @@ export default function CategoryPage() {
         </PageHeader>
 
         <CategoryInfo>
-          <CategoryIconLarge>{category.icon}</CategoryIconLarge>
+          <CategoryIconLarge>
+            {renderIcon(activeCategory.icon_url, '📁')}
+          </CategoryIconLarge>
           <CategoryDetails>
-            <CategoryName>{category.name}</CategoryName>
+            <CategoryName>{activeCategory.name}</CategoryName>
             <CategoryStats>
-              <Stat>
-                <StatValue>{category.unlocked}</StatValue>
-                <StatLabelText>Разблокировано</StatLabelText>
-              </Stat>
-              <Stat>
-                <StatValue>{category.total}</StatValue>
-                <StatLabelText>Всего</StatLabelText>
-              </Stat>
-              <Stat>
-                <StatValue>{Math.round((category.unlocked / category.total) * 100)}%</StatValue>
-                <StatLabelText>Прогресс</StatLabelText>
-              </Stat>
+              {isAuthenticated && categoryWithStats ? (
+                <>
+                  <Stat>
+                    <StatValue>{unlockedCount}</StatValue>
+                    <StatLabelText>Разблокировано</StatLabelText>
+                  </Stat>
+                  <Stat>
+                    <StatValue>{totalCount}</StatValue>
+                    <StatLabelText>Всего</StatLabelText>
+                  </Stat>
+                  <Stat>
+                    <StatValue>{progress}%</StatValue>
+                    <StatLabelText>Прогресс</StatLabelText>
+                  </Stat>
+                </>
+              ) : (
+                <Stat>
+                  <StatValue>{totalCount}</StatValue>
+                  <StatLabelText>Всего достижений</StatLabelText>
+                </Stat>
+              )}
             </CategoryStats>
           </CategoryDetails>
         </CategoryInfo>
@@ -140,7 +210,7 @@ export default function CategoryPage() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {renderAchievements(allAchievements)}
+            {renderAchievements(achievements)}
           </motion.div>
         </AnimatePresence>
       </Container>

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { AchievementCardContainer, AchievementIcon, AchievementInfo, AchievementName, AchievementStatus, UnlockedBadge } from './AchievementCard.styled'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 interface AchievementCardProps {
   achievement: {
@@ -70,7 +71,7 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
   return (
     <AchievementCardContainer
       ref={cardRef}
-      unlocked={achievement.unlocked}
+      $unlocked={achievement.unlocked}
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -81,14 +82,14 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
         transformStyle: 'preserve-3d',
       }}
     >
-      <AchievementIcon unlocked={achievement.unlocked}>
-        {achievement.icon}
+      <AchievementIcon $unlocked={achievement.unlocked}>
+        {renderIcon(achievement.icon, '🏆')}
         {achievement.unlocked && <UnlockedBadge>✓</UnlockedBadge>}
       </AchievementIcon>
       <AchievementInfo>
         {achievement.name && <AchievementName>{achievement.name}</AchievementName>}
-        <AchievementStatus unlocked={achievement.unlocked}>
-          {achievement.unlocked ? 'Разблокировано' : 'Заблокировано'}
+        <AchievementStatus $unlocked={achievement.unlocked}>
+          {achievement.unlocked ? 'Открыто' : 'Не открыто'}
         </AchievementStatus>
       </AchievementInfo>
     </AchievementCardContainer>

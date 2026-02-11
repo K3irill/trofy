@@ -330,7 +330,7 @@ export default function CategoriesPage() {
                           <StatItem>
                             <StatLabel>Статус:</StatLabel>
                             <StatValue>
-                              {achievement.unlocked ? 'Разблокировано' : 'Заблокировано'}
+                              {achievement.unlocked ? 'Открыто' : 'Не открыто'}
                             </StatValue>
                           </StatItem>
                           <StatItem>

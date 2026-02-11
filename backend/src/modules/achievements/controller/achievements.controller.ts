@@ -62,10 +62,25 @@ export class AchievementsController {
   /**
    * GET /api/achievements/categories/:id - Получение категории по ID
    */
-  async getCategoryById(req: Request, res: Response, next: NextFunction) {
+  async getCategoryById(req: Request | AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params
+      const userId = (req as AuthRequest).user?.userId
       const category = await achievementsService.getCategoryById(id)
+      res.json(category)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/achievements/categories/:id/with-stats - Получение категории по ID со статистикой пользователя
+   */
+  async getCategoryByIdWithStats(req: Request | AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+      const userId = (req as AuthRequest).user?.userId
+      const category = await achievementsService.getCategoryByIdWithStats(id, userId)
       res.json(category)
     } catch (error) {
       next(error)

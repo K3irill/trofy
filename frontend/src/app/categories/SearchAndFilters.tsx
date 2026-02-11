@@ -278,8 +278,8 @@ export const SearchAndFilters = ({
               onChange={(e) => onUnlockedFilterChange(e.target.value)}
             >
               <option value="">Все достижения</option>
-              <option value="true">Разблокированные</option>
-              <option value="false">Заблокированные</option>
+              <option value="true">Открытые</option>
+              <option value="false">Не открытые</option>
             </FilterSelect>
           </FilterSelectWrapper>
         )}
