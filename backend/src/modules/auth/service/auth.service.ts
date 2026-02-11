@@ -31,6 +31,7 @@ interface UserResponse {
   bio?: string | null
   badges?: string[]
   pinned_achievements?: string[]
+  priority_achievements?: string[]
   streak?: number
   uniqueness_score?: number | null
   growth_rate?: number | null
@@ -82,6 +83,11 @@ export function formatUser(
         ? (Array.isArray(user.pinned_achievements)
             ? user.pinned_achievements
             : JSON.parse(user.pinned_achievements))
+        : [],
+      priority_achievements: user.priority_achievements
+        ? (Array.isArray(user.priority_achievements)
+            ? user.priority_achievements
+            : JSON.parse(user.priority_achievements))
         : [],
       streak: user.streak,
       uniqueness_score: user.uniqueness_score,
@@ -148,6 +154,11 @@ export function formatUser(
       ? (Array.isArray(user.pinned_achievements)
           ? user.pinned_achievements
           : JSON.parse(user.pinned_achievements))
+      : [],
+    priority_achievements: privacy.show_achievements && user.priority_achievements
+      ? (Array.isArray(user.priority_achievements)
+          ? user.priority_achievements
+          : JSON.parse(user.priority_achievements))
       : [],
     streak: privacy.show_achievements ? user.streak : undefined,
     uniqueness_score: privacy.show_achievements ? user.uniqueness_score : null,

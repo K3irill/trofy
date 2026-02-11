@@ -10,6 +10,7 @@ export interface UpdateUserRequest {
     show_profile?: boolean
   }
   pinned_achievements?: string[]
+  priority_achievements?: string[]
 }
 
 export interface UserStats {

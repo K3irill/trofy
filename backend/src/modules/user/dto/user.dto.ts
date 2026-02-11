@@ -59,4 +59,10 @@ export class UpdateUserDto {
   @ArrayMaxSize(3, { message: 'Maximum 3 pinned achievements allowed' })
   @IsUUID('4', { each: true, message: 'Each achievement ID must be a valid UUID' })
   pinned_achievements?: string[]
+
+  @IsArray()
+  @IsOptional()
+  @ArrayMaxSize(2, { message: 'Maximum 2 priority achievements allowed' })
+  @IsUUID('4', { each: true, message: 'Each achievement ID must be a valid UUID' })
+  priority_achievements?: string[]
 }

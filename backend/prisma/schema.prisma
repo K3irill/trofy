@@ -24,6 +24,7 @@ model User {
   bio                       String?
   badges                    Json      @default("[]")
   pinned_achievements       Json      @default("[]")
+  priority_achievements     Json      @default("[]")
   streak                    Int       @default(0)
   last_activity_date        DateTime?
   uniqueness_score          Float?

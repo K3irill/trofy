@@ -70,6 +70,29 @@ export class UserService {
       updateData.pinned_achievements = dto.pinned_achievements
     }
 
+    if (dto.priority_achievements !== undefined) {
+      // Проверяем, что все достижения существуют
+      if (dto.priority_achievements.length > 0) {
+        const achievements = await prisma.achievement.findMany({
+          where: {
+            id: { in: dto.priority_achievements },
+          },
+          select: { id: true },
+        })
+
+        const validAchievementIds = achievements.map((a) => a.id)
+        const invalidIds = dto.priority_achievements.filter((id) => !validAchievementIds.includes(id))
+
+        if (invalidIds.length > 0) {
+          throw ApiError.badRequest(
+            `Some achievements not found: ${invalidIds.join(', ')}`
+          )
+        }
+      }
+
+      updateData.priority_achievements = dto.priority_achievements
+    }
+
     const user = await prisma.user.update({
       where: { id: userId },
       data: updateData,

@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGetAchievementsQuery, useGetCategoriesQuery, useGetRaritiesQuery } from '@/store/api/achievementsApi'
 import styled from 'styled-components'
+import { IoAddCircleOutline } from 'react-icons/io5'
 import { HiOutlineSearch } from 'react-icons/hi'
 
 const ModalOverlay = styled(motion.div)`
@@ -215,19 +216,19 @@ const EmptyState = styled.div`
   color: ${(props) => props.theme.colors.light[300]};
 `
 
-interface PinnedAchievementsModalProps {
+interface PriorityAchievementsModalProps {
   isOpen: boolean
   onClose: () => void
   onSelect: (achievementId: string) => void
-  currentPinned: string[]
+  currentPriority: string[]
 }
 
-export const PinnedAchievementsModal = ({
+export const PriorityAchievementsModal = ({
   isOpen,
   onClose,
   onSelect,
-  currentPinned,
-}: PinnedAchievementsModalProps) => {
+  currentPriority,
+}: PriorityAchievementsModalProps) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -237,7 +238,7 @@ export const PinnedAchievementsModal = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery)
-    }, 300) // 300ms задержка
+    }, 300)
 
     return () => {
       clearTimeout(timer)
@@ -255,20 +256,20 @@ export const PinnedAchievementsModal = ({
       query: debouncedSearchQuery || undefined,
       categoryId: selectedCategory || undefined,
       rarity: selectedRarity ? (selectedRarity as 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY') : undefined,
-      unlocked: true,
+      unlocked: false, // Только незавершенные достижения
       limit: 100,
     },
     {
-      skip: !isOpen, // Загружаем только когда модалка открыта
+      skip: !isOpen,
     }
   )
 
   const filteredAchievements = useMemo(() => {
     if (!achievementsData) return []
     return achievementsData.achievements.filter(
-      (achievement) => !currentPinned.includes(achievement.id)
+      (achievement) => !currentPriority.includes(achievement.id)
     )
-  }, [achievementsData, currentPinned])
+  }, [achievementsData, currentPriority])
 
   const handleSelect = (achievementId: string) => {
     onSelect(achievementId)
@@ -295,7 +296,7 @@ export const PinnedAchievementsModal = ({
             onClick={(e) => e.stopPropagation()}
           >
             <ModalHeader>
-              <ModalTitle>Выберите достижение</ModalTitle>
+              <ModalTitle>Выберите достижение в приоритете</ModalTitle>
               <CloseButton onClick={onClose}>✕</CloseButton>
             </ModalHeader>
 
