@@ -392,18 +392,24 @@ export const StatusContainer = styled.div`
   z-index: 1;
 `
 
-export const StatusInput = styled.input`
+export const StatusInput = styled.textarea`
   background: ${(props) => props.theme.colors.dark.neomorphDark};
-  border: 1px solid ${(props) => props.theme.colors.neomorphLight};
+  border: 1px solid ${(props) => props.theme.colors.dark.neomorphLight};
   border-radius: 12px;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem 1rem;
   color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.875rem;
   text-align: center;
   width: 100%;
+  min-height: 40px;
+  max-height: 200px;
   max-width: 300px;
   transition: all 0.3s ease;
   outline: none;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.5;
+  font-family: inherit;
 
   &:focus {
     border-color: ${(props) => `${props.theme.colors.primary}4d`};

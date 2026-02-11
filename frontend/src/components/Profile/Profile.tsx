@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { Rarity } from '@/types'
 import { ProfileProps } from './types'
 import { SectionMarker } from '@/components/SectionMarker'
@@ -67,6 +67,15 @@ interface GoalData {
 export const Profile = ({ user }: ProfileProps) => {
   const [status, setStatus] = useState(user.bio || '')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
+  const statusInputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Автоматическое изменение высоты textarea
+  useEffect(() => {
+    if (statusInputRef.current) {
+      statusInputRef.current.style.height = 'auto'
+      statusInputRef.current.style.height = `${statusInputRef.current.scrollHeight}px`
+    }
+  }, [status, isEditingStatus])
   const [expandedTrophy, setExpandedTrophy] = useState<string | null>(null)
   const [showParticles, setShowParticles] = useState(false)
 
@@ -165,12 +174,27 @@ export const Profile = ({ user }: ProfileProps) => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
+                  style={{ width: '100%', height: '100%' }}
                 >
                   <StatusInput
+                    ref={statusInputRef}
                     value={status}
-                    onChange={(e) => setStatus(e.target.value)}
+                    onChange={(e) => {
+                      setStatus(e.target.value)
+                      // Автоматическое изменение высоты
+                      if (statusInputRef.current) {
+                        statusInputRef.current.style.height = 'auto'
+                        statusInputRef.current.style.height = `${statusInputRef.current.scrollHeight}px`
+                      }
+                    }}
                     onBlur={() => setIsEditingStatus(false)}
-                    onKeyDown={(e) => e.key === 'Enter' && setIsEditingStatus(false)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        setIsEditingStatus(false)
+                      }
+                    }}
+                    maxLength={350}
                     autoFocus
                   />
                 </motion.div>
