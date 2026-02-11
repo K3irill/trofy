@@ -1,6 +1,6 @@
 import { prisma } from '../../../shared/database'
 import { ApiError } from '../../../core/errors/ApiError'
-import { GetAchievementsDto, Rarity, SortBy } from '../dto/achievements.dto'
+import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto } from '../dto/achievements.dto'
 
 export class AchievementsService {
   /**
@@ -41,6 +41,94 @@ export class AchievementsService {
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
     }))
+  }
+
+  /**
+   * Получение всех категорий со статистикой пользователя
+   */
+  async getCategoriesWithStats(userId?: string) {
+    const categories = await prisma.category.findMany({
+      include: {
+        _count: {
+          select: {
+            achievements: true,
+          },
+        },
+        achievements: {
+          take: 8,
+          orderBy: {
+            created_at: 'asc',
+          },
+          select: {
+            id: true,
+            icon_url: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'asc',
+      },
+    })
+
+    // Если userId передан, получаем статистику разблокированных достижений
+    let userAchievementsSet: Set<string> | null = null
+    let categoryUnlockedCounts: Map<string, number> | null = null
+
+    if (userId) {
+      const userAchievements = await prisma.userAchievement.findMany({
+        where: {
+          user_id: userId,
+        },
+        select: {
+          achievement_id: true,
+          achievement: {
+            select: {
+              category_id: true,
+            },
+          },
+        },
+      })
+
+      userAchievementsSet = new Set(userAchievements.map((ua) => ua.achievement_id))
+
+      // Подсчитываем разблокированные достижения по категориям
+      categoryUnlockedCounts = new Map()
+      userAchievements.forEach((ua) => {
+        const categoryId = ua.achievement.category_id
+        const currentCount = categoryUnlockedCounts!.get(categoryId) || 0
+        categoryUnlockedCounts!.set(categoryId, currentCount + 1)
+      })
+    }
+
+    return categories.map((category) => {
+      const unlockedCount = userId && categoryUnlockedCounts
+        ? categoryUnlockedCounts.get(category.id) || 0
+        : 0
+
+      const achievementsPreview = category.achievements.map((achievement) => {
+        const isUnlocked = userId && userAchievementsSet
+          ? userAchievementsSet.has(achievement.id)
+          : false
+
+        return {
+          id: achievement.id,
+          icon_url: achievement.icon_url,
+          unlocked: isUnlocked,
+        }
+      })
+
+      return {
+        id: category.id,
+        name: category.name,
+        icon_url: category.icon_url,
+        is_custom: category.is_custom,
+        total: category._count.achievements,
+        unlocked: unlockedCount,
+        achievements_preview: achievementsPreview,
+        created_at: category.created_at.toISOString(),
+        updated_at: category.updated_at.toISOString(),
+      }
+    })
   }
 
   /**
@@ -169,7 +257,18 @@ export class AchievementsService {
     })
 
     // Фильтр по разблокированности (если указан)
-    if (dto?.unlocked !== undefined && userId) {
+    // Для фильтра по unlocked требуется авторизация
+    if (dto?.unlocked !== undefined) {
+      if (!userId) {
+        // Если запрос без авторизации, но указан фильтр unlocked, возвращаем пустой массив
+        // так как для неавторизованных пользователей все достижения считаются незаблокированными
+        return {
+          achievements: [],
+          total: 0,
+          limit: dto?.limit || 100,
+          offset: dto?.offset || 0,
+        }
+      }
       formatted = formatted.filter((a) => a.unlocked === dto.unlocked)
     }
 
@@ -276,6 +375,86 @@ export class AchievementsService {
       unlocked: !!userAchievement,
       unlocked_at: userAchievement?.unlocked_at.toISOString(),
       is_public: userAchievement?.is_public ?? true,
+      created_at: achievement.created_at.toISOString(),
+      updated_at: achievement.updated_at.toISOString(),
+    }
+  }
+
+  /**
+   * Создание категории (для админов - обычная, для пользователей - кастомная)
+   */
+  async createCategory(dto: CreateCategoryDto, userId: string, isAdmin: boolean = false) {
+    const category = await prisma.category.create({
+      data: {
+        name: dto.name,
+        icon_url: dto.icon_url || null,
+        is_custom: !isAdmin, // Для админов is_custom = false, для пользователей = true
+        creator_id: !isAdmin ? userId : null, // Для пользователей сохраняем creator_id
+      },
+    })
+
+    return {
+      id: category.id,
+      name: category.name,
+      icon_url: category.icon_url,
+      is_custom: category.is_custom,
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+    }
+  }
+
+  /**
+   * Создание достижения (для админов - обычное, для пользователей - кастомное)
+   */
+  async createAchievement(dto: CreateAchievementDto, userId: string, isAdmin: boolean = false) {
+    // Проверяем существование категории
+    const category = await prisma.category.findUnique({
+      where: { id: dto.category_id },
+    })
+
+    if (!category) {
+      throw ApiError.notFound('Category not found')
+    }
+
+    // Если пользователь создает достижение, проверяем что категория его или кастомная
+    if (!isAdmin) {
+      if (!category.is_custom || category.creator_id !== userId) {
+        throw ApiError.forbidden('You can only create achievements in your own custom categories')
+      }
+    }
+
+    const achievement = await prisma.achievement.create({
+      data: {
+        title: dto.title,
+        description: dto.description,
+        icon_url: dto.icon_url || null,
+        rarity: dto.rarity || Rarity.COMMON,
+        category_id: dto.category_id,
+        xp_reward: dto.xp_reward || 100,
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            icon_url: true,
+          },
+        },
+      },
+    })
+
+    return {
+      id: achievement.id,
+      title: achievement.title,
+      description: achievement.description,
+      icon_url: achievement.icon_url,
+      rarity: achievement.rarity,
+      category: {
+        id: achievement.category.id,
+        name: achievement.category.name,
+        icon_url: achievement.category.icon_url,
+      },
+      xp_reward: achievement.xp_reward,
       created_at: achievement.created_at.toISOString(),
       updated_at: achievement.updated_at.toISOString(),
     }

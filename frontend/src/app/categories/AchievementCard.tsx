@@ -259,7 +259,24 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
           transformStyle: 'preserve-3d',
         }}
       >
-        {achievement.icon}
+        {(() => {
+          const iconUrl = achievement.icon
+          if (!iconUrl) return '🏆'
+          if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
+            return (
+              <img
+                src={iconUrl}
+                alt=""
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                }}
+              />
+            )
+          }
+          return iconUrl
+        })()}
       </AchievementIcon>
       <AchievementName>{achievement.name}</AchievementName>
       {achievement.description && (

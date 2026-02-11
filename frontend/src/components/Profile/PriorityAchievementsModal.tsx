@@ -7,6 +7,7 @@ import { useGetAchievementsQuery, useGetCategoriesQuery, useGetRaritiesQuery } f
 import styled from 'styled-components'
 import { IoAddCircleOutline } from 'react-icons/io5'
 import { HiOutlineSearch } from 'react-icons/hi'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -349,11 +350,7 @@ export const PriorityAchievementsModal = ({
                       onClick={() => handleSelect(achievement.id)}
                     >
                       <AchievementIcon rarity={achievement.rarity}>
-                        {achievement.icon_url ? (
-                          <img src={achievement.icon_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                        ) : (
-                          '🏆'
-                        )}
+                        {renderIcon(achievement.icon_url, '🏆')}
                       </AchievementIcon>
                       <AchievementInfo>
                         <AchievementTitle>{achievement.title}</AchievementTitle>

@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useGetAchievementsQuery, useGetCategoriesQuery, useGetRaritiesQuery } from '@/store/api/achievementsApi'
 import styled from 'styled-components'
 import { HiOutlineSearch } from 'react-icons/hi'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -336,7 +337,7 @@ export const PinnedAchievementsModal = ({
               ) : filteredAchievements.length === 0 ? (
                 <EmptyState>
                   <HiOutlineSearch style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.5 }} />
-                  <div>Достижения не найдены</div>
+                  <div>Выполенные достижения не найдены</div>
                 </EmptyState>
               ) : (
                 <AchievementsList>
@@ -348,11 +349,7 @@ export const PinnedAchievementsModal = ({
                       onClick={() => handleSelect(achievement.id)}
                     >
                       <AchievementIcon rarity={achievement.rarity}>
-                        {achievement.icon_url ? (
-                          <img src={achievement.icon_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                        ) : (
-                          '🏆'
-                        )}
+                        {renderIcon(achievement.icon_url, '🏆')}
                       </AchievementIcon>
                       <AchievementInfo>
                         <AchievementTitle>{achievement.title}</AchievementTitle>

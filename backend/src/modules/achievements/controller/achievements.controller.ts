@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { validate } from 'class-validator'
 import { plainToInstance } from 'class-transformer'
 import { achievementsService } from '../service/achievements.service'
-import { GetAchievementsDto } from '../dto/achievements.dto'
+import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto } from '../dto/achievements.dto'
 import { ApiError } from '../../../core/errors/ApiError'
 import { AuthRequest } from '../../auth/middleware/auth.middleware'
 
@@ -40,6 +40,19 @@ export class AchievementsController {
   async getCategories(req: Request, res: Response, next: NextFunction) {
     try {
       const categories = await achievementsService.getCategories()
+      res.json(categories)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/achievements/categories/with-stats - Получение всех категорий со статистикой пользователя
+   */
+  async getCategoriesWithStats(req: Request | AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as AuthRequest).user?.userId
+      const categories = await achievementsService.getCategoriesWithStats(userId)
       res.json(categories)
     } catch (error) {
       next(error)
@@ -169,6 +182,90 @@ export class AchievementsController {
 
       const achievement = await achievementsService.getAchievementById(id, userId)
       res.json(achievement)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/categories - Создание категории (только для админов)
+   */
+  async createCategory(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const dto = plainToInstance(CreateCategoryDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const category = await achievementsService.createCategory(dto, userId, true)
+      res.status(201).json(category)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/categories/custom - Создание кастомной категории (для пользователей)
+   */
+  async createCustomCategory(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const dto = plainToInstance(CreateCategoryDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const category = await achievementsService.createCategory(dto, userId, false)
+      res.status(201).json(category)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements - Создание достижения (только для админов)
+   */
+  async createAchievement(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const dto = plainToInstance(CreateAchievementDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const achievement = await achievementsService.createAchievement(dto, userId, true)
+      res.status(201).json(achievement)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/custom - Создание кастомного достижения (для пользователей)
+   */
+  async createCustomAchievement(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const dto = plainToInstance(CreateAchievementDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const achievement = await achievementsService.createAchievement(dto, userId, false)
+      res.status(201).json(achievement)
     } catch (error) {
       next(error)
     }

@@ -1,7 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { IoAddCircleOutline } from 'react-icons/io5'
+import { IoClose } from 'react-icons/io5'
 import {
   CurrentGoalsSection,
   SectionTitle,
@@ -16,13 +17,17 @@ import {
   AddTrophyButton,
   AddTrophyIcon,
   AddTrophyText,
+  RemoveButton,
+  CurrentGoals,
 } from '../styled'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 interface TrophyData {
   id: string
   title: string
   icon: string
   rarity: string
+  categoryId: string
 }
 
 interface PriorityAchievementsProps {
@@ -38,81 +43,98 @@ export function PriorityAchievements({
   onAdd,
   onRemove,
 }: PriorityAchievementsProps) {
+  const router = useRouter()
+
+  const handleAchievementClick = (achievement: TrophyData) => {
+    router.push(`/categories/${achievement.categoryId}/${achievement.id}`)
+  }
+
+  const handleRemoveClick = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation()
+    onRemove(index)
+  }
+
   return (
     <CurrentGoalsSection>
       <SectionTitle>📈 Сейчас в приоритете</SectionTitle>
-      {isAuthenticated ? (
-        priorityAchievements.map((achievement, index) => (
-          <div key={index}>
-            {achievement ? (
-              <GoalItem
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.2 + index * 0.1 }}
-                onClick={() => onRemove(index)}
-                style={{ cursor: 'pointer' }}
-                title="Нажмите, чтобы убрать из приоритета"
-              >
-                <GoalHeader>
-                  <GoalIcon>
-                    {achievement.icon.startsWith('http') || achievement.icon.startsWith('/') ? (
-                      <img src={achievement.icon} alt={achievement.title} />
-                    ) : (
-                      achievement.icon
-                    )}
-                  </GoalIcon>
-                  <GoalContent>
-                    <GoalHeader style={{ marginBottom: 0 }}>
-                      <GoalTitle>{achievement.title}</GoalTitle>
-                      <GoalProgress>0%</GoalProgress>
-                    </GoalHeader>
-                    <GoalBar>
-                      <GoalProgressBar
-                        initial={{ width: 0 }}
-                        animate={{ width: '0%' }}
-                        transition={{ duration: 1, delay: 1.3 + index * 0.1 }}
-                      />
-                    </GoalBar>
-                  </GoalContent>
-                </GoalHeader>
-              </GoalItem>
-            ) : (
-              <AddTrophyButton
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onAdd(index)}
-                transition={{ delay: 1.2 + index * 0.1 }}
-                style={{ minHeight: '80px', marginBottom: '0.75rem' }}
-              >
-                <AddTrophyIcon>
-                  <IoAddCircleOutline />
-                </AddTrophyIcon>
-                <AddTrophyText>Добавить в приоритет</AddTrophyText>
-              </AddTrophyButton>
-            )}
-          </div>
-        ))
-      ) : (
-        <GoalItem
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <GoalHeader>
-            <GoalTitle>?</GoalTitle>
-            <GoalProgress>?</GoalProgress>
-          </GoalHeader>
-          <GoalBar>
-            <GoalProgressBar
-              initial={{ width: 0 }}
-              animate={{ width: 0 }}
-              transition={{ duration: 0 }}
-            />
-          </GoalBar>
-        </GoalItem>
-      )}
+      <CurrentGoals>
+        {isAuthenticated ? (
+          priorityAchievements.map((achievement, index) => (
+            <div key={index}>
+              {achievement ? (
+                <GoalItem
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.2 + index * 0.1 }}
+                  onClick={() => handleAchievementClick(achievement)}
+                  style={{ cursor: 'pointer', position: 'relative' }}
+                  title="Нажмите, чтобы открыть детали достижения"
+                >
+                  <RemoveButton
+                    onClick={(e) => handleRemoveClick(e, index)}
+                    title="Убрать из приоритета"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <IoClose />
+                  </RemoveButton>
+                  <GoalHeader>
+                    <GoalIcon>
+                      {renderIcon(achievement.icon, '🏆')}
+                    </GoalIcon>
+                    <GoalContent>
+                      <GoalHeader style={{ marginBottom: 0 }}>
+                        <GoalTitle>{achievement.title}</GoalTitle>
+                        <GoalProgress>0%</GoalProgress>
+                      </GoalHeader>
+                      <GoalBar>
+                        <GoalProgressBar
+                          initial={{ width: 0 }}
+                          animate={{ width: '0%' }}
+                          transition={{ duration: 1, delay: 1.3 + index * 0.1 }}
+                        />
+                      </GoalBar>
+                    </GoalContent>
+                  </GoalHeader>
+                </GoalItem>
+              ) : (
+                <AddTrophyButton
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onAdd(index)}
+                  transition={{ delay: 1.2 + index * 0.1 }}
+                  style={{ minHeight: '80px' }}
+                >
+                  <AddTrophyIcon>
+                    <IoAddCircleOutline />
+                  </AddTrophyIcon>
+                  <AddTrophyText>Добавить в приоритет</AddTrophyText>
+                </AddTrophyButton>
+              )}
+            </div>
+          ))
+        ) : (
+          <GoalItem
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <GoalHeader>
+              <GoalTitle>?</GoalTitle>
+              <GoalProgress>?</GoalProgress>
+            </GoalHeader>
+            <GoalBar>
+              <GoalProgressBar
+                initial={{ width: 0 }}
+                animate={{ width: 0 }}
+                transition={{ duration: 0 }}
+              />
+            </GoalBar>
+          </GoalItem>
+        )}
+      </CurrentGoals>
     </CurrentGoalsSection>
   )
 }

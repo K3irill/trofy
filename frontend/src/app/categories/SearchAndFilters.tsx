@@ -1,9 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import styled from 'styled-components'
-import { motion } from 'framer-motion'
-import { categories } from './page.constants'
+import { useGetCategoriesQuery } from '@/store/api/achievementsApi'
+import { isImageUrl } from '@/lib/utils/iconUtils'
 
 const SearchFiltersContainer = styled.div`
   display: flex;
@@ -242,6 +241,8 @@ export const SearchAndFilters = ({
   onSortChange,
   isAuthenticated = false,
 }: SearchAndFiltersProps) => {
+  const { data: categoriesData = [] } = useGetCategoriesQuery()
+
   return (
     <SearchFiltersContainer>
       <SearchInputWrapper>
@@ -259,11 +260,15 @@ export const SearchAndFilters = ({
             onChange={(e) => onCategoryChange(e.target.value)}
           >
             <option value="">Все категории</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.icon} {category.name}
-              </option>
-            ))}
+            {categoriesData.map((category) => {
+              const icon = category.icon_url || '📁'
+              const iconDisplay = isImageUrl(icon) ? '🖼️' : icon
+              return (
+                <option key={category.id} value={category.id}>
+                  {iconDisplay} {category.name}
+                </option>
+              )
+            })}
           </FilterSelect>
         </FilterSelectWrapper>
         {isAuthenticated && (

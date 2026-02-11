@@ -1,6 +1,5 @@
 'use client'
 
-import { Category } from './page.constants'
 import {
   CategoryCard,
   CategoryIcon,
@@ -14,6 +13,20 @@ import {
   PreviewItem,
   AchievementCount,
 } from './page.styled'
+import { isImageUrl } from '@/lib/utils/iconUtils'
+
+export interface Category {
+  id: string
+  name: string
+  icon: string
+  total: number
+  unlocked: number
+  achievements: Array<{
+    id: string
+    icon: string
+    unlocked: boolean
+  }>
+}
 
 interface CategoryCardProps {
   category: Category
@@ -22,7 +35,7 @@ interface CategoryCardProps {
 }
 
 export const CategoryCardComponent = ({ category, onClick, isAuthenticated = false }: CategoryCardProps) => {
-  const progress = Math.round((category.unlocked / category.total) * 100)
+  const progress = category.total > 0 ? Math.round((category.unlocked / category.total) * 100) : 0
   const unlockedCount = category.achievements.filter(a => a.unlocked).length
 
   return (
@@ -31,7 +44,21 @@ export const CategoryCardComponent = ({ category, onClick, isAuthenticated = fal
       style={{ opacity: 1, transform: 'translateY(0)' }}
     >
       {isAuthenticated && <ProgressRing progress={progress} />}
-      <CategoryIcon>{category.icon}</CategoryIcon>
+      <CategoryIcon>
+        {isImageUrl(category.icon) ? (
+          <img
+            src={category.icon}
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+          />
+        ) : (
+          category.icon
+        )}
+      </CategoryIcon>
       <CategoryName>{category.name}</CategoryName>
       {isAuthenticated ? (
         <CategoryStats>
@@ -59,7 +86,19 @@ export const CategoryCardComponent = ({ category, onClick, isAuthenticated = fal
             unlocked={achievement.unlocked}
             style={{ opacity: 1, transform: 'scale(1)' }}
           >
-            {achievement.icon}
+            {isImageUrl(achievement.icon) ? (
+              <img
+                src={achievement.icon}
+                alt=""
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                }}
+              />
+            ) : (
+              achievement.icon
+            )}
           </PreviewItem>
         ))}
         {isAuthenticated && unlockedCount > 0 && (

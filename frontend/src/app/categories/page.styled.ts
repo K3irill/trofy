@@ -87,6 +87,13 @@ export const CategoryIcon = styled.div`
   border: 2px solid ${(props) => `${props.theme.colors.primary}4d`};
   box-shadow: ${(props) => props.theme.shadows.glow.primary};
   transition: all 0.3s ease;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 
   @media (max-width: 768px) {
     width: 64px;
@@ -219,6 +226,13 @@ export const PreviewItem = styled.div<{ unlocked: boolean }>`
   transition: all 0.3s ease;
   position: relative;
   filter: ${props => props.unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.5)'};
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 
   &:hover {
     transform: scale(1.1);
@@ -435,6 +449,13 @@ export const ListItemIcon = styled.div`
   border: 2px solid ${(props) => `${props.theme.colors.primary}4d`};
   box-shadow: ${(props) => props.theme.shadows.glow.primary};
   flex-shrink: 0;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 
   @media (max-width: 768px) {
     width: 52px;

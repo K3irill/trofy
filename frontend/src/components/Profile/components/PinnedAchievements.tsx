@@ -1,7 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { IoAddCircleOutline } from 'react-icons/io5'
+import { IoClose } from 'react-icons/io5'
 import {
   RareTrophiesSection,
   SectionTitle,
@@ -12,13 +13,16 @@ import {
   AddTrophyButton,
   AddTrophyIcon,
   AddTrophyText,
+  RemoveButton,
 } from '../styled'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 interface TrophyData {
   id: string
   title: string
   icon: string
   rarity: string
+  categoryId: string
 }
 
 interface PinnedAchievementsProps {
@@ -34,7 +38,18 @@ export function PinnedAchievements({
   onAdd,
   onRemove,
 }: PinnedAchievementsProps) {
+  const router = useRouter()
+
   if (!isAuthenticated) return null
+
+  const handleAchievementClick = (trophy: TrophyData) => {
+    router.push(`/categories/${trophy.categoryId}/${trophy.id}`)
+  }
+
+  const handleRemoveClick = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation()
+    onRemove(index)
+  }
 
   return (
     <RareTrophiesSection>
@@ -48,12 +63,21 @@ export function PinnedAchievements({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ scale: 1.05, rotateY: 15 }}
-                onClick={() => onRemove(index)}
+                onClick={() => handleAchievementClick(trophy)}
                 transition={{ delay: 0.9 + index * 0.1 }}
-                title="Нажмите, чтобы открепить"
+                title="Нажмите, чтобы открыть детали достижения"
+                style={{ position: 'relative' }}
               >
+                <RemoveButton
+                  onClick={(e) => handleRemoveClick(e, index)}
+                  title="Открепить достижение"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <IoClose />
+                </RemoveButton>
                 <TrophyIcon rarity={trophy.rarity.toLowerCase()}>
-                  {trophy.icon}
+                  {renderIcon(trophy.icon, '🏆')}
                 </TrophyIcon>
                 <TrophyTitle>{trophy.title}</TrophyTitle>
               </TrophyCard>

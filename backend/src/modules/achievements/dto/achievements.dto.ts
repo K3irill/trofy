@@ -6,6 +6,7 @@ import {
   IsInt,
   Min,
   Max,
+  IsNotEmpty,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 
@@ -60,4 +61,43 @@ export class GetAchievementsDto {
   @IsOptional()
   @Type(() => Number)
   offset?: number
+}
+
+export class CreateCategoryDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string
+
+  @IsString()
+  @IsOptional()
+  icon_url?: string
+}
+
+export class CreateAchievementDto {
+  @IsString()
+  @IsNotEmpty()
+  title: string
+
+  @IsString()
+  @IsNotEmpty()
+  description: string
+
+  @IsString()
+  @IsOptional()
+  icon_url?: string
+
+  @IsEnum(Rarity)
+  @IsOptional()
+  rarity?: Rarity
+
+  @IsString()
+  @IsNotEmpty()
+  category_id: string
+
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  @IsOptional()
+  @Type(() => Number)
+  xp_reward?: number
 }

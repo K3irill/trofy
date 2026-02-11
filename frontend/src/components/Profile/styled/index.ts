@@ -388,7 +388,7 @@ export const StatusContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-bottom: 1rem;
   position: relative;
   z-index: 1;
@@ -549,6 +549,9 @@ export const TrophyIcon = styled(motion.div) <{ rarity: string }>`
   margin-bottom: 0.5rem;
   display: flex;
   justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 2.5rem;
   filter: ${props => {
     switch (props.rarity) {
       case 'legendary':
@@ -562,8 +565,15 @@ export const TrophyIcon = styled(motion.div) <{ rarity: string }>`
     }
   }};
 
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
   @media (max-width: 768px) {
     font-size: 2rem;
+    height: 2rem;
   }
 `
 
@@ -647,12 +657,17 @@ export const CurrentGoalsSection = styled.div`
     margin-bottom: 1.5rem;
   }
 `
+export const CurrentGoals = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`
+
 
 export const GoalItem = styled(motion.div)`
   background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 12px;
   padding: 1rem;
-  margin-bottom: 0.75rem;
   border: 1px solid ${(props) => props.theme.colors.neomorphLight};
 
   &:last-child {
@@ -723,6 +738,38 @@ export const GoalProgressBar = styled(motion.div)`
   height: 100%;
   background: linear-gradient(90deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   border-radius: 6px;
+`
+
+export const RemoveButton = styled(motion.button)`
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${(props) => props.theme.colors.dark.glassLight};
+  border: 1px solid ${(props) => props.theme.colors.neomorphLight};
+  border-radius: 50%;
+  color: ${(props) => props.theme.colors.light[300]};
+  cursor: pointer;
+  z-index: 10;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  &:hover {
+    background: ${(props) => props.theme.colors.danger};
+    border-color: ${(props) => props.theme.colors.danger};
+    color: ${(props) => props.theme.colors.light[100]};
+    transform: scale(1.1);
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
 `
 
 export const StreakContainer = styled(motion.div)`

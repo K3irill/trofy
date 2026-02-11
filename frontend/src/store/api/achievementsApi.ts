@@ -28,6 +28,22 @@ export interface Category {
   updated_at: string
 }
 
+export interface CategoryWithStats {
+  id: string
+  name: string
+  icon_url: string | null
+  is_custom: boolean
+  total: number
+  unlocked: number
+  achievements_preview: Array<{
+    id: string
+    icon_url: string | null
+    unlocked: boolean
+  }>
+  created_at: string
+  updated_at: string
+}
+
 export interface Rarity {
   value: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
   label: string
@@ -60,6 +76,10 @@ export const achievementsApi = baseApi.injectEndpoints({
       query: () => '/achievements/categories',
       providesTags: ['Category'],
     }),
+    getCategoriesWithStats: builder.query<CategoryWithStats[], void>({
+      query: () => '/achievements/categories/with-stats',
+      providesTags: ['Category'],
+    }),
     getCategoryById: builder.query<Category, string>({
       query: (id) => `/achievements/categories/${id}`,
       providesTags: ['Category'],
@@ -88,6 +108,7 @@ export const achievementsApi = baseApi.injectEndpoints({
 export const {
   useGetRaritiesQuery,
   useGetCategoriesQuery,
+  useGetCategoriesWithStatsQuery,
   useGetCategoryByIdQuery,
   useGetAchievementsQuery,
   useGetAchievementsByCategoryQuery,
