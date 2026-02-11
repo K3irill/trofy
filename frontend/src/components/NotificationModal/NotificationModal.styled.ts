@@ -102,19 +102,19 @@ export const NotificationList = styled.div`
   gap: 0.5rem;
 `
 
-export const NotificationItem = styled(motion.button)<{ read: boolean }>`
+export const NotificationItem = styled(motion.button)<{ $read: boolean }>`
   display: flex;
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
   background: ${(props) => 
-    props.read 
+    props.$read 
       ? props.theme.colors.dark.glassLight 
       : `${props.theme.colors.primary}15`
   };
   border: ${(props) => props.theme.glass.border};
   border-left: ${(props) => 
-    props.read 
+    props.$read 
       ? `3px solid transparent`
       : `3px solid ${props.theme.colors.primary}`
   };
@@ -177,9 +177,9 @@ export const NotificationItemContent = styled.div`
   gap: 0.25rem;
 `
 
-export const NotificationItemTitle = styled.div<{ read: boolean }>`
+export const NotificationItemTitle = styled.div<{ $read: boolean }>`
   font-size: 0.9375rem;
-  font-weight: ${(props) => (props.read ? 500 : 700)};
+  font-weight: ${(props) => (props.$read ? 500 : 700)};
   color: ${(props) => props.theme.colors.light[100]};
 `
 

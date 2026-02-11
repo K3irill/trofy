@@ -6,8 +6,10 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { logout } from '@/store/slices/authSlice'
 import { SettingsModal } from '@/components/SettingsModal'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
-import { NotificationModal, type Notification } from '@/components/NotificationModal'
+import { NotificationModal } from '@/components/NotificationModal'
 import { Button } from '@/components/ui/Button'
+import { useGetUnreadCountQuery } from '@/store/api/notificationsApi'
+import { HiBell } from 'react-icons/hi'
 import {
   HeaderContainer,
   HeaderContent,
@@ -22,7 +24,9 @@ import {
   UserName,
   UserProfileMenu,
   MobileMenu,
+  NotificationIconWrapper,
   NotificationIcon,
+  NotificationBadge,
   CreateButton,
   LogoSymbol,
   HamburgerButton,
@@ -48,32 +52,13 @@ export const Header = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [settingsInitialView, setSettingsInitialView] = useState<'categories' | 'theme'>('categories')
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Новое достижение',
-      message: 'Вы получили достижение "Первые шаги"',
-      type: 'success',
-      time: '2 минуты назад',
-      read: false,
-    },
-    {
-      id: '2',
-      title: 'Уровень повышен',
-      message: 'Поздравляем! Вы достигли 5 уровня',
-      type: 'info',
-      time: '1 час назад',
-      read: false,
-    },
-    {
-      id: '3',
-      title: 'Новый друг',
-      message: 'Пользователь @GamerPro добавил вас в друзья',
-      type: 'info',
-      time: '3 часа назад',
-      read: true,
-    },
-  ])
+  
+  const { data: unreadData } = useGetUnreadCountQuery(undefined, {
+    skip: !isAuthenticated,
+    pollingInterval: 30000, // Обновление каждые 30 секунд
+  })
+  
+  const unreadCount = unreadData?.count || 0
 
   return (
     <>
@@ -110,9 +95,28 @@ export const Header = () => {
                 <CreateButton onClick={() => console.log('create')}>
                   <span>+</span> Свое Достижение
                 </CreateButton>
-                <NotificationIcon onClick={() => setIsNotificationsOpen(true)}>
-                  🔔
-                </NotificationIcon>
+                <NotificationIconWrapper>
+                  <NotificationIcon
+                    onClick={() => setIsNotificationsOpen(true)}
+                    $hasUnread={unreadCount > 0}
+                    animate={unreadCount > 0 ? {
+                      rotate: [0, -10, 10, -10, 10, 0],
+                      scale: [1, 1.1, 1],
+                    } : {}}
+                    transition={{
+                      duration: 0.5,
+                      repeat: unreadCount > 0 ? Infinity : 0,
+                      repeatDelay: 3,
+                    }}
+                  >
+                    <HiBell size={20} />
+                  </NotificationIcon>
+                  {unreadCount > 0 && (
+                    <NotificationBadge>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </NotificationBadge>
+                  )}
+                </NotificationIconWrapper>
                 <UserSection onClick={() => setShowProfileMenu(!showProfileMenu)}>
                   <Avatar>{user?.avatar ? <img src={user.avatar} alt={user.username} /> : '👤'}</Avatar>
                   <LevelBadge>Lvl {user?.level || 1}</LevelBadge>
@@ -240,15 +244,6 @@ export const Header = () => {
       <NotificationModal
         isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
-        notifications={notifications}
-        onMarkAsRead={(id) => {
-          setNotifications((prev) =>
-            prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
-          )
-        }}
-        onDelete={(id) => {
-          setNotifications((prev) => prev.filter((notif) => notif.id !== id))
-        }}
       />
     </>
   )

@@ -203,7 +203,14 @@ export const UserName = styled.div`
   }
 `
 
-export const NotificationIcon = styled(motion.button)`
+export const NotificationIconWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+export const NotificationIcon = styled(motion.button)<{ $hasUnread: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,34 +220,40 @@ export const NotificationIcon = styled(motion.button)`
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  font-size: 1.25rem;
+  color: ${(props) => props.theme.colors.light[100]};
   transition: all 0.3s ease;
   position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 8px;
-    height: 8px;
-    background: ${(props) => props.theme.colors.danger};
-    border-radius: 50%;
-    box-shadow: 0 0 10px ${(props) => `${props.theme.colors.danger}80`};
-  }
 
   &:hover {
     background: ${(props) => props.theme.colors.dark.glassLight};
     transform: scale(1.1);
+    color: ${(props) => props.theme.colors.primary};
   }
-
-  
 
   @media (max-width: 768px) {
     width: 36px;
     height: 36px;
-    font-size: 1.125rem;
   }
+`
+
+export const NotificationBadge = styled.div`
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: ${(props) => props.theme.colors.danger};
+  color: ${(props) => props.theme.colors.light[100]};
+  border-radius: 9px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px ${(props) => `${props.theme.colors.danger}80`};
+  border: 2px solid ${(props) => props.theme.colors.dark.bg};
+  z-index: 1;
 `
 
 export const CreateButton = styled(motion.button)`
