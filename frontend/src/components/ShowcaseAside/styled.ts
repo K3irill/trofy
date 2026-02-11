@@ -318,7 +318,7 @@ export const TrophyOwner = styled.div`
   font-size: 0.8125rem;
 
   @media (max-width: 768px) {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     display: none;
   }
 `
@@ -328,7 +328,7 @@ export const TrophyDate = styled.div`
   font-size: 0.75rem;
 
   @media (max-width: 768px) {
-    font-size: 0.6875rem;
+    font-size: 0.6575rem;
     display: none;
   }
 `

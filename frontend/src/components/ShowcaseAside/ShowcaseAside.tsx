@@ -149,8 +149,8 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange }: ShowcaseAside
               <TrophyHeader rarity={trophy.rarity}>
                 <TrophyIcon>{trophy.icon}</TrophyIcon>
                 <TrophyHeaderInfo>
-                  <TrophyOwner>👤 {trophy.owner}</TrophyOwner>
-                  <TrophyDate>📅 {trophy.date}</TrophyDate>
+                  <TrophyOwner>{trophy.owner}</TrophyOwner>
+                  <TrophyDate>{trophy.date}</TrophyDate>
                 </TrophyHeaderInfo>
               </TrophyHeader>
               <TrophyContent>
