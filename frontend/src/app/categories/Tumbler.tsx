@@ -1,24 +1,24 @@
 import { TumblerWrapper, TumblerTrack, TumblerThumb, ViewLabel, Label } from './page.styled'
 
 interface TumblerProps {
-  mode: 'grid' | 'list'
-  onChange: (mode: 'grid' | 'list') => void
+  mode: 'categories' | 'achievements'
+  onChange: (mode: 'categories' | 'achievements') => void
 }
 
 export const Tumbler = ({ mode, onChange }: TumblerProps) => {
   return (
     <TumblerWrapper>
-      <Label active={mode === 'grid'} onClick={() => onChange('grid')}>
-        <ViewLabel>🗃️</ViewLabel>
+      <Label active={mode === 'categories'} onClick={() => onChange('categories')}>
+        <ViewLabel>📂</ViewLabel>
       </Label>
       <TumblerTrack onClick={() => {
-        mode === 'grid' ? onChange('list') : onChange('grid')
+        mode === 'categories' ? onChange('achievements') : onChange('categories')
       }
       }>
-        <TumblerThumb position={mode === 'grid' ? 0 : 1} />
+        <TumblerThumb position={mode === 'categories' ? 0 : 1} />
       </TumblerTrack>
-      <Label active={mode === 'list'} onClick={() => onChange('list')}>
-        <ViewLabel>📝</ViewLabel>
+      <Label active={mode === 'achievements'} onClick={() => onChange('achievements')}>
+        <ViewLabel>🏆</ViewLabel>
       </Label>
     </TumblerWrapper>
   )

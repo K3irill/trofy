@@ -341,12 +341,33 @@ export const ListContainer = styled.div`
   }
 `
 
-export const ListItem = styled(motion.div)`
+const getRarityColorForList = (theme: { colors: { rarity: { base?: string; common?: string; rare: string; epic: string; legendary: string }; dark: { [key: number]: string;[key: string]: string }; light: { [key: number]: string;[key: string]: string } }; shadows: { glass: { light: string } } }, rarity?: string) => {
+  if (!rarity) return theme.colors.dark[600]
+  const rarityColors = theme.colors.rarity
+  switch (rarity) {
+    case 'common':
+      return rarityColors.base || rarityColors.common || theme.colors.light[300]
+    case 'rare':
+      return rarityColors.rare
+    case 'epic':
+      return rarityColors.epic
+    case 'legendary':
+      return rarityColors.legendary
+    default:
+      return theme.colors.dark[600]
+  }
+}
+
+export const ListItem = styled(motion.div) <{ rarity?: string; unlocked?: boolean }>`
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
-  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
+  border: 2px solid ${(props) => {
+    if (!props.unlocked) return `${props.theme.colors.dark[600]}80`
+    const rarityColor = getRarityColorForList(props.theme, props.rarity)
+    return `${rarityColor}80`
+  }};
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -362,15 +383,30 @@ export const ListItem = styled(motion.div)`
     top: 0;
     bottom: 0;
     width: 4px;
-    background: linear-gradient(180deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
-    opacity: 0;
+    background: linear-gradient(180deg, ${(props) => {
+    if (!props.unlocked) return props.theme.colors.dark[600]
+    const rarityColor = getRarityColorForList(props.theme, props.rarity)
+    return rarityColor
+  }} 0%, ${(props) => {
+    if (!props.unlocked) return props.theme.colors.dark[600]
+    const rarityColor = getRarityColorForList(props.theme, props.rarity)
+    return `${rarityColor}cc`
+  }} 100%);
+    opacity: ${(props) => (props.unlocked ? 1 : 0)};
     transition: opacity 0.3s ease;
   }
 
   &:hover {
-    border-color: ${(props) => props.theme.colors.primary};
+    border-color: ${(props) => {
+    if (!props.unlocked) return props.theme.colors.dark[600]
+    return getRarityColorForList(props.theme, props.rarity)
+  }};
     transform: translateX(8px);
-    box-shadow: ${(props) => props.theme.shadows.glass.light};
+    box-shadow: ${(props) => {
+    if (!props.unlocked) return props.theme.shadows.glass.light
+    const rarityColor = getRarityColorForList(props.theme, props.rarity)
+    return `${props.theme.shadows.glass.light}, 0 0 20px ${rarityColor}40`
+  }};
 
     &::before {
       opacity: 1;
