@@ -4,6 +4,7 @@ import { Providers } from "./providers"
 import StyledComponentsRegistry from "@/lib/registry"
 import "./globals.css"
 import { Header } from '@/components/Header'
+import { BottomNavigation } from '@/components/BottomNavigation'
 import { NotificationProvider } from '@/contexts/NotificationContext'
 import { ToastContainer } from '@/components/Toast'
 
@@ -58,6 +59,7 @@ export default function RootLayout({
               <main suppressHydrationWarning>
                 {children}
               </main>
+              <BottomNavigation />
               <ToastContainer />
             </NotificationProvider>
           </Providers>

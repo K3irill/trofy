@@ -37,6 +37,13 @@ export const GlobalStyle = createGlobalStyle`
     overflow-x: hidden;
   }
 
+  /* Отступ снизу для нижнего меню на мобильных */
+  main {
+    @media (max-width: 767px) {
+      padding-bottom: 80px;
+    }
+  }
+
   /* Glassmorphism utility classes */
   .glass {
     background: ${(props) => props.theme.glass.bg};

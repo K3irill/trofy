@@ -13,17 +13,9 @@ import {
 } from './page.styled'
 import { mockUser } from './page.constants'
 import Container from '@/components/Container/Container'
-import { useNotificationContext } from '@/contexts/NotificationContext'
 
 export default function Home() {
   const [showcaseFilter, setShowcaseFilter] = useState<'best' | 'recent' | 'mine'>('best')
-
-
-  const { addToast } = useNotificationContext()
-  useEffect(() => {
-    addToast('Сообщение 2', 'success', 3000)
-
-  }, [])
 
   return (
     <Container>
