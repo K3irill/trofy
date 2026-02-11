@@ -48,7 +48,11 @@ import {
   ButtonIcon,
   ButtonText,
   ProfileTitleWrap,
+  ProfileOverlay,
+  OverlayTitle,
+  OverlayButton,
 } from './styled'
+import { Button } from '@/components/ui/Button'
 
 interface TrophyData {
   id: string
@@ -64,7 +68,7 @@ interface GoalData {
   total: number
 }
 
-export const Profile = ({ user }: ProfileProps) => {
+export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileProps) => {
   const [status, setStatus] = useState(user.bio || '')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const statusInputRef = useRef<HTMLTextAreaElement>(null)
@@ -113,6 +117,7 @@ export const Profile = ({ user }: ProfileProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
+      $isBlurred={!isAuthenticated}
     >
       <ParticlesContainer>
         <AnimatePresence>
@@ -239,26 +244,46 @@ export const Profile = ({ user }: ProfileProps) => {
 
           <CurrentGoalsSection>
             <SectionTitle>📈 Сейчас в работе</SectionTitle>
-            {currentGoals.map((goal, index) => (
+            {isAuthenticated ? (
+              currentGoals.map((goal, index) => (
+                <GoalItem
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 1.2 + index * 0.1 }}
+                >
+                  <GoalHeader>
+                    <GoalTitle>{goal.title}</GoalTitle>
+                    <GoalProgress>{goal.current}/{goal.total}</GoalProgress>
+                  </GoalHeader>
+                  <GoalBar>
+                    <GoalProgressBar
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(goal.current / goal.total) * 100}%` }}
+                      transition={{ duration: 1, delay: 1.3 + index * 0.1 }}
+                    />
+                  </GoalBar>
+                </GoalItem>
+              ))
+            ) : (
               <GoalItem
-                key={index}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.2 + index * 0.1 }}
+                transition={{ delay: 0.3 }}
               >
                 <GoalHeader>
-                  <GoalTitle>{goal.title}</GoalTitle>
-                  <GoalProgress>{goal.current}/{goal.total}</GoalProgress>
+                  <GoalTitle>?</GoalTitle>
+                  <GoalProgress>?</GoalProgress>
                 </GoalHeader>
                 <GoalBar>
                   <GoalProgressBar
                     initial={{ width: 0 }}
-                    animate={{ width: `${(goal.current / goal.total) * 100}%` }}
-                    transition={{ duration: 1, delay: 1.3 + index * 0.1 }}
+                    animate={{ width: 0 }}
+                    transition={{ duration: 0 }}
                   />
                 </GoalBar>
               </GoalItem>
-            ))}
+            )}
           </CurrentGoalsSection>
           <StreakContainer
             initial={{ opacity: 0, y: 10 }}
@@ -273,7 +298,7 @@ export const Profile = ({ user }: ProfileProps) => {
             </StreakFlame>
             <div>
               <StreakText>Серия подряд</StreakText>
-              <StreakDays>{user.streak || 7}</StreakDays>
+              <StreakDays>{isAuthenticated ? (user.streak || 7) : '?'}</StreakDays>
             </div>
           </StreakContainer>
 
@@ -325,25 +350,36 @@ export const Profile = ({ user }: ProfileProps) => {
 
 
 
-      <RareTrophiesSection>
+      {isAuthenticated && <RareTrophiesSection>
         <SectionTitle>🏆 Редкие трофеи</SectionTitle>
-        <RareTrophiesGrid>
-          {rareTrophies.map((trophy, index) => (
-            <TrophyCard
-              key={trophy.id}
-              isNew={trophy.isNew || false}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.05, rotateY: 15 }}
-              onClick={() => setExpandedTrophy(expandedTrophy === trophy.id ? null : trophy.id)}
-              transition={{ delay: 0.9 + index * 0.1 }}
-            >
-              <TrophyIcon rarity={trophy.rarity}>{trophy.icon}</TrophyIcon>
-              <TrophyTitle>{trophy.title}</TrophyTitle>
-            </TrophyCard>
-          ))}
-        </RareTrophiesGrid>
-      </RareTrophiesSection>
+        {isAuthenticated ? (
+          <RareTrophiesGrid>
+            {rareTrophies.map((trophy, index) => (
+              <TrophyCard
+                key={trophy.id}
+                isNew={trophy.isNew || false}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.05, rotateY: 15 }}
+                onClick={() => setExpandedTrophy(expandedTrophy === trophy.id ? null : trophy.id)}
+                transition={{ delay: 0.9 + index * 0.1 }}
+              >
+                <TrophyIcon rarity={trophy.rarity}>{trophy.icon}</TrophyIcon>
+                <TrophyTitle>{trophy.title}</TrophyTitle>
+              </TrophyCard>
+            ))}
+          </RareTrophiesGrid>
+        ) : (
+          <div style={{
+            textAlign: 'center',
+            padding: '2rem',
+            color: 'rgba(255, 255, 255, 0.5)',
+            fontSize: '1.5rem'
+          }}>
+            ?
+          </div>
+        )}
+      </RareTrophiesSection>}
 
 
       <StatsSection>
@@ -352,37 +388,49 @@ export const Profile = ({ user }: ProfileProps) => {
           <StatItem>
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.8 }}>42</StatValue>
+              transition={{ type: 'spring', delay: 0.8 }}>
+              {isAuthenticated ? '42' : '?'}
+            </StatValue>
             <StatLabel>Всего</StatLabel>
           </StatItem>
           <StatItem>
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.8 }}>5</StatValue>
+              transition={{ type: 'spring', delay: 0.8 }}>
+              {isAuthenticated ? '5' : '?'}
+            </StatValue>
             <StatLabel>Редких</StatLabel>
           </StatItem>
           <StatItem>
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.8 }}>1</StatValue>
+              transition={{ type: 'spring', delay: 0.8 }}>
+              {isAuthenticated ? '1' : '?'}
+            </StatValue>
             <StatLabel>Эпических</StatLabel>
           </StatItem>
           <StatItem>
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.8 }}>{user.uniqueness_score || 87}%</StatValue>
+              transition={{ type: 'spring', delay: 0.8 }}>
+              {isAuthenticated ? `${user.uniqueness_score || 87}%` : '?'}
+            </StatValue>
             <StatLabel>Уникальность</StatLabel>
           </StatItem>
           <StatItem>
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.8 }}>+{user.growth_rate || 12}</StatValue>
+              transition={{ type: 'spring', delay: 0.8 }}>
+              {isAuthenticated ? `+${user.growth_rate || 12}` : '?'}
+            </StatValue>
             <StatLabel>Темп роста</StatLabel>
           </StatItem>
           <StatItem>
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.8 }}>  {user.fastest_achievement?.days || 3}д</StatValue>
+              transition={{ type: 'spring', delay: 0.8 }}>
+              {isAuthenticated ? `${user.fastest_achievement?.days || 3}д` : '?'}
+            </StatValue>
             <StatLabel>Рекорд</StatLabel>
           </StatItem>
         </Stats>
@@ -391,13 +439,31 @@ export const Profile = ({ user }: ProfileProps) => {
 
 
 
-      <ShareButton
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handleShare}
-      >
-        <span>📤</span> Поделиться профилем
-      </ShareButton>
+      {isAuthenticated && (
+        <ShareButton
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleShare}
+        >
+          <span>📤</span> Поделиться профилем
+        </ShareButton>
+      )}
+
+      {!isAuthenticated && (
+        <ProfileOverlay>
+          <OverlayTitle>Авторизуйтесь, чтобы увидеть статистику</OverlayTitle>
+          {onLoginClick && (
+
+            <Button
+              variant="primary"
+              size="md"
+              onClick={onLoginClick}
+            >
+              Войти
+            </Button>
+          )}
+        </ProfileOverlay>
+      )}
     </ProfileContainer >
   )
 }

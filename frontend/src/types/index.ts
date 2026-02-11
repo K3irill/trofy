@@ -12,8 +12,10 @@ export interface ProfileTheme {
 
 export interface User {
   id: string
-  vk_id: string
+  vk_id?: string
   username: string
+  email?: string
+  phone?: string
   xp: number
   level: number
   profile_theme: ProfileTheme
@@ -29,6 +31,7 @@ export interface User {
     title: string
     days: number
   }
+  platform_accounts?: import('./auth').PlatformAccount[]
 }
 
 export interface PrivacySettings {

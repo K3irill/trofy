@@ -2,15 +2,15 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import styled from 'styled-components'
+import styled, { DefaultTheme } from 'styled-components'
 import { Achievement } from './api'
 
-const getRarityColor = (rarity?: string, theme: any) => {
+const getRarityColor = (theme: DefaultTheme, rarity?: string) => {
   if (!rarity) return theme.colors.dark[600]
   const rarityColors = theme.colors.rarity
   switch (rarity) {
     case 'common':
-      return rarityColors.base || rarityColors.common || theme.colors.light[300]
+      return rarityColors.base || theme.colors.light[300]
     case 'rare':
       return rarityColors.rare
     case 'epic':
@@ -22,9 +22,9 @@ const getRarityColor = (rarity?: string, theme: any) => {
   }
 }
 
-const getRarityGlow = (rarity?: string, theme: any) => {
+const getRarityGlow = (theme: DefaultTheme, rarity?: string) => {
   if (!rarity) return 'none'
-  const rarityColor = getRarityColor(rarity, theme)
+  const rarityColor = getRarityColor(theme, rarity)
   return `0 0 20px ${rarityColor}40, 0 0 40px ${rarityColor}20`
 }
 
@@ -40,7 +40,7 @@ const AchievementCardContainer = styled(motion.div) <{ unlocked: boolean; rarity
   border: 2px solid
     ${(props) => {
     if (!props.unlocked) return `${props.theme.colors.dark[600]}80`
-    const rarityColor = getRarityColor(props.rarity, props.theme)
+    const rarityColor = getRarityColor(props.theme, props.rarity)
     return `${rarityColor}80`
   }};
   cursor: pointer;
@@ -60,12 +60,12 @@ const AchievementCardContainer = styled(motion.div) <{ unlocked: boolean; rarity
       90deg,
       ${(props) => {
     if (!props.unlocked) return props.theme.colors.dark[600]
-    const rarityColor = getRarityColor(props.rarity, props.theme)
+    const rarityColor = getRarityColor(props.theme, props.rarity)
     return rarityColor
   }} 0%,
       ${(props) => {
     if (!props.unlocked) return props.theme.colors.dark[600]
-    const rarityColor = getRarityColor(props.rarity, props.theme)
+    const rarityColor = getRarityColor(props.theme, props.rarity)
     return `${rarityColor}cc`
   }} 100%
     );
@@ -76,11 +76,11 @@ const AchievementCardContainer = styled(motion.div) <{ unlocked: boolean; rarity
   &:hover {
     border-color: ${(props) => {
     if (!props.unlocked) return props.theme.colors.dark[600]
-    return getRarityColor(props.rarity, props.theme)
+    return getRarityColor(props.theme, props.rarity)
   }};
     transform: translateY(-8px);
     box-shadow: ${(props) => props.theme.shadows.glass.medium},
-      ${(props) => (props.unlocked ? getRarityGlow(props.rarity, props.theme) : 'none')};
+      ${(props) => (props.unlocked ? getRarityGlow(props.theme, props.rarity) : 'none')};
   }
 `
 
@@ -148,7 +148,7 @@ const RarityBadge = styled.div<{ rarity?: string }>`
   gap: 0.25rem;
   background: ${(props) => {
     if (!props.rarity) return `${props.theme.colors.dark[600]}80`
-    const rarityColor = getRarityColor(props.rarity, props.theme)
+    const rarityColor = getRarityColor(props.theme, props.rarity)
     return `${rarityColor}1a`
   }};
   padding: 0.35rem 0.75rem;
@@ -157,17 +157,17 @@ const RarityBadge = styled.div<{ rarity?: string }>`
   font-weight: 600;
   color: ${(props) => {
     if (!props.rarity) return props.theme.colors.light[300]
-    return getRarityColor(props.rarity, props.theme)
+    return getRarityColor(props.theme, props.rarity)
   }};
   border: 1px solid ${(props) => {
     if (!props.rarity) return `${props.theme.colors.dark[600]}33`
-    const rarityColor = getRarityColor(props.rarity, props.theme)
+    const rarityColor = getRarityColor(props.theme, props.rarity)
     return `${rarityColor}33`
   }};
   text-transform: capitalize;
   box-shadow: ${(props) => {
     if (!props.rarity) return 'none'
-    const rarityColor = getRarityColor(props.rarity, props.theme)
+    const rarityColor = getRarityColor(props.theme, props.rarity)
     return `0 0 8px ${rarityColor}20`
   }};
 `

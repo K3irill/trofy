@@ -226,6 +226,7 @@ interface SearchAndFiltersProps {
   onRarityFilterChange: (value: string) => void
   sortBy: string
   onSortChange: (value: string) => void
+  isAuthenticated?: boolean
 }
 
 export const SearchAndFilters = ({
@@ -239,6 +240,7 @@ export const SearchAndFilters = ({
   onRarityFilterChange,
   sortBy,
   onSortChange,
+  isAuthenticated = false,
 }: SearchAndFiltersProps) => {
   return (
     <SearchFiltersContainer>
@@ -264,16 +266,18 @@ export const SearchAndFilters = ({
             ))}
           </FilterSelect>
         </FilterSelectWrapper>
-        <FilterSelectWrapper>
-          <FilterSelect
-            value={unlockedFilter}
-            onChange={(e) => onUnlockedFilterChange(e.target.value)}
-          >
-            <option value="">Все достижения</option>
-            <option value="true">Разблокированные</option>
-            <option value="false">Заблокированные</option>
-          </FilterSelect>
-        </FilterSelectWrapper>
+        {isAuthenticated && (
+          <FilterSelectWrapper>
+            <FilterSelect
+              value={unlockedFilter}
+              onChange={(e) => onUnlockedFilterChange(e.target.value)}
+            >
+              <option value="">Все достижения</option>
+              <option value="true">Разблокированные</option>
+              <option value="false">Заблокированные</option>
+            </FilterSelect>
+          </FilterSelectWrapper>
+        )}
         <FilterSelectWrapper>
           <FilterSelect
             value={rarityFilter}

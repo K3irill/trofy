@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useAppSelector } from '@/store/hooks'
 
 import {
   Header as PageHeader,
@@ -33,6 +34,7 @@ import Container from '@/components/Container/Container'
 
 export default function CategoriesPage() {
   const router = useRouter()
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
   const [mode, setMode] = useState<'categories' | 'achievements'>('categories')
   const [viewMode, setViewMode] = useState<AchievementViewMode>('grid3')
   const [searchQuery, setSearchQuery] = useState('')
@@ -52,6 +54,9 @@ export default function CategoriesPage() {
         // Распределяем редкость по индексу для демонстрации
         const rarityIndex = index % rarities.length
         const dateIndex = index % dates.length
+        // Для авторизованных пользователей все достижения незавершены (если нет реальных данных)
+        // Для неавторизованных показываем мок-данные как есть
+        const isUnlocked = isAuthenticated ? false : achievement.unlocked
         all.push({
           id: achievement.id,
           name: achievement.name || 'Достижение',
@@ -59,14 +64,14 @@ export default function CategoriesPage() {
           icon: achievement.icon,
           categoryId: category.id,
           categoryName: category.name,
-          unlocked: achievement.unlocked,
+          unlocked: isUnlocked,
           rarity: rarities[rarityIndex],
-          completionDate: achievement.unlocked ? dates[dateIndex] : undefined,
+          completionDate: isUnlocked ? dates[dateIndex] : undefined,
         })
       })
     })
     return all
-  }, [])
+  }, [isAuthenticated])
 
   // Фильтрация и сортировка достижений (локально, пока нет API)
   const filteredAndSortedAchievements = useMemo(() => {
@@ -87,7 +92,8 @@ export default function CategoriesPage() {
       )
     }
 
-    if (unlockedFilter) {
+    // Фильтр по разблокированности доступен только для авторизованных пользователей
+    if (isAuthenticated && unlockedFilter) {
       const unlocked = unlockedFilter === 'true'
       filtered = filtered.filter(
         (achievement) => achievement.unlocked === unlocked
@@ -128,7 +134,7 @@ export default function CategoriesPage() {
     }
 
     return filtered
-  }, [allAchievements, searchQuery, selectedCategory, unlockedFilter, rarityFilter, sortBy])
+  }, [allAchievements, searchQuery, selectedCategory, unlockedFilter, rarityFilter, sortBy, isAuthenticated])
 
   // TODO: Реализовать вызов API при изменении поиска/фильтров
   // useEffect(() => {
@@ -169,13 +175,25 @@ export default function CategoriesPage() {
               transition={{ duration: 0.3 }}
             >
               <Grid>
-                {categories.map((category) => (
-                  <CategoryCardComponent
-                    key={category.id}
-                    category={category}
-                    onClick={() => router.push(`/categories/${category.id}`)}
-                  />
-                ))}
+                {categories.map((category) => {
+                  // Для авторизованных пользователей все достижения незавершены
+                  const processedCategory = isAuthenticated
+                    ? {
+                      ...category,
+                      unlocked: 0,
+                      achievements: category.achievements.map((a) => ({ ...a, unlocked: false })),
+                    }
+                    : category
+
+                  return (
+                    <CategoryCardComponent
+                      key={category.id}
+                      category={processedCategory}
+                      onClick={() => router.push(`/categories/${category.id}`)}
+                      isAuthenticated={isAuthenticated}
+                    />
+                  )
+                })}
               </Grid>
             </motion.div>
           ) : (
@@ -197,6 +215,7 @@ export default function CategoriesPage() {
                 onRarityFilterChange={setRarityFilter}
                 sortBy={sortBy}
                 onSortChange={setSortBy}
+                isAuthenticated={isAuthenticated}
               />
               {filteredAndSortedAchievements.length === 0 ? (
                 <div

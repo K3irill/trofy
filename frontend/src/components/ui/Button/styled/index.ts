@@ -1,7 +1,7 @@
-import styled from 'styled-components';
-import { motion } from 'framer-motion';
+import styled from 'styled-components'
+import { motion } from 'framer-motion'
 
-export const StyledButton = styled(motion.button)<{ variant: string; size: string }>`
+export const StyledButton = styled(motion.button) <{ variant: string; size: string }>`
   border: none;
   border-radius: 8px;
   font-weight: 600;
@@ -31,8 +31,8 @@ export const StyledButton = styled(motion.button)<{ variant: string; size: strin
         background: transparent;
         color: ${props.theme.colors.primary};
       `,
-    };
-    return variants[props.variant as keyof typeof variants];
+    }
+    return variants[props.variant as keyof typeof variants]
   }}
 
   ${(props) => {
@@ -40,13 +40,13 @@ export const StyledButton = styled(motion.button)<{ variant: string; size: strin
       sm: 'padding: 0.5rem 1rem; font-size: 0.875rem;',
       md: 'padding: 0.75rem 1.5rem; font-size: 1rem;',
       lg: 'padding: 1rem 2rem; font-size: 1.125rem;',
-    };
-    return sizes[props.size as keyof typeof sizes];
+    }
+    return sizes[props.size as keyof typeof sizes]
   }}
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+    box-shadow: 0 8px 25px  ${(props) => props.theme.shadows.glow.accent}
   }
 
   &:active:not(:disabled) {
@@ -57,4 +57,4 @@ export const StyledButton = styled(motion.button)<{ variant: string; size: strin
     opacity: 0.5;
     cursor: not-allowed;
   }
-`;
+`

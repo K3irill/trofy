@@ -57,11 +57,15 @@ const myTrophies: Trophy[] = [
 interface ShowcaseAsideProps {
   filter?: 'best' | 'recent' | 'mine'
   onFilterChange?: (filter: 'best' | 'recent' | 'mine') => void
+  isAuthenticated?: boolean
 }
 
-export const ShowcaseAside = ({ filter = 'best', onFilterChange }: ShowcaseAsideProps) => {
+export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated = true }: ShowcaseAsideProps) => {
+  // Если не авторизован и выбран фильтр "mine", используем "best"
+  const activeFilter = (!isAuthenticated && filter === 'mine') ? 'best' : filter
+
   const getTrophies = () => {
-    switch (filter) {
+    switch (activeFilter) {
       case 'recent':
         return recentTrophies
       case 'mine':
@@ -72,7 +76,7 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange }: ShowcaseAside
   }
 
   const getTitle = () => {
-    switch (filter) {
+    switch (activeFilter) {
       case 'recent':
         return 'Последние трофеи'
       case 'mine':
@@ -83,7 +87,7 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange }: ShowcaseAside
   }
 
   const getIcon = () => {
-    switch (filter) {
+    switch (activeFilter) {
       case 'recent':
         return '🆕'
       case 'mine':
@@ -110,26 +114,28 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange }: ShowcaseAside
         {onFilterChange && (
           <ToggleContainer>
             <SwitchOption
-              active={filter === 'best'}
+              active={activeFilter === 'best'}
               onClick={() => handleFilterChange('best')}
               position="left"
             >
               🏆 Лучшие
             </SwitchOption>
             <SwitchOption
-              active={filter === 'recent'}
+              active={activeFilter === 'recent'}
               onClick={() => handleFilterChange('recent')}
-              position="center"
+              position={isAuthenticated ? 'center' : 'right'}
             >
               🆕 Последние
             </SwitchOption>
-            <SwitchOption
-              active={filter === 'mine'}
-              onClick={() => handleFilterChange('mine')}
-              position="right"
-            >
-              👤 Мои
-            </SwitchOption>
+            {isAuthenticated && (
+              <SwitchOption
+                active={activeFilter === 'mine'}
+                onClick={() => handleFilterChange('mine')}
+                position="right"
+              >
+                👤 Мои
+              </SwitchOption>
+            )}
 
           </ToggleContainer>
         )}

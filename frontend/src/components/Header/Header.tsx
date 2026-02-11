@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
+import { logout } from '@/store/slices/authSlice'
 import { SettingsModal } from '@/components/SettingsModal'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { NotificationModal, type Notification } from '@/components/NotificationModal'
-import { mockUser } from '@/app/page.constants'
+import { Button } from '@/components/ui/Button'
 import {
   HeaderContainer,
   HeaderContent,
@@ -39,6 +41,8 @@ const links = [
 export const Header = () => {
   const pathname = usePathname()
   const router = useRouter()
+  const dispatch = useAppDispatch()
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -101,35 +105,52 @@ export const Header = () => {
               setSettingsInitialView('theme')
               setIsSettingsOpen(true)
             }} />
-            <CreateButton onClick={() => console.log('create')}>
-              <span>+</span> Свое Достижение
-            </CreateButton>
-            <NotificationIcon onClick={() => setIsNotificationsOpen(true)}>
-              🔔
-            </NotificationIcon>
-            <UserSection onClick={() => setShowProfileMenu(!showProfileMenu)}>
-              <Avatar>{mockUser.avatar ? <img src={mockUser.avatar} alt={mockUser.username} /> : '👤'}</Avatar>
-              <LevelBadge>Lvl {mockUser.level}</LevelBadge>
-              <UserName>{mockUser.username}</UserName>
-            </UserSection>
-            {showProfileMenu && (
-              <UserProfileMenu
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+            {isAuthenticated && (
+              <>
+                <CreateButton onClick={() => console.log('create')}>
+                  <span>+</span> Свое Достижение
+                </CreateButton>
+                <NotificationIcon onClick={() => setIsNotificationsOpen(true)}>
+                  🔔
+                </NotificationIcon>
+                <UserSection onClick={() => setShowProfileMenu(!showProfileMenu)}>
+                  <Avatar>{user?.avatar ? <img src={user.avatar} alt={user.username} /> : '👤'}</Avatar>
+                  <LevelBadge>Lvl {user?.level || 1}</LevelBadge>
+                  <UserName>{user?.username || 'Гость'}</UserName>
+                </UserSection>
+                {showProfileMenu && (
+                  <UserProfileMenu
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    <div onClick={() => { router.push('/'); setShowProfileMenu(false) }}>
+                      Профиль
+                    </div>
+                    <div onClick={() => {
+                      setSettingsInitialView('categories')
+                      setIsSettingsOpen(true)
+                      setShowProfileMenu(false)
+                    }}>
+                      Настройки
+                    </div>
+                    <div onClick={() => {
+                      dispatch(logout())
+                      setShowProfileMenu(false)
+                      router.push('/')
+                    }}>Выйти</div>
+                  </UserProfileMenu>
+                )}
+              </>
+            )}
+            {!isAuthenticated && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => router.push('/auth/login')}
               >
-                <div onClick={() => { router.push('/profile'); setShowProfileMenu(false) }}>
-                  Профиль
-                </div>
-                <div onClick={() => {
-                  setSettingsInitialView('categories')
-                  setIsSettingsOpen(true)
-                  setShowProfileMenu(false)
-                }}>
-                  Настройки
-                </div>
-                <div onClick={() => setShowProfileMenu(false)}>Выйти</div>
-              </UserProfileMenu>
+                Войти
+              </Button>
             )}
             <HamburgerButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <span>☰</span>
@@ -145,27 +166,49 @@ export const Header = () => {
           exit={{ opacity: 0, y: -20 }}
         >
           <MobileMenuHeader>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem' }}>
-                {mockUser.avatar ? <img src={mockUser.avatar} alt={mockUser.username} /> : '👤'}
-              </Avatar>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <LevelBadge>Lvl {mockUser.level}</LevelBadge>
-                <UserName style={{ fontSize: '1.125rem' }}>{mockUser.username}</UserName>
+            {isAuthenticated && user ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem' }}>
+                    {user.avatar ? <img src={user.avatar} alt={user.username} /> : '👤'}
+                  </Avatar>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <LevelBadge>Lvl {user.level}</LevelBadge>
+                    <UserName style={{ fontSize: '1.125rem' }}>{user.username}</UserName>
+                  </div>
+                </div>
+                <MobileMenuActions>
+                  <MobileMenuActionButton onClick={() => {
+                    setSettingsInitialView('categories')
+                    setIsSettingsOpen(true)
+                    setShowProfileMenu(false)
+                  }}>
+                    ⚙️
+                  </MobileMenuActionButton>
+                  <MobileMenuActionButton onClick={() => {
+                    dispatch(logout())
+                    setIsMobileMenuOpen(false)
+                    router.push('/')
+                  }}>
+                    выйти
+                  </MobileMenuActionButton>
+                </MobileMenuActions>
+              </>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', justifyContent: 'space-between' }}>
+                <div style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Гость</div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    router.push('/auth/login')
+                    setIsMobileMenuOpen(false)
+                  }}
+                >
+                  Войти
+                </Button>
               </div>
-            </div>
-            <MobileMenuActions>
-              <MobileMenuActionButton onClick={() => {
-                setSettingsInitialView('categories')
-                setIsSettingsOpen(true)
-                setShowProfileMenu(false)
-              }}>
-                ⚙️
-              </MobileMenuActionButton>
-              <MobileMenuActionButton onClick={() => console.log('logout')}>
-                выйти
-              </MobileMenuActionButton>
-            </MobileMenuActions>
+            )}
           </MobileMenuHeader>
           {links.map((link) => (
             <NavLink
@@ -177,11 +220,13 @@ export const Header = () => {
               {link.name}
             </NavLink>
           ))}
-          <div style={{ borderTop: '2px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.5rem' }}>
-            <CreateButton style={{ width: '100%', justifyContent: 'center' }} onClick={() => console.log('create')}>
-              <span>+</span> Создать Достижение
-            </CreateButton>
-          </div>
+          {isAuthenticated && (
+            <div style={{ borderTop: '2px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.5rem' }}>
+              <CreateButton style={{ width: '100%', justifyContent: 'center' }} onClick={() => console.log('create')}>
+                <span>+</span> Создать Достижение
+              </CreateButton>
+            </div>
+          )}
 
         </MobileMenu>
       )}

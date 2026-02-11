@@ -18,9 +18,10 @@ import {
 interface CategoryCardProps {
   category: Category
   onClick: () => void
+  isAuthenticated?: boolean
 }
 
-export const CategoryCardComponent = ({ category, onClick }: CategoryCardProps) => {
+export const CategoryCardComponent = ({ category, onClick, isAuthenticated = false }: CategoryCardProps) => {
   const progress = Math.round((category.unlocked / category.total) * 100)
   const unlockedCount = category.achievements.filter(a => a.unlocked).length
 
@@ -29,19 +30,28 @@ export const CategoryCardComponent = ({ category, onClick }: CategoryCardProps) 
       onClick={onClick}
       style={{ opacity: 1, transform: 'translateY(0)' }}
     >
-      <ProgressRing progress={progress} />
+      {isAuthenticated && <ProgressRing progress={progress} />}
       <CategoryIcon>{category.icon}</CategoryIcon>
       <CategoryName>{category.name}</CategoryName>
-      <CategoryStats>
-        <StatItem>
-          <StatLabel>Доступно:</StatLabel>
-          <StatValue>{category.unlocked}/{category.total}</StatValue>
-        </StatItem>
-        <StatItem>
-          <StatLabel>Прогресс:</StatLabel>
-          <StatValue>{progress}%</StatValue>
-        </StatItem>
-      </CategoryStats>
+      {isAuthenticated ? (
+        <CategoryStats>
+          <StatItem>
+            <StatLabel>Доступно:</StatLabel>
+            <StatValue>{category.unlocked}/{category.total}</StatValue>
+          </StatItem>
+          <StatItem>
+            <StatLabel>Прогресс:</StatLabel>
+            <StatValue>{progress}%</StatValue>
+          </StatItem>
+        </CategoryStats>
+      ) : (
+        <CategoryStats>
+          <StatItem>
+            <StatLabel>Всего достижений:</StatLabel>
+            <StatValue>{category.total}</StatValue>
+          </StatItem>
+        </CategoryStats>
+      )}
       <AchievementPreview>
         {category.achievements.slice(0, 8).map((achievement) => (
           <PreviewItem
@@ -52,7 +62,7 @@ export const CategoryCardComponent = ({ category, onClick }: CategoryCardProps) 
             {achievement.icon}
           </PreviewItem>
         ))}
-        {unlockedCount > 0 && (
+        {isAuthenticated && unlockedCount > 0 && (
           <PreviewItem
             unlocked={true}
             style={{ opacity: 1, transform: 'scale(1)' }}

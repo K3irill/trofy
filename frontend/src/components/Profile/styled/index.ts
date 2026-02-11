@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
 
-export const ProfileContainer = styled(motion.div)`
+export const ProfileContainer = styled(motion.div) <{ $isBlurred?: boolean }>`
   background: ${(props) => props.theme.glass.bg};
   backdrop-filter: ${(props) => props.theme.glass.blur};
   -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
@@ -12,6 +12,8 @@ export const ProfileContainer = styled(motion.div)`
   text-align: center;
   position: relative;
   overflow: hidden;
+  filter: ${(props) => (props.$isBlurred ? 'brightness(1)' : 'none')};
+  transition: filter 0.3s ease;
 
   &::before {
     content: '';
@@ -782,5 +784,64 @@ export const ButtonText = styled.span`
 
   @media (max-width: 768px) {
     font-size: 0.75rem;
+  }
+`
+
+export const ProfileOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  gap: 1.5rem;
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+`
+
+export const OverlayTitle = styled.h3`
+  color: ${(props) => props.theme.colors.light[100]};
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+`
+
+export const OverlayButton = styled(motion.button)`
+  padding: 0.875rem 2rem;
+  background: ${(props) => props.theme.colors.secondary};
+  border: none;
+  border-radius: 12px;
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
+  transition: all 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: ${(props) => props.theme.shadows.glow.secondary};
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
   }
 `
