@@ -10,7 +10,6 @@ import type { ProfileThemeType } from '../styled'
 
 // Доступные иконки для фона
 export const availableIcons = [
-  '🦉', // Сова
   '🦅', // Орел
   '🦆', // Утка
   '🦢', // Лебедь
