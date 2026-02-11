@@ -11,6 +11,7 @@ export interface UpdateUserRequest {
   }
   pinned_achievements?: string[]
   priority_achievements?: string[]
+  main_info_theme?: string | null
 }
 
 export interface UserStats {

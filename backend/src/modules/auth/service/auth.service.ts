@@ -89,6 +89,7 @@ export function formatUser(
             ? user.priority_achievements
             : JSON.parse(user.priority_achievements))
         : [],
+      main_info_theme: user.main_info_theme || null,
       streak: user.streak,
       uniqueness_score: user.uniqueness_score,
       growth_rate: user.growth_rate,
@@ -160,6 +161,7 @@ export function formatUser(
           ? user.priority_achievements
           : JSON.parse(user.priority_achievements))
       : [],
+    main_info_theme: privacy.show_profile ? (user.main_info_theme || null) : null,
     streak: privacy.show_achievements ? user.streak : undefined,
     uniqueness_score: privacy.show_achievements ? user.uniqueness_score : null,
     growth_rate: privacy.show_achievements ? user.growth_rate : null,

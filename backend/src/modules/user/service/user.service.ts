@@ -16,19 +16,40 @@ export class UserService {
 
     if (dto.profile_theme_id !== undefined) {
       // Проверяем существование темы
-      if (dto.profile_theme_id) {
-        const theme = await prisma.profileTheme.findUnique({
-          where: { id: dto.profile_theme_id },
-        })
+        if (dto.profile_theme_id) {
+            const theme = await prisma.profileTheme.findUnique({
+              where: { id: dto.profile_theme_id },
+            })
 
-        if (!theme) {
-          throw ApiError.notFound('Profile theme not found')
+            if (!theme) {
+              throw ApiError.notFound('Profile theme not found')
+            }
+          }
+          updateData.profile_theme_id = dto.profile_theme_id || null
         }
-      }
-      updateData.profile_theme_id = dto.profile_theme_id || null
-    }
 
-    if (dto.privacy_settings) {
+        if (dto.main_info_theme !== undefined) {
+          // Валидация темы блока основной информации
+          const validThemes = [
+            'midnight',
+            'deepBlue',
+            'velvetPurple',
+            'forest',
+            'cosmic',
+            'sunset',
+            'nebula',
+            'aurora',
+            'gold',
+            'platinum',
+            'dragonScale',
+          ]
+          if (dto.main_info_theme && !validThemes.includes(dto.main_info_theme)) {
+            throw ApiError.badRequest('Invalid main_info_theme')
+          }
+          updateData.main_info_theme = dto.main_info_theme || null
+        }
+
+        if (dto.privacy_settings) {
       const currentUser = await prisma.user.findUnique({
         where: { id: userId },
         select: { privacy_settings: true },

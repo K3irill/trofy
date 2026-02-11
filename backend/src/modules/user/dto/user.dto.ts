@@ -48,6 +48,10 @@ export class UpdateUserDto {
   @IsOptional()
   profile_theme_id?: string
 
+  @IsString()
+  @IsOptional()
+  main_info_theme?: string
+
   @IsObject()
   @IsOptional()
   @ValidateNested()

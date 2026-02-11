@@ -104,9 +104,9 @@ export const TrophiesList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: 50vh;
+  /* max-height: 50vh;
   overflow-y: scroll;
-  scrollbar-width: none;
+  scrollbar-width: none; */
 
   @media (max-width: 768px) {
     flex-direction: row;

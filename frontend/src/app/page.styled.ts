@@ -35,8 +35,8 @@ export const AsideSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  position: sticky;
-  top: 100px;
+  /* position: sticky; */
+  top: 25px;
   height: fit-content;
 
   @media (max-width: 1024px) {

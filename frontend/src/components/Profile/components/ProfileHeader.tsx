@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { User } from '@/types'
 import {
@@ -17,6 +18,36 @@ import {
   mapProfileColorToTheme,
 } from '../styled'
 import { useProfileBio } from '../hooks/useProfileBio'
+import { ProfileThemeModal } from './ProfileThemeModal'
+import { IoColorPaletteOutline } from 'react-icons/io5'
+import styled from 'styled-components'
+
+const ThemeButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: ${(props) => props.theme.colors.light[100]};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: ${(props) => props.theme.colors.primary};
+    color: ${(props) => props.theme.colors.primary};
+    transform: scale(1.1);
+  }
+`
 
 interface ProfileHeaderProps {
   user: User
@@ -38,8 +69,23 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel }
     handleClick,
   } = useProfileBio(user, isAuthenticated)
 
+  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
+
+  // Используем main_info_theme если есть, иначе fallback на profile_theme.profile_color
+  const currentTheme = user.main_info_theme
+    ? (user.main_info_theme as any)
+    : mapProfileColorToTheme(user.profile_theme.profile_color || 'dark')
+
   return (
-    <MainInfo profileTheme={mapProfileColorToTheme(user.profile_theme.profile_color || 'dark')}>
+    <MainInfo profileTheme={currentTheme}>
+      {isAuthenticated && (
+        <ThemeButton
+          onClick={() => setIsThemeModalOpen(true)}
+          title="Изменить тему блока"
+        >
+          <IoColorPaletteOutline size={20} />
+        </ThemeButton>
+      )}
       <div style={{ position: 'relative', display: 'inline-block' }}>
         <Avatar>👤</Avatar>
       </div>
@@ -123,6 +169,12 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel }
         />
       </XPBar>
       <XPText>{user.xp.toLocaleString()} / {xpToNextLevel.toLocaleString()} XP</XPText>
+
+      <ProfileThemeModal
+        isOpen={isThemeModalOpen}
+        onClose={() => setIsThemeModalOpen(false)}
+        currentTheme={currentTheme}
+      />
     </MainInfo>
   )
 }
