@@ -43,7 +43,7 @@ export const BottomNavItem = styled.button<{ active: boolean }>`
   }
 
   ${(props) =>
-    props.active &&
+    props.$active &&
     `
     background: ${props.theme.colors.dark.glassLight};
     
@@ -62,30 +62,30 @@ export const BottomNavItem = styled.button<{ active: boolean }>`
   `}
 `
 
-export const BottomNavIcon = styled.div<{ active: boolean }>`
+export const BottomNavIcon = styled.div<{ $active: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
   color: ${(props) =>
-    props.active
+    props.$active
       ? props.theme.colors.primary
       : props.theme.colors.light[300]};
   transition: all 0.3s ease;
-  transform: ${(props) => (props.active ? 'scale(1.1)' : 'scale(1)')};
+  transform: ${(props) => (props.$active ? 'scale(1.1)' : 'scale(1)')};
 
   ${(props) =>
-    props.active &&
+    props.$active &&
     `
     filter: drop-shadow(0 0 8px ${props.theme.colors.primary}60);
   `}
 `
 
-export const BottomNavLabel = styled.span<{ active: boolean }>`
+export const BottomNavLabel = styled.span<{ $active: boolean }>`
   font-size: 0.75rem;
-  font-weight: ${(props) => (props.active ? 600 : 400)};
+  font-weight: ${(props) => (props.$active ? 600 : 400)};
   color: ${(props) =>
-    props.active
+    props.$active
       ? props.theme.colors.primary
       : props.theme.colors.light[300]};
   transition: all 0.3s ease;

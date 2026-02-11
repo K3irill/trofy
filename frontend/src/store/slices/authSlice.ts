@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { AuthState, User } from '@/types'
 import { saveTokens, clearTokens } from '@/lib/auth/tokenStorage'
 import { authApi } from '../api/authApi'
+import { userApi } from '../api/userApi'
 
 // Инициализация состояния - читаем пользователя из localStorage на клиенте
 const initialState: AuthState = {
@@ -119,7 +120,7 @@ const authSlice = createSlice({
       .addMatcher(authApi.endpoints.getMe.matchPending, (state) => {
         state.loading = true
       })
-      .addMatcher(authApi.endpoints.getMe.matchFulfilled, (state, action) => {
+      .addMatcher(userApi.endpoints.getMe.matchFulfilled, (state, action) => {
         state.user = action.payload
         state.isAuthenticated = true
         state.loading = false
@@ -128,7 +129,7 @@ const authSlice = createSlice({
           localStorage.setItem('user', JSON.stringify(action.payload))
         }
       })
-      .addMatcher(authApi.endpoints.getMe.matchRejected, (state) => {
+      .addMatcher(userApi.endpoints.getMe.matchRejected, (state) => {
         state.loading = false
         state.isAuthenticated = false
         state.user = null

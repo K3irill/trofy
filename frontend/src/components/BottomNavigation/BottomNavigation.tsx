@@ -32,12 +32,12 @@ export const BottomNavigation = () => {
           <BottomNavItem
             key={item.href}
             onClick={() => router.push(item.href)}
-            active={isActive}
+            $active={isActive}
           >
-            <BottomNavIcon active={isActive}>
+            <BottomNavIcon $active={isActive}>
               <Icon />
             </BottomNavIcon>
-            <BottomNavLabel active={isActive}>{item.name}</BottomNavLabel>
+            <BottomNavLabel $active={isActive}>{item.name}</BottomNavLabel>
           </BottomNavItem>
         )
       })}

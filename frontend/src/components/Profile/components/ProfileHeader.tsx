@@ -19,6 +19,7 @@ import {
 } from '../styled'
 import { useProfileBio } from '../hooks/useProfileBio'
 import { ProfileThemeModal } from './ProfileThemeModal'
+import { BackgroundIcons } from './BackgroundIcons'
 import { IoColorPaletteOutline } from 'react-icons/io5'
 import styled from 'styled-components'
 
@@ -76,8 +77,12 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel }
     ? (user.main_info_theme as any)
     : mapProfileColorToTheme(user.profile_theme.profile_color || 'dark')
 
+  // Используем background_icons из пользователя
+  const backgroundIcons = user.background_icons || []
+
   return (
     <MainInfo profileTheme={currentTheme}>
+      <BackgroundIcons icons={backgroundIcons} count={15} />
       {isAuthenticated && (
         <ThemeButton
           onClick={() => setIsThemeModalOpen(true)}
@@ -174,6 +179,7 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel }
         isOpen={isThemeModalOpen}
         onClose={() => setIsThemeModalOpen(false)}
         currentTheme={currentTheme}
+        currentIcons={backgroundIcons}
       />
     </MainInfo>
   )

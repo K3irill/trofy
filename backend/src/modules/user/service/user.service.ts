@@ -49,6 +49,14 @@ export class UserService {
           updateData.main_info_theme = dto.main_info_theme || null
         }
 
+        if (dto.background_icons !== undefined) {
+          // Валидация иконок для фона
+          if (dto.background_icons.length > 10) {
+            throw ApiError.badRequest('Maximum 10 background icons allowed')
+          }
+          updateData.background_icons = dto.background_icons
+        }
+
         if (dto.privacy_settings) {
       const currentUser = await prisma.user.findUnique({
         where: { id: userId },

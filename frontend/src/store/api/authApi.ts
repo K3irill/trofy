@@ -41,10 +41,6 @@ export const authApi = baseApi.injectEndpoints({
         body: { refresh_token },
       }),
     }),
-    getMe: builder.query<User, void>({
-      query: () => '/auth/me',
-      providesTags: ['User'],
-    }),
     linkPlatform: builder.mutation<User, LinkPlatformRequest>({
       query: (data) => ({
         url: '/auth/link-platform',
@@ -61,6 +57,5 @@ export const {
   useRegisterMutation,
   useRefreshTokenMutation,
   useLogoutMutation,
-  useGetMeQuery,
   useLinkPlatformMutation,
 } = authApi

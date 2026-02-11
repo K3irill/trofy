@@ -52,6 +52,12 @@ export class UpdateUserDto {
   @IsOptional()
   main_info_theme?: string
 
+  @IsArray()
+  @IsOptional()
+  @ArrayMaxSize(10, { message: 'Maximum 10 background icons allowed' })
+  @IsString({ each: true, message: 'Each icon must be a string' })
+  background_icons?: string[]
+
   @IsObject()
   @IsOptional()
   @ValidateNested()

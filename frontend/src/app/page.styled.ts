@@ -37,7 +37,7 @@ export const AsideSection = styled.div`
   gap: 2rem;
   /* position: sticky; */
   top: 25px;
-  height: fit-content;
+  /* height: fit-content; */
 
   @media (max-width: 1024px) {
     position: static;

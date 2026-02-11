@@ -1,6 +1,6 @@
 'use client'
 
-import { useGetMeQuery } from '@/store/api/authApi'
+import { useGetMeQuery } from '@/store/api/userApi'
 import { hasTokens } from '@/lib/auth/tokenStorage'
 import { Loader } from '@/components/Loader'
 

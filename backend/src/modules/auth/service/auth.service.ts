@@ -90,6 +90,11 @@ export function formatUser(
             : JSON.parse(user.priority_achievements))
         : [],
       main_info_theme: user.main_info_theme || null,
+      background_icons: user.background_icons
+        ? (Array.isArray(user.background_icons)
+            ? user.background_icons
+            : JSON.parse(user.background_icons))
+        : [],
       streak: user.streak,
       uniqueness_score: user.uniqueness_score,
       growth_rate: user.growth_rate,
@@ -162,6 +167,11 @@ export function formatUser(
           : JSON.parse(user.priority_achievements))
       : [],
     main_info_theme: privacy.show_profile ? (user.main_info_theme || null) : null,
+    background_icons: privacy.show_profile && user.background_icons
+      ? (Array.isArray(user.background_icons)
+          ? user.background_icons
+          : JSON.parse(user.background_icons))
+      : [],
     streak: privacy.show_achievements ? user.streak : undefined,
     uniqueness_score: privacy.show_achievements ? user.uniqueness_score : null,
     growth_rate: privacy.show_achievements ? user.growth_rate : null,

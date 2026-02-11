@@ -27,6 +27,7 @@ export interface User {
   pinned_achievements?: string[]
   priority_achievements?: string[]
   main_info_theme?: string | null
+  background_icons?: string[]
   streak?: number
   uniqueness_score?: number
   growth_rate?: number

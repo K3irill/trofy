@@ -99,8 +99,8 @@ export const NavLinks = styled.div`
   }
 `
 
-export const NavLink = styled(motion.a) <{ active: boolean }>`
-  color: ${(props) => props.active ? props.theme.colors.primary : props.theme.colors.light[300]};
+export const NavLink = styled(motion.a) <{ $active: boolean }>`
+  color: ${(props) => props.$active ? props.theme.colors.primary : props.theme.colors.light[300]};
   text-decoration: none;
   font-weight: 600;
   font-size: 0.875rem;
@@ -109,8 +109,8 @@ export const NavLink = styled(motion.a) <{ active: boolean }>`
   transition: all 0.3s ease;
   position: relative;
   white-space: nowrap;
-  background: ${(props) => props.active ? `${props.theme.colors.primary}1a` : 'transparent'};
-  border: 1px solid ${(props) => props.active ? `${props.theme.colors.primary}4d` : 'transparent'};
+  background: ${(props) => props.$active ? `${props.theme.colors.primary}1a` : 'transparent'};
+  border: 1px solid ${(props) => props.$active ? `${props.theme.colors.primary}4d` : 'transparent'};
 
   &:hover {
     color: ${(props) => props.theme.colors.primary};

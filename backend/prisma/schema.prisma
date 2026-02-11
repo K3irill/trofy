@@ -21,6 +21,7 @@ model User {
   level                     Int       @default(1)
   profile_theme_id          String?
   main_info_theme           String?
+  background_icons          Json      @default("[]")
   privacy_settings          Json      @default("{\"show_achievements\": true, \"show_level\": true, \"show_profile\": true}")
   bio                       String?
   badges                    Json      @default("[]")

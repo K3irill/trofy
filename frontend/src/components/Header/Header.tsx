@@ -93,7 +93,7 @@ export const Header = () => {
                 <NavLink
                   key={link.href}
                   href={link.href}
-                  active={pathname === link.href}
+                  $active={pathname === link.href}
                 >
                   {link.name}
                 </NavLink>
@@ -214,7 +214,7 @@ export const Header = () => {
             <NavLink
               key={link.href}
               href={link.href}
-              active={pathname === link.href}
+              $active={pathname === link.href}
               style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
             >
               {link.name}

@@ -12,6 +12,7 @@ export interface UpdateUserRequest {
   pinned_achievements?: string[]
   priority_achievements?: string[]
   main_info_theme?: string | null
+  background_icons?: string[]
 }
 
 export interface UserStats {
@@ -50,6 +51,7 @@ export interface RecentAchievement {
 }
 
 export const userApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getMe: builder.query<User, void>({
       query: () => '/users/me',
