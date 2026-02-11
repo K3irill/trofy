@@ -4,6 +4,8 @@ import { Providers } from "./providers"
 import StyledComponentsRegistry from "@/lib/registry"
 import "./globals.css"
 import { Header } from '@/components/Header'
+import { NotificationProvider } from '@/contexts/NotificationContext'
+import { ToastContainer } from '@/components/Toast'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,12 +51,15 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
         <StyledComponentsRegistry>
           <Providers>
-            <div suppressHydrationWarning>
-              <Header />
-            </div>
-            <main suppressHydrationWarning>
-              {children}
-            </main>
+            <NotificationProvider>
+              <div suppressHydrationWarning>
+                <Header />
+              </div>
+              <main suppressHydrationWarning>
+                {children}
+              </main>
+              <ToastContainer />
+            </NotificationProvider>
           </Providers>
         </StyledComponentsRegistry>
       </body>

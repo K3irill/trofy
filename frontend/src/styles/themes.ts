@@ -1,4 +1,4 @@
-export type ThemeName = 'NEON' | 'TWILIGHT' | 'STOIC' | 'MINIMAL' | 'FOREST' | 'DARK_GLASS' | 'SUNSET' | 'MYTHOLOGY' | 'BERSERK' | 'CYBERPUNK' | 'OCEAN' | 'BLACK_GLOSS' | 'BASALT'
+export type ThemeName = 'NEON' | 'TWILIGHT' | 'STOIC' | 'OBSIDIAN' | 'MINIMAL' | 'FOREST' | 'DARK_GLASS' | 'SUNSET' | 'MYTHOLOGY' | 'BERSERK' | 'CYBERPUNK' | 'OCEAN' | 'BLACK_GLOSS' | 'BASALT' | 'AMBITION'
 
 export interface ThemeColors {
   primary: string
@@ -237,10 +237,10 @@ export const stoicTheme: Theme = {
     border: '1px solid rgba(255, 255, 255, 0.06)',
   },
 }
-// 1. Тема MINIMAL с изюминкой - градиент с фиолетовыми и синими акцентами
-export const minimalTheme: Theme = {
-  name: 'MINIMAL',
-  displayName: 'МИНИМАЛИЗМ',
+// 1. Тема OBSIDIAN - градиент с фиолетовыми и синими акцентами
+export const obsidianTheme: Theme = {
+  name: 'OBSIDIAN',
+  displayName: 'ОБСИДИАН',
   colors: {
     primary: '#8b5cf6', // Фиолетовый акцент
     secondary: '#6366f1', // Индиго
@@ -310,7 +310,80 @@ export const minimalTheme: Theme = {
   },
 }
 
-// 2. Тема FOREST - темный ночной лес при звездах, светлая ночь
+// 2. Тема MINIMAL - лист тетради, шероховатый сероватый
+export const minimalTheme: Theme = {
+  name: 'MINIMAL',
+  displayName: 'МИНИМАЛИЗМ',
+  colors: {
+    primary: '#6b7280', // Серый как карандаш
+    secondary: '#4b5563', // Темно-серый
+    gold: '#9ca3af', // Светло-серый
+    goldLight: '#d1d5db',
+    accent: '#e5e7eb', // Светло-серый
+    danger: '#dc2626',
+    warning: '#d97706',
+    success: '#059669',
+    dark: {
+      bg: '#f5f5f4', // Сероватый фон как лист тетради
+      glass: 'rgba(229, 231, 235, 0.95)', // Матовое стекло
+      glassLight: 'rgba(243, 244, 246, 0.9)',
+      neomorphLight: 'rgba(0, 0, 0, 0.03)', // Легкая тень
+      neomorphDark: 'rgba(0, 0, 0, 0.06)',
+      900: '#1f2937', // Темно-серый для текста
+      800: '#374151',
+      700: '#4b5563',
+      600: '#6b7280',
+    },
+    light: {
+      100: '#111827', // Темный текст
+      200: '#1f2937',
+      300: '#374151',
+    },
+    rarity: {
+      base: '#9ca3af', // Серый
+      rare: '#6b7280', // Темно-серый
+      epic: '#4b5563', // Очень темно-серый
+      legendary: '#1f2937', // Почти черный
+    },
+  },
+  shadows: {
+    sm: '0 1px 2px rgba(0,0,0,0.08)',
+    md: '0 2px 4px rgba(0,0,0,0.1)',
+    lg: '0 4px 8px rgba(0,0,0,0.12)',
+    xl: '0 8px 16px rgba(0,0,0,0.15)',
+    glow: {
+      primary: '0 0 8px rgba(107, 114, 128, 0.15)', // Мягкое серое свечение
+      secondary: '0 0 8px rgba(75, 85, 99, 0.15)',
+      gold: '0 0 8px rgba(156, 163, 175, 0.15)',
+      accent: '0 0 8px rgba(229, 231, 235, 0.15)',
+    },
+    neomorph: {
+      light: '2px 2px 4px rgba(0, 0, 0, 0.1), -2px -2px 4px rgba(255, 255, 255, 0.9)',
+      dark: 'inset 2px 2px 4px rgba(0, 0, 0, 0.1), inset -2px -2px 4px rgba(255, 255, 255, 0.9)',
+      flat: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    },
+    glass: {
+      light: '0 2px 8px rgba(0, 0, 0, 0.08)',
+      medium: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      heavy: '0 8px 24px rgba(0, 0, 0, 0.12)',
+    },
+  },
+  neomorph: {
+    bg: '#f5f5f4',
+    radius: '8px',
+    radiusSm: '6px',
+    radiusLg: '12px',
+  },
+  glass: {
+    bg: 'rgba(229, 231, 235, 0.95)',
+    bgLight: 'rgba(243, 244, 246, 0.9)',
+    blur: 'blur(10px)',
+    radius: '8px',
+    border: '1px solid rgba(0, 0, 0, 0.1)',
+  },
+}
+
+// 3. Тема FOREST - темный ночной лес при звездах, светлая ночь
 export const forestTheme: Theme = {
   name: 'FOREST',
   displayName: 'ЛЕСНАЯ ГАРМОНИЯ',
@@ -1040,12 +1113,86 @@ export const basaltTheme: Theme = {
   },
 }
 
+// Тема AMBITION - черно-золотая тема амбиций (на основе BLACK_GLOSS)
+export const ambitionTheme: Theme = {
+  name: 'AMBITION',
+  displayName: 'АМБИЦИИ',
+  colors: {
+    primary: '#d4af37', // Строгое золото для контраста на черном
+    secondary: '#b8860b', // Темное золото
+    gold: '#d4af37', // Строгое золото
+    goldLight: '#daa520', // Среднее золото
+    accent: '#b8860b', // Темное золото акцент
+    danger: '#dc2626',
+    warning: '#d97706',
+    success: '#10b981',
+    dark: {
+      bg: '#000000', // Чистый черный
+      glass: 'rgba(0, 0, 0, 0.9)', // Почти черное стекло
+      glassLight: 'rgba(30, 30, 30, 0.8)', // Светлее для глянца
+      neomorphLight: 'rgba(212, 175, 55, 0.08)', // Слабый золотой отблеск для глянца
+      neomorphDark: 'rgba(0, 0, 0, 0.6)',
+      900: '#000000',
+      800: '#0a0a0a', // Почти черный
+      700: '#1a1a1a', // Очень темно-серый
+      600: '#2a2a2a', // Темно-серый
+    },
+    light: {
+      100: '#d4af37', // Строгое золото для текста
+      200: '#daa520', // Среднее золото
+      300: '#b8860b', // Темное золото
+    },
+    rarity: {
+      base: '#6b7280', // Серый
+      rare: '#b8860b', // Темное золото
+      epic: '#d4af37', // Строгое золото
+      legendary: '#d4af37', // Строгое золото
+    },
+  },
+  shadows: {
+    sm: '0 1px 3px rgba(0, 0, 0, 0.8)',
+    md: '0 4px 6px rgba(0, 0, 0, 0.8)',
+    lg: '0 10px 25px rgba(0, 0, 0, 0.9)',
+    xl: '0 20px 40px rgba(0, 0, 0, 1)',
+    glow: {
+      primary: 'none', // Без свечения
+      secondary: 'none', // Без свечения
+      gold: 'none', // Без свечения
+      accent: 'none', // Без свечения
+    },
+    neomorph: {
+      light: '8px 8px 16px rgba(0, 0, 0, 0.8), -8px -8px 16px rgba(212, 175, 55, 0.05)', // Глянцевый эффект с золотым
+      dark: 'inset 4px 4px 8px rgba(0, 0, 0, 0.8), inset -4px -4px 8px rgba(212, 175, 55, 0.05)',
+      flat: '0 8px 32px rgba(0, 0, 0, 0.6)',
+    },
+    glass: {
+      light: '0 8px 32px rgba(0, 0, 0, 0.6)',
+      medium: '0 12px 40px rgba(0, 0, 0, 0.7)',
+      heavy: '0 20px 60px rgba(0, 0, 0, 0.8)',
+    },
+  },
+  neomorph: {
+    bg: '#000000',
+    radius: '16px',
+    radiusSm: '12px',
+    radiusLg: '24px',
+  },
+  glass: {
+    bg: 'rgba(0, 0, 0, 0.9)',
+    bgLight: 'rgba(30, 30, 30, 0.8)',
+    blur: 'blur(20px)',
+    radius: '20px',
+    border: '1px solid rgba(212, 175, 55, 0.15)', // Тонкая золотая граница для глянца
+  },
+}
+
 
 // Обновляем объект themes
 export const themes: Record<ThemeName, Theme> = {
   NEON: neonTheme,
   TWILIGHT: twilightTheme,
   STOIC: stoicTheme,
+  OBSIDIAN: obsidianTheme,
   MINIMAL: minimalTheme,
   FOREST: forestTheme,
   DARK_GLASS: darkGlassTheme,
@@ -1056,6 +1203,7 @@ export const themes: Record<ThemeName, Theme> = {
   OCEAN: oceanTheme,
   BLACK_GLOSS: blackGlossTheme,
   BASALT: basaltTheme,
+  AMBITION: ambitionTheme,
 }
 
 export const getTheme = (themeName: ThemeName): Theme => {

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { SettingsModal } from '@/components/SettingsModal'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
+import { NotificationModal, type Notification } from '@/components/NotificationModal'
 import { mockUser } from '@/app/page.constants'
 import {
   HeaderContainer,
@@ -41,7 +42,34 @@ export const Header = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [settingsInitialView, setSettingsInitialView] = useState<'categories' | 'theme'>('categories')
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      title: 'Новое достижение',
+      message: 'Вы получили достижение "Первые шаги"',
+      type: 'success',
+      time: '2 минуты назад',
+      read: false,
+    },
+    {
+      id: '2',
+      title: 'Уровень повышен',
+      message: 'Поздравляем! Вы достигли 5 уровня',
+      type: 'info',
+      time: '1 час назад',
+      read: false,
+    },
+    {
+      id: '3',
+      title: 'Новый друг',
+      message: 'Пользователь @GamerPro добавил вас в друзья',
+      type: 'info',
+      time: '3 часа назад',
+      read: true,
+    },
+  ])
 
   return (
     <>
@@ -76,7 +104,7 @@ export const Header = () => {
             <CreateButton onClick={() => console.log('create')}>
               <span>+</span> Свое Достижение
             </CreateButton>
-            <NotificationIcon>
+            <NotificationIcon onClick={() => setIsNotificationsOpen(true)}>
               🔔
             </NotificationIcon>
             <UserSection onClick={() => setShowProfileMenu(!showProfileMenu)}>
@@ -163,6 +191,19 @@ export const Header = () => {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         initialView={settingsInitialView}
+      />
+      <NotificationModal
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+        notifications={notifications}
+        onMarkAsRead={(id) => {
+          setNotifications((prev) =>
+            prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
+          )
+        }}
+        onDelete={(id) => {
+          setNotifications((prev) => prev.filter((notif) => notif.id !== id))
+        }}
       />
     </>
   )

@@ -17,6 +17,18 @@ export const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     background: linear-gradient(135deg, ${(props) => props.theme.colors.dark.bg} 0%, ${(props) => props.theme.colors.dark[800]} 50%, ${(props) => props.theme.colors.dark.bg} 100%);
     min-height: 100vh;
+    
+    /* Текстура листа тетради для MINIMAL темы */
+    ${(props) => props.theme.name === 'MINIMAL' && `
+      background: ${props.theme.colors.dark.bg};
+      background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+      background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px;
+      background-position: 0 0, 0 0, 0 0, 0 0;
+    `}
   }
 
   html,

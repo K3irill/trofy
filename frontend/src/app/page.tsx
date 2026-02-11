@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Profile } from '@/components/Profile'
 import { ShowcaseAside } from '@/components/ShowcaseAside'
 import { RecentTrophiesSection } from '@/components/RecentTrophiesSection'
@@ -13,9 +13,17 @@ import {
 } from './page.styled'
 import { mockUser } from './page.constants'
 import Container from '@/components/Container/Container'
+import { useNotificationContext } from '@/contexts/NotificationContext'
 
 export default function Home() {
   const [showcaseFilter, setShowcaseFilter] = useState<'best' | 'recent' | 'mine'>('best')
+
+
+  const { addToast } = useNotificationContext()
+  useEffect(() => {
+    addToast('Сообщение 2', 'success', 3000)
+
+  }, [])
 
   return (
     <Container>

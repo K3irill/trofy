@@ -16,7 +16,7 @@ import {
 } from './ThemeSelector.styled'
 
 // Классические темы
-const classicThemes: ThemeName[] = ['STOIC', 'BLACK_GLOSS', 'TWILIGHT']
+const classicThemes: ThemeName[] = ['STOIC', 'BLACK_GLOSS', 'TWILIGHT', 'MINIMAL']
 
 // Красочные темы (все остальные)
 const colorfulThemes: ThemeName[] = Object.keys(themes).filter(
