@@ -7,21 +7,39 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id               String   @id @default(uuid())
-  vk_id            String   @unique
-  username         String
-  xp               Int      @default(0)
-  level            Int      @default(1)
-  profile_theme    String   @default("default")
-  privacy_settings Json     @default("{\"show_achievements\": true, \"show_level\": true, \"show_profile\": true}")
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  id                        String   @id @default(uuid())
+  vk_id                     String?  @unique
+  username                  String   @unique
+  email                     String?  @unique
+  phone                     String?  @unique
+  password_hash             String?
+  xp                        Int      @default(0)
+  level                     Int      @default(1)
+  profile_theme_id          String?
+  privacy_settings          Json     @default("{\"show_achievements\": true, \"show_level\": true, \"show_profile\": true}")
+  bio                       String?
+  badges                    Json     @default("[]")
+  streak                    Int      @default(0)
+  uniqueness_score          Float?
+  growth_rate               Float?
+  fastest_achievement_days  Int?
+  fastest_achievement_title String?
+  created_at                DateTime @default(now())
+  updated_at                DateTime @updatedAt
 
+  profile_theme    ProfileTheme?     @relation(fields: [profile_theme_id], references: [id], onDelete: SetNull)
   userAchievements UserAchievement[]
   categories       Category[]
+  platformAccounts PlatformAccount[]
+  refreshTokens    RefreshToken[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([username])
 }
 
 model Achievement {
@@ -72,12 +90,47 @@ model UserAchievement {
 }
 
 model ProfileTheme {
-  id          String   @id @default(uuid())
-  name        String
-  preview_url String?
-  cost        Int      @default(0)
-  xp_required Int      @default(0)
-  created_at  DateTime @default(now())
+  id            String   @id @default(uuid())
+  name          String?
+  preview_url   String?
+  cost          Int      @default(0)
+  xp_required   Int      @default(0)
+  profile_color String? // blue, purple, green, orange, pink, dark, red, yellow
+  created_at    DateTime @default(now())
+
+  users User[]
+
+  @@index([profile_color])
+}
+
+model PlatformAccount {
+  id               String   @id @default(uuid())
+  user_id          String
+  platform         String // WEB, VK, TELEGRAM
+  platform_user_id String
+  linked_at        DateTime @default(now())
+  username         String?
+  avatar_url       String?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([platform, platform_user_id])
+  @@index([user_id])
+  @@index([platform, platform_user_id])
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  user_id    String
+  token      String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([token])
+  @@index([expires_at])
 }
 
 enum Rarity {

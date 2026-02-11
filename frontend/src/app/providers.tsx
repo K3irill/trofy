@@ -9,8 +9,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
       <ThemeProvider>
-        <AuthInitializer />
-        {children}
+        <AuthInitializer>
+          {children}
+        </AuthInitializer>
       </ThemeProvider>
     </Provider>
   )

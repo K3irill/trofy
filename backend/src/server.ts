@@ -1,13 +1,15 @@
 import { app } from './app'
-
-const PORT = process.env.PORT || 3333
+import { config } from './core/config'
+import { prisma } from './shared/database'
 
 const start = async () => {
   try {
+    // Проверяем подключение к БД
+    await prisma.$connect()
     console.log('☑️ Database connected ☑️')
 
-    app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT} ✅`)
+    app.listen(config.server.port, () => {
+      console.log(`✅ Server running on port ${config.server.port} ✅`)
     })
   } catch (error) {
     console.error('🛑☠️🛑 Failed to start server 🛑☠️🛑:', error)
@@ -16,10 +18,12 @@ const start = async () => {
 }
 
 process.on('SIGINT', async () => {
+  await prisma.$disconnect()
   process.exit(0)
 })
 
 process.on('SIGTERM', async () => {
+  await prisma.$disconnect()
   process.exit(0)
 })
 

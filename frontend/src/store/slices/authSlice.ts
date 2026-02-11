@@ -1,12 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { AuthState, User } from '@/types'
 import { saveTokens, clearTokens } from '@/lib/auth/tokenStorage'
-import { saveUser, clearUser } from '@/lib/auth/userStorage'
 import { authApi } from '../api/authApi'
 
-// Инициализация состояния - на сервере всегда пустое
+// Инициализация состояния - читаем пользователя из localStorage на клиенте
 const initialState: AuthState = {
-  user: null,
+  user:
+    typeof window !== 'undefined'
+      ? JSON.parse(localStorage.getItem('user') || 'null')
+      : null,
   isAuthenticated: false,
   loading: false,
   error: null,
@@ -24,15 +26,22 @@ const authSlice = createSlice({
       state.isAuthenticated = true
       state.loading = false
       state.error = null
-      saveUser(action.payload)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(action.payload))
+      }
     },
-    logout: (state) => {
-      state.user = null
-      state.isAuthenticated = false
-      state.loading = false
-      state.error = null
+    logout: () => {
       clearTokens()
-      clearUser()
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user')
+      }
+      // Возвращаем начальное состояние
+      return {
+        user: null,
+        isAuthenticated: false,
+        loading: false,
+        error: null,
+      }
     },
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload
@@ -42,6 +51,9 @@ const authSlice = createSlice({
       if (state.user) {
         state.user.xp = action.payload
         state.user.level = Math.floor(Math.sqrt(action.payload / 100)) + 1
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(state.user))
+        }
       }
     },
     clearError: (state) => {
@@ -61,7 +73,9 @@ const authSlice = createSlice({
         state.loading = false
         state.error = null
         saveTokens(action.payload.tokens)
-        saveUser(action.payload.user)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(action.payload.user))
+        }
       })
       .addMatcher(authApi.endpoints.login.matchRejected, (state, action) => {
         state.loading = false
@@ -81,7 +95,9 @@ const authSlice = createSlice({
         state.loading = false
         state.error = null
         saveTokens(action.payload.tokens)
-        saveUser(action.payload.user)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(action.payload.user))
+        }
       })
       .addMatcher(authApi.endpoints.register.matchRejected, (state, action) => {
         state.loading = false
@@ -91,12 +107,11 @@ const authSlice = createSlice({
 
     // Logout
     builder.addMatcher(authApi.endpoints.logout.matchFulfilled, (state) => {
-      state.user = null
-      state.isAuthenticated = false
-      state.loading = false
-      state.error = null
       clearTokens()
-      clearUser()
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('user')
+      }
+      return initialState
     })
 
     // GetMe
@@ -109,7 +124,9 @@ const authSlice = createSlice({
         state.isAuthenticated = true
         state.loading = false
         state.error = null
-        saveUser(action.payload)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(action.payload))
+        }
       })
       .addMatcher(authApi.endpoints.getMe.matchRejected, (state) => {
         state.loading = false
@@ -130,6 +147,9 @@ const authSlice = createSlice({
       authApi.endpoints.linkPlatform.matchFulfilled,
       (state, action) => {
         state.user = action.payload
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('user', JSON.stringify(action.payload))
+        }
       }
     )
   },

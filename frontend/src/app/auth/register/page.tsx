@@ -25,8 +25,12 @@ export default function RegisterPage() {
     username: string
   }) => {
     try {
-      await register(registerData).unwrap()
-      router.push('/')
+      const result = await register(registerData).unwrap()
+      // Состояние обновляется через authSlice.matchFulfilled
+      // Делаем редирект сразу после успешной регистрации
+      if (result.user) {
+        router.replace('/')
+      }
     } catch (err) {
       // Ошибка обрабатывается в компоненте формы
     }
