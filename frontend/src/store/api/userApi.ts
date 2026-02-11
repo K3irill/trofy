@@ -32,6 +32,22 @@ export interface UserStats {
   level: number
 }
 
+export interface RecentAchievement {
+  id: string
+  title: string
+  description: string
+  icon_url: string | null
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  category: {
+    id: string
+    name: string
+    icon_url: string | null
+  }
+  xp_reward: number
+  unlocked_at: string
+  is_public: boolean
+}
+
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMe: builder.query<User, void>({
@@ -57,7 +73,20 @@ export const userApi = baseApi.injectEndpoints({
       query: () => '/users/me/stats',
       providesTags: ['User'],
     }),
+    getRecentAchievements: builder.query<RecentAchievement[], number | void>({
+      query: (limit = 6) => ({
+        url: '/users/me/achievements/recent',
+        params: { limit },
+      }),
+      providesTags: ['User', 'Achievement'],
+    }),
   }),
 })
 
-export const { useGetMeQuery, useUpdateMeMutation, useUpdateActivityMutation, useGetStatsQuery } = userApi
+export const {
+  useGetMeQuery,
+  useUpdateMeMutation,
+  useUpdateActivityMutation,
+  useGetStatsQuery,
+  useGetRecentAchievementsQuery,
+} = userApi

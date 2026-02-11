@@ -250,6 +250,46 @@ export class UserService {
 
     return formatUser(user, true)
   }
+
+  /**
+   * Получение последних разблокированных достижений пользователя
+   */
+  async getRecentAchievements(userId: string, limit: number = 5) {
+    const userAchievements = await prisma.userAchievement.findMany({
+      where: { user_id: userId },
+      include: {
+        achievement: {
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                icon_url: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { unlocked_at: 'desc' },
+      take: limit,
+    })
+
+    return userAchievements.map((ua) => ({
+      id: ua.achievement.id,
+      title: ua.achievement.title,
+      description: ua.achievement.description,
+      icon_url: ua.achievement.icon_url,
+      rarity: ua.achievement.rarity.toLowerCase() as 'common' | 'rare' | 'epic' | 'legendary',
+      category: {
+        id: ua.achievement.category.id,
+        name: ua.achievement.category.name,
+        icon_url: ua.achievement.category.icon_url,
+      },
+      xp_reward: ua.achievement.xp_reward,
+      unlocked_at: ua.unlocked_at.toISOString(),
+      is_public: ua.is_public,
+    }))
+  }
 }
 
 export const userService = new UserService()

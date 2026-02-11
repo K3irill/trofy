@@ -105,7 +105,14 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
     right: 0;
     height: 3px;
     background: ${(props) => {
-    return props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    const rarityMap: Record<string, keyof typeof props.theme.colors.rarity> = {
+      common: 'base',
+      rare: 'rare',
+      epic: 'epic',
+      legendary: 'legendary',
+    }
+    const mappedRarity = rarityMap[props.rarity] || 'base'
+    return props.theme.colors.rarity[mappedRarity] || props.theme.colors.light[300]
   }};
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -119,7 +126,14 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
     box-shadow: 
       ${(props) => props.theme.shadows.glass.medium},
       0 0 25px ${(props) => {
-    const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    const rarityMap: Record<string, keyof typeof props.theme.colors.rarity> = {
+      common: 'base',
+      rare: 'rare',
+      epic: 'epic',
+      legendary: 'legendary',
+    }
+    const mappedRarity = rarityMap[props.rarity] || 'base'
+    const rarityColor = props.theme.colors.rarity[mappedRarity] || props.theme.colors.light[300]
     return `${rarityColor}33`
   }};
   }
@@ -134,7 +148,14 @@ export const TrophyIcon = styled.div <{ rarity: string }>`
   font-size: 3rem;
   align-self: flex-start;
   filter: drop-shadow(0 0 15px ${(props) => {
-    const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    const rarityMap: Record<string, keyof typeof props.theme.colors.rarity> = {
+      common: 'base',
+      rare: 'rare',
+      epic: 'epic',
+      legendary: 'legendary',
+    }
+    const mappedRarity = rarityMap[props.rarity] || 'base'
+    const rarityColor = props.theme.colors.rarity[mappedRarity] || props.theme.colors.light[300]
     return `${rarityColor}66`
   }});
 
@@ -169,13 +190,27 @@ export const TrophyRarity = styled.div <{ rarity: string }>`
   font-size: 0.6875rem;
   font-weight: 700;
   color: ${(props) => {
-    return props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    const rarityMap: Record<string, keyof typeof props.theme.colors.rarity> = {
+      common: 'base',
+      rare: 'rare',
+      epic: 'epic',
+      legendary: 'legendary',
+    }
+    const mappedRarity = rarityMap[props.rarity] || 'base'
+    return props.theme.colors.rarity[mappedRarity] || props.theme.colors.light[300]
   }};
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 0.25rem 0.75rem;
   background: ${(props) => {
-    const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]
+    const rarityMap: Record<string, keyof typeof props.theme.colors.rarity> = {
+      common: 'base',
+      rare: 'rare',
+      epic: 'epic',
+      legendary: 'legendary',
+    }
+    const mappedRarity = rarityMap[props.rarity] || 'base'
+    const rarityColor = props.theme.colors.rarity[mappedRarity] || props.theme.colors.light[300]
     return `${rarityColor}1a`
   }};
   border-radius: 6px;

@@ -90,6 +90,23 @@ export class UserController {
       next(error)
     }
   }
+
+  /**
+   * GET /api/users/me/achievements/recent - Получение последних достижений пользователя
+   */
+  async getRecentAchievements(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5
+      const achievements = await userService.getRecentAchievements(req.user.userId, limit)
+      res.json(achievements)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 export const userController = new UserController()
