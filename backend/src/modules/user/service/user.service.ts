@@ -5,6 +5,63 @@ import { formatUser } from '../../auth/service/auth.service'
 
 export class UserService {
   /**
+   * Обновление серии подряд (streak)
+   * Засчитывается если пользователь зашел сегодня
+   * Если не зашел вчера - обнуляется
+   */
+  async updateStreak(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        streak: true,
+        last_activity_date: true,
+      },
+    })
+
+    if (!user) {
+      return
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    let newStreak = user.streak || 0
+
+    if (user.last_activity_date) {
+      const lastActivity = new Date(user.last_activity_date)
+      lastActivity.setHours(0, 0, 0, 0)
+
+      if (lastActivity.getTime() === today.getTime()) {
+        // Уже заходил сегодня - не обновляем streak
+        return
+      } else if (lastActivity.getTime() === yesterday.getTime()) {
+        // Заходил вчера - увеличиваем streak
+        newStreak = (user.streak || 0) + 1
+      } else {
+        // Не заходил вчера - обнуляем streak
+        newStreak = 1 // Начинаем новую серию с сегодняшнего дня
+      }
+    } else {
+      // Первый вход - начинаем серию
+      newStreak = 1
+    }
+
+    // Обновляем streak и last_activity_date
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        streak: newStreak,
+        last_activity_date: today,
+      },
+    })
+
+    return newStreak
+  }
+
+  /**
    * Обновление данных пользователя
    */
   async updateUser(userId: string, dto: UpdateUserDto) {

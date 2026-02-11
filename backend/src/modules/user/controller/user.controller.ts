@@ -52,6 +52,9 @@ export class UserController {
         throw ApiError.unauthorized()
       }
 
+      // Обновляем серию подряд при каждом запросе
+      await userService.updateStreak(req.user.userId)
+
       const user = await userService.getUserById(req.user.userId)
       res.json(user)
     } catch (error) {

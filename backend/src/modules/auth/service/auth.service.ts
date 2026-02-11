@@ -293,6 +293,10 @@ export class AuthService {
       throw ApiError.unauthorized('Invalid credentials')
     }
 
+    // Обновляем серию подряд при входе
+    const { userService } = await import('../../user/service/user.service')
+    await userService.updateStreak(user.id)
+
     // Генерируем токены
     const tokens = generateTokens(user.id)
 
@@ -308,8 +312,17 @@ export class AuthService {
       },
     })
 
+    // Получаем обновленного пользователя с актуальным streak
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        profile_theme: true,
+        platformAccounts: true,
+      },
+    })
+
     return {
-      user: formatUser(user, true),
+      user: formatUser(updatedUser!, true),
       tokens: {
         access_token: tokens.accessToken,
         refresh_token: tokens.refreshToken,
