@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { app } from './app'
 import { config } from './core/config'
 import { prisma } from './shared/database'

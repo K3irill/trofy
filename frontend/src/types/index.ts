@@ -24,6 +24,7 @@ export interface User {
   updated_at: string
   bio?: string
   badges?: string[]
+  pinned_achievements?: string[]
   streak?: number
   uniqueness_score?: number
   growth_rate?: number

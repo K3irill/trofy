@@ -3,6 +3,11 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { Rarity } from '@/types'
 import { ProfileProps } from './types'
 import { SectionMarker } from '@/components/SectionMarker'
+import { useUpdateMeMutation, useGetStatsQuery } from '@/store/api/userApi'
+import { useAppSelector } from '@/store/hooks'
+import { useGetAchievementByIdQuery } from '@/store/api/achievementsApi'
+import { PinnedAchievementsModal } from './PinnedAchievementsModal'
+import { IoAddCircleOutline } from 'react-icons/io5'
 import {
   ProfileContainer,
   Avatar,
@@ -25,6 +30,9 @@ import {
   TrophyCard,
   TrophyIcon,
   TrophyTitle,
+  AddTrophyButton,
+  AddTrophyIcon,
+  AddTrophyText,
   CurrentGoalsSection,
   GoalItem,
   GoalHeader,
@@ -50,7 +58,6 @@ import {
   ProfileTitleWrap,
   ProfileOverlay,
   OverlayTitle,
-  OverlayButton,
 } from './styled'
 import { Button } from '@/components/ui/Button'
 
@@ -69,18 +76,26 @@ interface GoalData {
 }
 
 export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileProps) => {
-  const [status, setStatus] = useState(user.bio || '')
+  const { user: currentUser } = useAppSelector((state) => state.auth)
+  const [updateMe] = useUpdateMeMutation()
+  const { data: stats } = useGetStatsQuery(undefined, {
+    skip: !isAuthenticated,
+  })
+
+  const [status, setStatus] = useState('')
   const [isEditingStatus, setIsEditingStatus] = useState(false)
   const statusInputRef = useRef<HTMLTextAreaElement>(null)
 
+  // Используем status только при редактировании, иначе user.bio
+  const displayStatus = isEditingStatus ? status : (user.bio || '')
+
   // Автоматическое изменение высоты textarea
   useEffect(() => {
-    if (statusInputRef.current) {
+    if (statusInputRef.current && isEditingStatus) {
       statusInputRef.current.style.height = 'auto'
       statusInputRef.current.style.height = `${statusInputRef.current.scrollHeight}px`
     }
   }, [status, isEditingStatus])
-  const [expandedTrophy, setExpandedTrophy] = useState<string | null>(null)
   const [showParticles, setShowParticles] = useState(false)
 
   const particlePositions = useMemo(() =>
@@ -95,11 +110,82 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
   const currentLevelXP = Math.pow(user.level - 1, 2) * 100
   const progress = Math.max(0, Math.min(100, ((user.xp - currentLevelXP) / (xpToNextLevel - currentLevelXP)) * 100))
 
-  const rareTrophies: TrophyData[] = [
-    { id: '1', title: 'Легенда', icon: '👑', rarity: Rarity.LEGENDARY, isNew: true },
-    { id: '2', title: 'Исследователь', icon: '🔮', rarity: Rarity.EPIC },
-    { id: '3', title: 'Мастер', icon: '⚡', rarity: Rarity.RARE },
-  ]
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null)
+
+  // Получаем данные закрепленных достижений
+  const pinnedIds = user.pinned_achievements || []
+  const achievement1 = useGetAchievementByIdQuery(pinnedIds[0] || '', { skip: !pinnedIds[0] })
+  const achievement2 = useGetAchievementByIdQuery(pinnedIds[1] || '', { skip: !pinnedIds[1] })
+  const achievement3 = useGetAchievementByIdQuery(pinnedIds[2] || '', { skip: !pinnedIds[2] })
+
+  const pinnedAchievements = useMemo(() => {
+    const achievements: (TrophyData | null)[] = []
+
+    // Добавляем достижения по порядку
+    const achievementData = [achievement1.data, achievement2.data, achievement3.data]
+
+    for (let i = 0; i < 3; i++) {
+      if (achievementData[i]) {
+        achievements.push({
+          id: achievementData[i]!.id,
+          title: achievementData[i]!.title,
+          icon: achievementData[i]!.icon_url || '🏆',
+          rarity: achievementData[i]!.rarity.toUpperCase() as Rarity,
+        })
+      } else {
+        achievements.push(null)
+      }
+    }
+
+    return achievements
+  }, [achievement1.data, achievement2.data, achievement3.data])
+
+  const handleAddAchievement = (slotIndex: number) => {
+    setSelectedSlotIndex(slotIndex)
+    setModalOpen(true)
+  }
+
+  const handleSelectAchievement = async (achievementId: string) => {
+    if (selectedSlotIndex === null) return
+
+    const currentPinned = [...(user.pinned_achievements || [])]
+
+    // Создаем массив из 3 элементов, заполняя пустые слоты
+    const newPinned: string[] = []
+    for (let i = 0; i < 3; i++) {
+      if (i === selectedSlotIndex) {
+        // В выбранный слот ставим новое достижение
+        newPinned[i] = achievementId
+      } else if (currentPinned[i]) {
+        // Сохраняем существующие достижения
+        newPinned[i] = currentPinned[i]
+      }
+    }
+
+    // Убираем undefined и ограничиваем до 3
+    const filteredPinned = newPinned.filter((id): id is string => !!id).slice(0, 3)
+
+    try {
+      await updateMe({ pinned_achievements: filteredPinned }).unwrap()
+    } catch (error) {
+      console.error('Failed to update pinned achievements:', error)
+    }
+
+    setModalOpen(false)
+    setSelectedSlotIndex(null)
+  }
+
+  const handleRemoveAchievement = async (slotIndex: number) => {
+    const currentPinned = [...(user.pinned_achievements || [])]
+    currentPinned.splice(slotIndex, 1)
+
+    try {
+      await updateMe({ pinned_achievements: currentPinned }).unwrap()
+    } catch (error) {
+      console.error('Failed to remove pinned achievement:', error)
+    }
+  }
 
   const currentGoals: GoalData[] = [
     { title: 'Прочитано 23/50 книг', current: 23, total: 50 },
@@ -153,7 +239,7 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
 
 
           <div style={{ position: 'relative', display: 'inline-block' }}>
-            <Avatar>{user.avatar ? <img src={user.avatar} alt="" /> : '👤'}</Avatar>
+            <Avatar>👤</Avatar>
           </div>
 
           <Username>{user.username}</Username>
@@ -192,14 +278,35 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
                         statusInputRef.current.style.height = `${statusInputRef.current.scrollHeight}px`
                       }
                     }}
-                    onBlur={() => setIsEditingStatus(false)}
-                    onKeyDown={(e) => {
+                    onBlur={async () => {
+                      setIsEditingStatus(false)
+                      if (isAuthenticated && currentUser && status !== (user.bio || '')) {
+                        try {
+                          await updateMe({ bio: status }).unwrap()
+                        } catch (error) {
+                          console.error('Failed to update bio:', error)
+                        }
+                      }
+                      setStatus('')
+                    }}
+                    onKeyDown={async (e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault()
                         setIsEditingStatus(false)
+                        if (isAuthenticated && currentUser && status !== (user.bio || '')) {
+                          try {
+                            await updateMe({ bio: status }).unwrap()
+                          } catch (error) {
+                            console.error('Failed to update bio:', error)
+                          }
+                        }
+                        setStatus('')
                       }
                     }}
-                    maxLength={350}
+                    onFocus={() => {
+                      setStatus(user.bio || '')
+                    }}
+                    maxLength={500}
                     autoFocus
                   />
                 </motion.div>
@@ -209,9 +316,12 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onClick={() => setIsEditingStatus(true)}
+                  onClick={() => {
+                    setIsEditingStatus(true)
+                    setStatus(user.bio || '')
+                  }}
                   style={{
-                    color: status ? '#f3f4f6' : 'rgba(156, 163, 175, 0.5)',
+                    color: displayStatus ? '#f3f4f6' : 'rgba(156, 163, 175, 0.5)',
                     fontSize: '0.875rem',
                     cursor: 'pointer',
                     padding: '0.5rem 1rem',
@@ -220,7 +330,7 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
                     border: '1px solid rgba(255, 255, 255, 0.05)',
                   }}
                 >
-                  {status || 'Напишите свой статус...'}
+                  {displayStatus || 'Напишите свой статус...'}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -298,7 +408,9 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
             </StreakFlame>
             <div>
               <StreakText>Серия подряд</StreakText>
-              <StreakDays>{isAuthenticated ? (user.streak || 7) : '?'}</StreakDays>
+              <StreakDays>
+                {isAuthenticated && stats ? stats.streak : isAuthenticated ? (user.streak || 0) : '?'}
+              </StreakDays>
             </div>
           </StreakContainer>
 
@@ -350,36 +462,57 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
 
 
 
-      {isAuthenticated && <RareTrophiesSection>
-        <SectionTitle>🏆 Редкие трофеи</SectionTitle>
-        {isAuthenticated ? (
+      {isAuthenticated && (
+        <RareTrophiesSection>
+          <SectionTitle>🏆 Закрепленные достижения</SectionTitle>
           <RareTrophiesGrid>
-            {rareTrophies.map((trophy, index) => (
-              <TrophyCard
-                key={trophy.id}
-                isNew={trophy.isNew || false}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                whileHover={{ scale: 1.05, rotateY: 15 }}
-                onClick={() => setExpandedTrophy(expandedTrophy === trophy.id ? null : trophy.id)}
-                transition={{ delay: 0.9 + index * 0.1 }}
-              >
-                <TrophyIcon rarity={trophy.rarity}>{trophy.icon}</TrophyIcon>
-                <TrophyTitle>{trophy.title}</TrophyTitle>
-              </TrophyCard>
+            {pinnedAchievements.map((trophy, index) => (
+              <div key={index}>
+                {trophy ? (
+                  <TrophyCard
+                    isNew={false}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05, rotateY: 15 }}
+                    onClick={() => handleRemoveAchievement(index)}
+                    transition={{ delay: 0.9 + index * 0.1 }}
+                    title="Нажмите, чтобы открепить"
+                  >
+                    <TrophyIcon rarity={trophy.rarity.toLowerCase()}>
+                      {trophy.icon}
+                    </TrophyIcon>
+                    <TrophyTitle>{trophy.title}</TrophyTitle>
+                  </TrophyCard>
+                ) : (
+                  <AddTrophyButton
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleAddAchievement(index)}
+                    transition={{ delay: 0.9 + index * 0.1 }}
+                  >
+                    <AddTrophyIcon>
+                      <IoAddCircleOutline />
+                    </AddTrophyIcon>
+                    <AddTrophyText>Добавить</AddTrophyText>
+                  </AddTrophyButton>
+                )}
+              </div>
             ))}
           </RareTrophiesGrid>
-        ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '2rem',
-            color: 'rgba(255, 255, 255, 0.5)',
-            fontSize: '1.5rem'
-          }}>
-            ?
-          </div>
-        )}
-      </RareTrophiesSection>}
+        </RareTrophiesSection>
+      )}
+
+      <PinnedAchievementsModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false)
+          setSelectedSlotIndex(null)
+        }}
+        onSelect={handleSelectAchievement}
+        currentPinned={user.pinned_achievements || []}
+      />
 
 
       <StatsSection>
@@ -389,7 +522,7 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.8 }}>
-              {isAuthenticated ? '42' : '?'}
+              {isAuthenticated && stats ? stats.total_achievements : '?'}
             </StatValue>
             <StatLabel>Всего</StatLabel>
           </StatItem>
@@ -397,7 +530,7 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.8 }}>
-              {isAuthenticated ? '5' : '?'}
+              {isAuthenticated && stats ? stats.achievements_by_rarity.rare : '?'}
             </StatValue>
             <StatLabel>Редких</StatLabel>
           </StatItem>
@@ -405,7 +538,7 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.8 }}>
-              {isAuthenticated ? '1' : '?'}
+              {isAuthenticated && stats ? stats.achievements_by_rarity.epic : '?'}
             </StatValue>
             <StatLabel>Эпических</StatLabel>
           </StatItem>
@@ -413,7 +546,7 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.8 }}>
-              {isAuthenticated ? `${user.uniqueness_score || 87}%` : '?'}
+              {isAuthenticated && stats ? `${stats.uniqueness_score}%` : '?'}
             </StatValue>
             <StatLabel>Уникальность</StatLabel>
           </StatItem>
@@ -421,7 +554,7 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.8 }}>
-              {isAuthenticated ? `+${user.growth_rate || 12}` : '?'}
+              {isAuthenticated && stats ? `+${stats.growth_rate}` : '?'}
             </StatValue>
             <StatLabel>Темп роста</StatLabel>
           </StatItem>
@@ -429,7 +562,9 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
             <StatValue initial={{ scale: 0.5 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', delay: 0.8 }}>
-              {isAuthenticated ? `${user.fastest_achievement?.days || 3}д` : '?'}
+              {isAuthenticated && stats && stats.fastest_achievement
+                ? `${stats.fastest_achievement.days}д`
+                : '?'}
             </StatValue>
             <StatLabel>Рекорд</StatLabel>
           </StatItem>

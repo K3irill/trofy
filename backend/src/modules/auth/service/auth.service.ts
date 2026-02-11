@@ -30,6 +30,7 @@ interface UserResponse {
   updated_at: string
   bio?: string | null
   badges?: string[]
+  pinned_achievements?: string[]
   streak?: number
   uniqueness_score?: number | null
   growth_rate?: number | null
@@ -43,7 +44,7 @@ interface UserResponse {
 /**
  * Форматирует пользователя для ответа с учетом приватности
  */
-function formatUser(
+export function formatUser(
   user: any,
   isOwnProfile: boolean = false,
   viewerId?: string
@@ -77,6 +78,11 @@ function formatUser(
       updated_at: user.updated_at.toISOString(),
       bio: user.bio,
       badges: user.badges ? (Array.isArray(user.badges) ? user.badges : JSON.parse(user.badges)) : [],
+      pinned_achievements: user.pinned_achievements
+        ? (Array.isArray(user.pinned_achievements)
+            ? user.pinned_achievements
+            : JSON.parse(user.pinned_achievements))
+        : [],
       streak: user.streak,
       uniqueness_score: user.uniqueness_score,
       growth_rate: user.growth_rate,
@@ -137,6 +143,11 @@ function formatUser(
     bio: privacy.show_profile ? user.bio : null,
     badges: privacy.show_achievements && user.badges
       ? (Array.isArray(user.badges) ? user.badges : JSON.parse(user.badges))
+      : [],
+    pinned_achievements: privacy.show_achievements && user.pinned_achievements
+      ? (Array.isArray(user.pinned_achievements)
+          ? user.pinned_achievements
+          : JSON.parse(user.pinned_achievements))
       : [],
     streak: privacy.show_achievements ? user.streak : undefined,
     uniqueness_score: privacy.show_achievements ? user.uniqueness_score : null,

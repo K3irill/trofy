@@ -579,6 +579,65 @@ export const TrophyTitle = styled.div`
   }
 `
 
+export const AddTrophyButton = styled(motion.button)`
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
+  border-radius: 16px;
+  padding: 1rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2px dashed ${(props) => props.theme.colors.dark[600]};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  width: 100%;
+
+  &:hover {
+    border-color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => `${props.theme.colors.primary}1a`};
+    transform: translateY(-5px);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    min-height: 100px;
+  }
+`
+
+export const AddTrophyIcon = styled.div`
+  font-size: 2.5rem;
+  color: ${(props) => props.theme.colors.light[300]};
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  ${AddTrophyButton}:hover & {
+    color: ${(props) => props.theme.colors.primary};
+    transform: scale(1.1);
+  }
+`
+
+export const AddTrophyText = styled.div`
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-align: center;
+
+  ${AddTrophyButton}:hover & {
+    color: ${(props) => props.theme.colors.primary};
+  }
+`
+
 export const CurrentGoalsSection = styled.div`
   margin-bottom: 2rem;
   position: relative;

@@ -4,6 +4,8 @@ import helmet from 'helmet'
 import { config } from './core/config'
 import { errorHandler } from './core/middlewares/errorHandler'
 import authRoutes from './modules/auth/routes/auth.routes'
+import userRoutes from './modules/user/routes/user.routes'
+import achievementsRoutes from './modules/achievements/routes/achievements.routes'
 import { authController } from './modules/auth/controller/auth.controller'
 
 const app = express()
@@ -24,6 +26,8 @@ app.use(express.json())
 
 // API routes
 app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/achievements', achievementsRoutes)
 // Роут для получения других пользователей (публичный, но может использовать viewerId из токена)
 app.get('/api/users/:id', authController.getUserById.bind(authController))
 

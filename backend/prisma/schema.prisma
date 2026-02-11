@@ -11,25 +11,27 @@ datasource db {
 }
 
 model User {
-  id                        String   @id @default(uuid())
-  vk_id                     String?  @unique
-  username                  String   @unique
-  email                     String?  @unique
-  phone                     String?  @unique
+  id                        String    @id @default(uuid())
+  vk_id                     String?   @unique
+  username                  String    @unique
+  email                     String?   @unique
+  phone                     String?   @unique
   password_hash             String?
-  xp                        Int      @default(0)
-  level                     Int      @default(1)
+  xp                        Int       @default(0)
+  level                     Int       @default(1)
   profile_theme_id          String?
-  privacy_settings          Json     @default("{\"show_achievements\": true, \"show_level\": true, \"show_profile\": true}")
+  privacy_settings          Json      @default("{\"show_achievements\": true, \"show_level\": true, \"show_profile\": true}")
   bio                       String?
-  badges                    Json     @default("[]")
-  streak                    Int      @default(0)
+  badges                    Json      @default("[]")
+  pinned_achievements       Json      @default("[]")
+  streak                    Int       @default(0)
+  last_activity_date        DateTime?
   uniqueness_score          Float?
   growth_rate               Float?
   fastest_achievement_days  Int?
   fastest_achievement_title String?
-  created_at                DateTime @default(now())
-  updated_at                DateTime @updatedAt
+  created_at                DateTime  @default(now())
+  updated_at                DateTime  @updatedAt
 
   profile_theme    ProfileTheme?     @relation(fields: [profile_theme_id], references: [id], onDelete: SetNull)
   userAchievements UserAchievement[]
