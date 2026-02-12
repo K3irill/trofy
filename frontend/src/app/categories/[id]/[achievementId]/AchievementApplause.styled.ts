@@ -35,8 +35,9 @@ export const ApplauseButton = styled.button<{ liked: boolean }>`
     cursor: not-allowed;
   }
 
-  span {
+  svg {
     font-size: 1.5rem;
+    flex-shrink: 0;
   }
 `
 
@@ -52,4 +53,12 @@ export const ApplauseDisabled = styled.div`
   color: #9ca3af;
   font-size: 0.875rem;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
 `

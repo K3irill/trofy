@@ -7,6 +7,7 @@ import {
   Min,
   Max,
   IsNotEmpty,
+  IsISO8601,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 
@@ -119,6 +120,23 @@ export class CompleteAchievementDto {
   impressions?: string
 }
 
+export class UpdateAchievementDto {
+  @IsString()
+  @IsOptional()
+  completion_date?: string
+
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  @IsOptional()
+  @Type(() => Number)
+  difficulty?: number
+
+  @IsString()
+  @IsOptional()
+  impressions?: string
+}
+
 export class UpdateAchievementSettingsDto {
   @IsBoolean()
   @IsOptional()
@@ -154,4 +172,12 @@ export class CreateCommentDto {
   @IsString()
   @IsOptional()
   parent_comment_id?: string
+}
+
+export class UpdateProgressDto {
+  @IsInt()
+  @Min(0)
+  @IsNotEmpty()
+  @Type(() => Number)
+  progress: number
 }

@@ -76,8 +76,9 @@ export const ActionButton = styled.button<{ variant?: 'primary' | 'secondary' | 
     }
   }}
 
-  span {
-    font-size: 1.125rem;
+  svg {
+    font-size: 1.25rem;
+    flex-shrink: 0;
   }
 
   @media (max-width: 768px) {

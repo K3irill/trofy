@@ -97,6 +97,7 @@ model UserAchievement {
   can_like        Boolean   @default(true)
   can_comment     Boolean   @default(true)
   is_hidden       Boolean   @default(false)
+  progress        Int       @default(0) // Прогресс выполнения (0-100 или больше)
 
   user        User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
   achievement Achievement @relation(fields: [achievement_id], references: [id], onDelete: Cascade)

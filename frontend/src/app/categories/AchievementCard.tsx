@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import styled, { DefaultTheme } from 'styled-components'
+import { IoTimeOutline, IoCheckmarkCircle } from 'react-icons/io5'
 import { Achievement } from './api'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 const getRarityColor = (theme: DefaultTheme, rarity?: string) => {
   if (!rarity) return theme.colors.dark[600]
@@ -84,27 +86,92 @@ const AchievementCardContainer = styled(motion.div) <{ unlocked: boolean; rarity
   }
 `
 
-const AchievementIcon = styled.div<{ unlocked: boolean }>`
+const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   width: 80px;
   height: 80px;
   border-radius: 16px;
-  background: linear-gradient(
-    135deg,
-    ${(props) => `${props.theme.colors.primary}26`} 0%,
-    ${(props) => `${props.theme.colors.secondary}1a`} 100%
-  );
+  background: ${(props) => {
+    if (props.$status === 'completed') return `linear-gradient(135deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
+    if (props.$status === 'in_progress') return `linear-gradient(135deg, #ffa50033 0%, #ff8c001a 100%)`
+    if (props.$status === 'unlocked') return `linear-gradient(135deg, ${props.theme.colors.primary}26 0%, ${props.theme.colors.secondary}1a 100%)`
+    return `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`
+  }};
+  border: 2px solid ${(props) => {
+    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'in_progress') return `#ffa50080`
+    if (props.$status === 'unlocked') return `${props.theme.colors.primary}80`
+    return `${props.theme.colors.dark[600]}80`
+  }};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2.5rem;
-  margin-bottom: 1rem;
-  border: 2px solid ${(props) => `${props.theme.colors.primary}4d`};
-  box-shadow: ${(props) =>
-    props.unlocked ? props.theme.shadows.glow.primary : 'none'};
+  position: relative;
   transition: all 0.3s ease;
-  filter: ${(props) => (props.unlocked ? 'none' : 'grayscale(0.5)')};
+  filter: ${(props) => (props.$status === 'locked' ? 'grayscale(0.6) brightness(0.7)' : 'none')};
   cursor: pointer;
   transform-style: preserve-3d;
+  box-shadow: ${(props) => (props.$status !== 'locked' ? props.theme.shadows.glow.primary : 'none')};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+`
+
+const StatusBadge = styled.div<{ $status: 'completed' | 'in_progress' }>`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border: 2px solid ${(props) => props.theme.colors.dark.bg};
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
+  transform: translateZ(30px);
+
+  ${(props) =>
+    props.$status === 'completed' &&
+    `
+    background: linear-gradient(135deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%);
+    color: ${props.theme.colors.dark.bg};
+  `}
+
+  ${(props) =>
+    props.$status === 'in_progress' &&
+    `
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+    color: ${props.theme.colors.dark.bg};
+  `}
+
+  @media (max-width: 768px) {
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    top: -6px;
+    right: -6px;
+  }
+`
+
+const AchievementStatus = styled.span<{ $status: AchievementStatus }>`
+  font-size: 0.75rem;
+  color: ${(props) => {
+    if (props.$status === 'completed') return props.theme.colors.success
+    if (props.$status === 'in_progress') return '#ffa500'
+    if (props.$status === 'unlocked') return props.theme.colors.primary
+    return props.theme.colors.light[300]
+  }};
+  font-weight: 500;
+
+  @media (max-width: 768px) {
+    font-size: 0.6875rem;
+  }
 `
 
 const AchievementName = styled.h3`
@@ -195,6 +262,17 @@ interface AchievementCardProps {
 export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) => {
   const [iconTransform, setIconTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
 
+  // Определяем статус достижения
+  const isCompleted = !!achievement.completion_date
+  const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
+  const status: AchievementStatus = isCompleted
+    ? 'completed'
+    : isInProgress
+      ? 'in_progress'
+      : achievement.unlocked
+        ? 'unlocked'
+        : 'locked'
+
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
@@ -242,14 +320,14 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
 
   return (
     <AchievementCardContainer
-      unlocked={achievement.unlocked}
+      $status={status}
       rarity={achievement.rarity}
       onClick={onClick}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
       <AchievementIcon
-        unlocked={achievement.unlocked}
+        $status={status}
         onMouseMove={handleIconMouseMove}
         onMouseLeave={handleIconMouseLeave}
         onTouchMove={handleIconTouchMove}
@@ -259,33 +337,35 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
           transformStyle: 'preserve-3d',
         }}
       >
-        {(() => {
-          const iconUrl = achievement.icon
-          if (!iconUrl) return '🏆'
-          if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
-            return (
-              <img
-                src={iconUrl}
-                alt=""
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                }}
-              />
-            )
-          }
-          return iconUrl
-        })()}
+        {renderIcon(achievement.icon, 'trophy')}
+        {isCompleted && (
+          <StatusBadge $status="completed">
+            <IoCheckmarkCircle />
+          </StatusBadge>
+        )}
+        {isInProgress && (
+          <StatusBadge $status="in_progress">
+            <IoTimeOutline />
+          </StatusBadge>
+        )}
       </AchievementIcon>
       <AchievementName>{achievement.name}</AchievementName>
       {achievement.description && (
         <AchievementDescription>{achievement.description}</AchievementDescription>
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%', alignItems: 'center' }}>
         <AchievementCategory>
           <span>{achievement.categoryName}</span>
         </AchievementCategory>
+        <AchievementStatus $status={status}>
+          {isCompleted
+            ? 'Завершено'
+            : isInProgress
+              ? `В работе ${achievement.progress}%`
+              : achievement.unlocked
+                ? 'Открыто'
+                : 'Не открыто'}
+        </AchievementStatus>
         <RarityBadge rarity={achievement.rarity}>
           {getRarityLabel(achievement.rarity)}
         </RarityBadge>

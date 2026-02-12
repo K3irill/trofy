@@ -2,6 +2,8 @@
 
 import { AchievementDetail } from './types'
 import { useToggleLikeMutation } from '@/store/api/achievementDetailApi'
+import { useToast } from '@/hooks/useToast'
+import { IoHandRight, IoHandRightOutline } from 'react-icons/io5'
 import {
   ApplauseContainer,
   ApplauseButton,
@@ -14,10 +16,12 @@ interface AchievementApplauseProps {
   isOwner: boolean
   currentUserId?: string
   userAchievementId?: string
+  achievementId?: string
 }
 
-export const AchievementApplause = ({ achievement, isOwner, currentUserId, userAchievementId }: AchievementApplauseProps) => {
+export const AchievementApplause = ({ achievement, isOwner, currentUserId, userAchievementId, achievementId }: AchievementApplauseProps) => {
   const [toggleLike, { isLoading: isToggling }] = useToggleLikeMutation()
+  const { showToast, ToastComponent } = useToast()
 
   const likesCount = achievement.likesCount || 0
   const isLiked = achievement.isLiked || false
@@ -30,19 +34,21 @@ export const AchievementApplause = ({ achievement, isOwner, currentUserId, userA
     return (
       <ApplauseContainer>
         <ApplauseDisabled>
-          👏 Аплодисменты отключены владельцем
+          <IoHandRightOutline style={{ marginRight: '0.5rem' }} />
+          Аплодисменты отключены владельцем
         </ApplauseDisabled>
       </ApplauseContainer>
     )
   }
 
   const handleToggleLike = async () => {
-    if (isToggling || !userAchievementId) return
+    if (isToggling || !userAchievementId || !achievementId) return
 
     try {
-      await toggleLike(userAchievementId).unwrap()
+      await toggleLike({ userAchievementId, achievementId }).unwrap()
+      showToast(isLiked ? 'Аплодисменты убраны' : 'Аплодисменты добавлены', 'success')
     } catch (error) {
-      alert('Ошибка при обновлении лайка')
+      showToast('Ошибка при обновлении лайка', 'error')
     }
   }
 
@@ -53,10 +59,10 @@ export const AchievementApplause = ({ achievement, isOwner, currentUserId, userA
         liked={isLiked}
         disabled={isToggling}
       >
-        <span>{isLiked ? '👏' : '👋'}</span>
+        {isLiked ? <IoHandRight /> : <IoHandRightOutline />}
         <ApplauseCount>{likesCount}</ApplauseCount>
       </ApplauseButton>
-
+      <ToastComponent />
     </ApplauseContainer>
   )
 }

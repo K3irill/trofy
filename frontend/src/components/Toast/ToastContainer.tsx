@@ -2,7 +2,8 @@
 
 import { AnimatePresence } from 'framer-motion'
 import { useNotificationContext } from '@/contexts/NotificationContext'
-import { ToastComponent } from './Toast'
+import { Toast } from './Toast'
+
 import { ToastListContainer } from './ToastContainer.styled'
 
 export const ToastContainer = () => {
@@ -12,7 +13,13 @@ export const ToastContainer = () => {
     <ToastListContainer>
       <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
-          <ToastComponent key={toast.id} toast={toast} onClose={removeToast} />
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            isOpen={true}
+            onClose={() => removeToast(toast.id)}
+          />
         ))}
       </AnimatePresence>
     </ToastListContainer>

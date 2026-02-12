@@ -15,6 +15,7 @@ import {
 import { ActionButton } from './AchievementActions.styled'
 import { isImageUrl } from '@/lib/utils/iconUtils'
 import Image from 'next/image'
+import { IoShareSocial } from 'react-icons/io5'
 
 interface AchievementPreviewModalProps {
   isOpen: boolean
@@ -170,7 +171,7 @@ export const AchievementPreviewModal = ({
               <ModalTitle>{name}</ModalTitle>
               <ModalDescription>{description}</ModalDescription>
               <ActionButton onClick={() => console.log()} variant="primary">
-                <span>🔗</span>
+                <IoShareSocial />
                 Поделиться
               </ActionButton>
             </ModalContent>

@@ -28,6 +28,7 @@ interface TrophyData {
   icon: string
   rarity: string
   categoryId: string
+  progress?: number
 }
 
 interface PriorityAchievementsProps {
@@ -69,6 +70,7 @@ export function PriorityAchievements({
                   onClick={() => handleAchievementClick(achievement)}
                   style={{ cursor: 'pointer', position: 'relative' }}
                   title="Нажмите, чтобы открыть детали достижения"
+                  $isComplete={(achievement.progress || 0) >= 100}
                 >
                   <RemoveButton
                     onClick={(e) => handleRemoveClick(e, index)}
@@ -85,13 +87,16 @@ export function PriorityAchievements({
                     <GoalContent>
                       <GoalHeader style={{ marginBottom: 0 }}>
                         <GoalTitle>{achievement.title}</GoalTitle>
-                        <GoalProgress>0%</GoalProgress>
+                        <GoalProgress $isComplete={(achievement.progress || 0) >= 100}>
+                          {achievement.progress || 0}%
+                        </GoalProgress>
                       </GoalHeader>
                       <GoalBar>
                         <GoalProgressBar
                           initial={{ width: 0 }}
-                          animate={{ width: '0%' }}
+                          animate={{ width: `${achievement.progress || 0}%` }}
                           transition={{ duration: 1, delay: 1.3 + index * 0.1 }}
+                          $isComplete={(achievement.progress || 0) >= 100}
                         />
                       </GoalBar>
                     </GoalContent>

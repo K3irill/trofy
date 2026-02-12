@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
+import { IoFolder, IoTrophy, IoCloseCircle, IoSearch } from 'react-icons/io5'
 import { useAppSelector } from '@/store/hooks'
 import {
   useGetCategoriesQuery,
@@ -34,6 +35,7 @@ import { SearchAndFilters } from './SearchAndFilters'
 import { AchievementCard } from './AchievementCard'
 import { AchievementGrid } from './AchievementGrid.styled'
 import { type Achievement } from './api'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
@@ -44,12 +46,14 @@ const transformAchievement = (apiAchievement: ApiAchievement): Achievement => {
     id: apiAchievement.id,
     name: apiAchievement.title,
     description: apiAchievement.description,
-    icon: apiAchievement.icon_url || '🏆',
+    icon: apiAchievement.icon_url || '',
     categoryId: apiAchievement.category.id,
     categoryName: apiAchievement.category.name,
     unlocked: apiAchievement.unlocked,
     rarity: apiAchievement.rarity,
     completionDate: apiAchievement.unlocked_at || undefined,
+    progress: apiAchievement.progress,
+    completion_date: apiAchievement.completion_date,
   }
 }
 
@@ -61,7 +65,7 @@ export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
-  const [unlockedFilter, setUnlockedFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
 
@@ -102,8 +106,10 @@ export default function CategoriesPage() {
         unlocked: cat.unlocked,
         achievements: cat.achievements_preview.map((ach) => ({
           id: ach.id,
-          icon: ach.icon_url || '🏆',
+          icon: ach.icon_url || '',
           unlocked: ach.unlocked,
+          progress: ach.progress,
+          completion_date: ach.completion_date,
         })),
       }))
     } else if (!isAuthenticated && categoriesData) {
@@ -144,8 +150,12 @@ export default function CategoriesPage() {
       params.rarity = rarityFilter.toUpperCase() as 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
     }
 
-    if (isAuthenticated && unlockedFilter) {
-      params.unlocked = unlockedFilter === 'true'
+    // Фильтр по статусу обрабатывается на фронтенде после получения данных
+    // Для совместимости с API оставляем unlocked фильтр
+    if (isAuthenticated && statusFilter === 'unlocked') {
+      params.unlocked = true
+    } else if (isAuthenticated && statusFilter === 'locked') {
+      params.unlocked = false
     }
 
     if (sortBy !== 'default') {
@@ -153,7 +163,7 @@ export default function CategoriesPage() {
     }
 
     return params
-  }, [debouncedSearchQuery, selectedCategory, rarityFilter, unlockedFilter, sortBy, isAuthenticated])
+  }, [debouncedSearchQuery, selectedCategory, rarityFilter, statusFilter, sortBy, isAuthenticated])
 
   // Запрос достижений
   const {
@@ -164,11 +174,37 @@ export default function CategoriesPage() {
     skip: mode === 'categories',
   })
 
-  // Преобразование достижений
+  // Преобразование и фильтрация достижений
   const achievements = useMemo(() => {
     if (!achievementsData) return []
-    return achievementsData.achievements.map(transformAchievement)
-  }, [achievementsData])
+
+    let filtered = achievementsData.achievements.map(transformAchievement)
+
+    // Фильтрация по статусу на фронтенде
+    if (isAuthenticated && statusFilter) {
+      filtered = filtered.filter((achievement) => {
+        const isCompleted = !!achievement.completion_date
+        const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
+        const isUnlocked = achievement.unlocked && !isInProgress && !isCompleted
+        const isLocked = !achievement.unlocked
+
+        switch (statusFilter) {
+          case 'completed':
+            return isCompleted
+          case 'in_progress':
+            return isInProgress
+          case 'unlocked':
+            return isUnlocked
+          case 'locked':
+            return isLocked
+          default:
+            return true
+        }
+      })
+    }
+
+    return filtered
+  }, [achievementsData, statusFilter, isAuthenticated])
 
   const isLoading = mode === 'categories'
     ? (isAuthenticated ? categoriesWithStatsLoading : categoriesLoading)
@@ -184,7 +220,17 @@ export default function CategoriesPage() {
         <PageHeader>
           <PageHeaderWrap>
             <Title>
-              {mode === 'categories' ? '📂 Категории достижений' : '🏆 Все достижения'}
+              {mode === 'categories' ? (
+                <>
+                  <IoFolder style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                  Категории достижений
+                </>
+              ) : (
+                <>
+                  <IoTrophy style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                  Все достижения
+                </>
+              )}
             </Title>
             <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
               {mode === 'achievements' && (
@@ -214,7 +260,7 @@ export default function CategoriesPage() {
                     color: 'rgba(255, 255, 255, 0.5)',
                   }}
                 >
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
+                  <IoCloseCircle style={{ fontSize: '3rem', marginBottom: '1rem', color: '#ef4444' }} />
                   <div style={{ fontSize: '1.25rem' }}>Ошибка загрузки категорий</div>
                 </div>
               ) : categories.length === 0 ? (
@@ -225,7 +271,7 @@ export default function CategoriesPage() {
                     color: 'rgba(255, 255, 255, 0.5)',
                   }}
                 >
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📂</div>
+                  <IoFolder style={{ fontSize: '3rem', marginBottom: '1rem' }} />
                   <div style={{ fontSize: '1.25rem' }}>Категории не найдены</div>
                 </div>
               ) : (
@@ -254,8 +300,8 @@ export default function CategoriesPage() {
                 onSearchChange={setSearchQuery}
                 selectedCategory={selectedCategory}
                 onCategoryChange={setSelectedCategory}
-                unlockedFilter={unlockedFilter}
-                onUnlockedFilterChange={setUnlockedFilter}
+                statusFilter={statusFilter}
+                onStatusFilterChange={setStatusFilter}
                 rarityFilter={rarityFilter}
                 onRarityFilterChange={setRarityFilter}
                 sortBy={sortBy}
@@ -272,7 +318,7 @@ export default function CategoriesPage() {
                     color: 'rgba(255, 255, 255, 0.5)',
                   }}
                 >
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
+                  <IoCloseCircle style={{ fontSize: '3rem', marginBottom: '1rem', color: '#ef4444' }} />
                   <div style={{ fontSize: '1.25rem' }}>Ошибка загрузки достижений</div>
                 </div>
               ) : achievements.length === 0 ? (
@@ -283,7 +329,7 @@ export default function CategoriesPage() {
                     color: 'rgba(255, 255, 255, 0.5)',
                   }}
                 >
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+                  <IoSearch style={{ fontSize: '3rem', marginBottom: '1rem' }} />
                   <div style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
                     Достижения не найдены
                   </div>
@@ -293,63 +339,81 @@ export default function CategoriesPage() {
                 </div>
               ) : viewMode === 'list' ? (
                 <ListContainer>
-                  {achievements.map((achievement) => (
-                    <ListItem
-                      key={achievement.id}
-                      rarity={achievement.rarity}
-                      unlocked={achievement.unlocked}
-                      onClick={() =>
-                        router.push(`/categories/${achievement.categoryId}/${achievement.id}`)
-                      }
-                    >
-                      <ListItemIcon>{achievement.icon}</ListItemIcon>
-                      <ListItemContent>
-                        <ListItemName>{achievement.name}</ListItemName>
-                        <ListItemStats>
-                          <StatItem>
-                            <StatLabel>Категория:</StatLabel>
-                            <StatValue>{achievement.categoryName}</StatValue>
-                          </StatItem>
-                          <StatItem>
-                            <StatLabel>Статус:</StatLabel>
-                            <StatValue>
-                              {achievement.unlocked ? 'Открыто' : 'Не открыто'}
-                            </StatValue>
-                          </StatItem>
-                          <StatItem>
-                            <StatLabel>Редкость:</StatLabel>
-                            <StatValue
-                              style={{
-                                color: achievement.rarity
-                                  ? (() => {
-                                    const rarityColors: Record<string, string> = {
-                                      common: '#9ca3af',
-                                      rare: '#3b82f6',
-                                      epic: '#a855f7',
-                                      legendary: '#ffd700',
-                                    }
-                                    return rarityColors[achievement.rarity] || '#9ca3af'
-                                  })()
-                                  : '#9ca3af',
-                                fontWeight: 600,
-                              }}
-                            >
-                              {achievement.rarity === 'common'
-                                ? 'Обычное'
-                                : achievement.rarity === 'rare'
-                                  ? 'Редкое'
-                                  : achievement.rarity === 'epic'
-                                    ? 'Эпическое'
-                                    : achievement.rarity === 'legendary'
-                                      ? 'Легендарное'
-                                      : 'Обычное'}
-                            </StatValue>
-                          </StatItem>
-                        </ListItemStats>
-                      </ListItemContent>
-                      <ProgressRing progress={achievement.unlocked ? 100 : 0} />
-                    </ListItem>
-                  ))}
+                  {achievements.map((achievement) => {
+                    const isCompleted = !!achievement.completion_date
+                    const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
+                    const status: 'locked' | 'unlocked' | 'in_progress' | 'completed' = isCompleted
+                      ? 'completed'
+                      : isInProgress
+                        ? 'in_progress'
+                        : achievement.unlocked
+                          ? 'unlocked'
+                          : 'locked'
+
+                    return (
+                      <ListItem
+                        key={achievement.id}
+                        rarity={achievement.rarity}
+                        $status={status}
+                        onClick={() =>
+                          router.push(`/categories/${achievement.categoryId}/${achievement.id}`)
+                        }
+                      >
+                        <ListItemIcon $status={status}>{renderIcon(achievement.icon, 'trophy')}</ListItemIcon>
+                        <ListItemContent>
+                          <ListItemName>{achievement.name}</ListItemName>
+                          <ListItemStats>
+                            <StatItem>
+                              <StatLabel>Категория:</StatLabel>
+                              <StatValue>{achievement.categoryName}</StatValue>
+                            </StatItem>
+                            <StatItem>
+                              <StatLabel>Статус:</StatLabel>
+                              <StatValue $status={status}>
+                                {isCompleted
+                                  ? 'Завершено'
+                                  : isInProgress
+                                    ? `В работе ${achievement.progress}%`
+                                    : achievement.unlocked
+                                      ? 'Открыто'
+                                      : 'Не открыто'}
+                              </StatValue>
+                            </StatItem>
+                            <StatItem>
+                              <StatLabel>Редкость:</StatLabel>
+                              <StatValue
+                                style={{
+                                  color: achievement.rarity
+                                    ? (() => {
+                                      const rarityColors: Record<string, string> = {
+                                        common: '#9ca3af',
+                                        rare: '#3b82f6',
+                                        epic: '#a855f7',
+                                        legendary: '#ffd700',
+                                      }
+                                      return rarityColors[achievement.rarity] || '#9ca3af'
+                                    })()
+                                    : '#9ca3af',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {achievement.rarity === 'common'
+                                  ? 'Обычное'
+                                  : achievement.rarity === 'rare'
+                                    ? 'Редкое'
+                                    : achievement.rarity === 'epic'
+                                      ? 'Эпическое'
+                                      : achievement.rarity === 'legendary'
+                                        ? 'Легендарное'
+                                        : 'Обычное'}
+                              </StatValue>
+                            </StatItem>
+                          </ListItemStats>
+                        </ListItemContent>
+                        <ProgressRing progress={isCompleted ? 100 : isInProgress ? (achievement.progress || 0) : 0} />
+                      </ListItem>
+                    )
+                  })}
                 </ListContainer>
               ) : (
                 <AchievementGrid mode={viewMode}>

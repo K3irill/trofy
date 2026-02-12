@@ -34,13 +34,15 @@ export function usePinnedAchievements(user: User) {
     const achievementData = [achievement1.data, achievement2.data, achievement3.data]
 
     for (let i = 0; i < 3; i++) {
-      if (achievementData[i]) {
+      const achievement = achievementData[i]
+      // Показываем только завершенные достижения (с completion_date)
+      if (achievement && achievement.completion_date) {
         achievements.push({
-          id: achievementData[i]!.id,
-          title: achievementData[i]!.title,
-          icon: achievementData[i]!.icon_url || '🏆',
-          rarity: achievementData[i]!.rarity.toUpperCase() as Rarity,
-          categoryId: achievementData[i]!.category.id,
+          id: achievement.id,
+          title: achievement.title,
+          icon: achievement.icon_url || '🏆',
+          rarity: achievement.rarity.toUpperCase() as Rarity,
+          categoryId: achievement.category.id,
         })
       } else {
         achievements.push(null)

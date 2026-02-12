@@ -1,7 +1,8 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { AchievementCardContainer, AchievementIcon, AchievementInfo, AchievementName, AchievementStatus, UnlockedBadge } from './AchievementCard.styled'
+import { IoTimeOutline, IoCheckmarkCircle } from 'react-icons/io5'
+import { AchievementCardContainer, AchievementIcon, AchievementInfo, AchievementName, AchievementStatus, StatusBadge } from './AchievementCard.styled'
 import { renderIcon } from '@/lib/utils/iconUtils'
 
 interface AchievementCardProps {
@@ -11,6 +12,8 @@ interface AchievementCardProps {
     unlocked: boolean
     name?: string
     description?: string
+    progress?: number
+    completion_date?: string
   }
   onClick: () => void
 }
@@ -68,10 +71,14 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
     setTransform({ rotateX: 0, rotateY: 0, scale: 1 })
   }
 
+  const isCompleted = !!achievement.completion_date
+  const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
+  const status = isCompleted ? 'completed' : isInProgress ? 'in_progress' : achievement.unlocked ? 'unlocked' : 'locked'
+
   return (
     <AchievementCardContainer
       ref={cardRef}
-      $unlocked={achievement.unlocked}
+      $status={status}
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
@@ -82,14 +89,23 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
         transformStyle: 'preserve-3d',
       }}
     >
-      <AchievementIcon $unlocked={achievement.unlocked}>
-        {renderIcon(achievement.icon, '🏆')}
-        {achievement.unlocked && <UnlockedBadge>✓</UnlockedBadge>}
+      <AchievementIcon $status={status}>
+        {renderIcon(achievement.icon, 'trophy')}
+        {isCompleted && (
+          <StatusBadge $status="completed">
+            <IoCheckmarkCircle />
+          </StatusBadge>
+        )}
+        {isInProgress && (
+          <StatusBadge $status="in_progress">
+            <IoTimeOutline />
+          </StatusBadge>
+        )}
       </AchievementIcon>
       <AchievementInfo>
         {achievement.name && <AchievementName>{achievement.name}</AchievementName>}
-        <AchievementStatus $unlocked={achievement.unlocked}>
-          {achievement.unlocked ? 'Открыто' : 'Не открыто'}
+        <AchievementStatus $status={status}>
+          {isCompleted ? 'Завершено' : isInProgress ? `В работе ${achievement.progress}%` : achievement.unlocked ? 'Открыто' : 'Не открыто'}
         </AchievementStatus>
       </AchievementInfo>
     </AchievementCardContainer>

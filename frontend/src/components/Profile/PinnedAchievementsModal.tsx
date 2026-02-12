@@ -256,7 +256,7 @@ export const PinnedAchievementsModal = ({
       query: debouncedSearchQuery || undefined,
       categoryId: selectedCategory || undefined,
       rarity: selectedRarity ? (selectedRarity as 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY') : undefined,
-      unlocked: true,
+      unlocked: true, // Загружаем все разблокированные, затем фильтруем по completion_date
       limit: 100,
     },
     {
@@ -267,7 +267,9 @@ export const PinnedAchievementsModal = ({
   const filteredAchievements = useMemo(() => {
     if (!achievementsData) return []
     return achievementsData.achievements.filter(
-      (achievement) => !currentPinned.includes(achievement.id)
+      (achievement) => 
+        !currentPinned.includes(achievement.id) &&
+        achievement.completion_date !== undefined // Только завершенные достижения
     )
   }, [achievementsData, currentPinned])
 

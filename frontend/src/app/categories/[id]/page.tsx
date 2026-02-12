@@ -113,26 +113,38 @@ export default function CategoryPage() {
     if (viewMode === 'list') {
       return (
         <AchievementListContainer>
-          {achievementsList.map((achievement) => (
-            <AchievementListItem
-              key={achievement.id}
-              $unlocked={achievement.unlocked}
-              onClick={() => router.push(`/categories/${activeCategory.id}/${achievement.id}`)}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <AchievementListIcon $unlocked={achievement.unlocked}>
-                {renderIcon(achievement.icon_url, '🏆')}
-              </AchievementListIcon>
-              <AchievementListContent>
-                <AchievementListName>{achievement.title}</AchievementListName>
-                <AchievementListStatus $unlocked={achievement.unlocked}>
-                  {achievement.unlocked ? 'Разблокировано' : 'Не открыто'}
-                </AchievementListStatus>
-              </AchievementListContent>
-            </AchievementListItem>
-          ))}
+          {achievementsList.map((achievement) => {
+            const isCompleted = !!achievement.completion_date
+            const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
+            const status = isCompleted ? 'completed' : isInProgress ? 'in_progress' : achievement.unlocked ? 'unlocked' : 'locked'
+
+            return (
+              <AchievementListItem
+                key={achievement.id}
+                $status={status}
+                onClick={() => router.push(`/categories/${activeCategory.id}/${achievement.id}`)}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <AchievementListIcon $status={status}>
+                  {renderIcon(achievement.icon_url, 'trophy')}
+                </AchievementListIcon>
+                <AchievementListContent>
+                  <AchievementListName>{achievement.title}</AchievementListName>
+                  <AchievementListStatus $status={status}>
+                    {isCompleted
+                      ? 'Завершено'
+                      : isInProgress
+                        ? `В работе ${achievement.progress}%`
+                        : achievement.unlocked
+                          ? 'Разблокировано'
+                          : 'Не открыто'}
+                  </AchievementListStatus>
+                </AchievementListContent>
+              </AchievementListItem>
+            )
+          })}
         </AchievementListContainer>
       )
     }
@@ -148,6 +160,8 @@ export default function CategoryPage() {
               unlocked: achievement.unlocked,
               name: achievement.title,
               description: achievement.description,
+              progress: achievement.progress,
+              completion_date: achievement.completion_date,
             }}
             onClick={() => router.push(`/categories/${activeCategory.id}/${achievement.id}`)}
           />
@@ -170,7 +184,7 @@ export default function CategoryPage() {
 
         <CategoryInfo>
           <CategoryIconLarge>
-            {renderIcon(activeCategory.icon_url, '📁')}
+            {renderIcon(activeCategory.icon_url, 'folder')}
           </CategoryIconLarge>
           <CategoryDetails>
             <CategoryName>{activeCategory.name}</CategoryName>

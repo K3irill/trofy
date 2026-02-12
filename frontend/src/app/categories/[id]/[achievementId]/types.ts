@@ -13,7 +13,8 @@ export interface AchievementDetail {
   completionDate?: string
   difficulty?: 1 | 2 | 3 | 4 | 5
   impressions?: string
-  photos?: string[] // Фотографии, добавленные пользователем
+  photos?: string[] // Фотографии, добавленные пользователем (URL)
+  photosWithId?: Array<{ id: string; url: string }> // Фотографии с ID для удаления
   isMain?: boolean
   isFavorite?: boolean
   isHidden?: boolean

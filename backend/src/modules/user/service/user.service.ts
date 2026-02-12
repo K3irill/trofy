@@ -268,7 +268,10 @@ export class UserService {
       throw ApiError.notFound('User not found')
     }
 
-    const totalAchievements = user.userAchievements.length
+    // Считаем только завершенные достижения (с completion_date)
+    const completedAchievements = user.userAchievements.filter((ua) => ua.completion_date !== null)
+    
+    const totalAchievements = completedAchievements.length
     const achievementsByRarity = {
       common: 0,
       rare: 0,
@@ -276,7 +279,7 @@ export class UserService {
       legendary: 0,
     }
 
-    user.userAchievements.forEach((ua) => {
+    completedAchievements.forEach((ua) => {
       const rarity = ua.achievement.rarity.toLowerCase() as keyof typeof achievementsByRarity
       if (rarity in achievementsByRarity) {
         achievementsByRarity[rarity]++

@@ -26,6 +26,7 @@ import {
   EmptyStateText,
   NotificationDeleteButton,
 } from './NotificationModal.styled'
+import { BlockLoader } from '../Loader/BlockLoader'
 
 interface NotificationModalProps {
   isOpen: boolean

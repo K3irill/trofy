@@ -1,8 +1,20 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3333',
+        pathname: '/uploads/**',
+      },
+    ],
+    // Разрешаем неоптимизированные изображения для localhost в development
+    unoptimized: process.env.NODE_ENV === 'development',
   },
   async rewrites() {
     return [
@@ -12,6 +24,6 @@ const nextConfig: NextConfig = {
       },
     ]
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

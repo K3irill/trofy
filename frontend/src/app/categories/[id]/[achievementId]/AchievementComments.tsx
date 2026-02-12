@@ -7,7 +7,10 @@ import {
   useCreateCommentMutation,
   useDeleteCommentMutation,
 } from '@/store/api/achievementDetailApi'
+import { useToast } from '@/hooks/useToast'
+import { useConfirm } from '@/hooks/useConfirm'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
+import { IoChatbubbleOutline, IoChatbubble } from 'react-icons/io5'
 import {
   CommentsContainer,
   CommentsHeader,
@@ -57,6 +60,8 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyText, setReplyText] = useState('')
+  const { showToast, ToastComponent } = useToast()
+  const { confirm, ConfirmComponent } = useConfirm()
 
   const { data: comments = [], isLoading } = useGetCommentsQuery(
     { userAchievementId: userAchievementId || '' },
@@ -72,9 +77,10 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
   if (achievement.canComment === false) {
     return (
       <CommentsContainer>
-        <CommentsDisabled>
-          💬 Комментарии отключены владельцем
-        </CommentsDisabled>
+      <CommentsDisabled>
+        <IoChatbubbleOutline style={{ marginRight: '0.5rem' }} />
+        Комментарии отключены владельцем
+      </CommentsDisabled>
       </CommentsContainer>
     )
   }
@@ -94,18 +100,30 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
       setNewComment('')
       setReplyingTo(null)
       setReplyText('')
+      showToast('Комментарий добавлен', 'success')
     } catch (error) {
-      alert('Ошибка при добавлении комментария')
+      showToast('Ошибка при добавлении комментария', 'error')
     }
   }
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!confirm('Удалить комментарий?') || !userAchievementId) return
+    if (!userAchievementId) return
+
+    const confirmed = await confirm({
+      title: 'Удалить комментарий?',
+      message: 'Вы уверены, что хотите удалить этот комментарий? Это действие нельзя отменить.',
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      type: 'danger',
+    })
+
+    if (!confirmed) return
 
     try {
       await deleteComment({ userAchievementId, commentId }).unwrap()
+      showToast('Комментарий удален', 'success')
     } catch (error) {
-      alert('Ошибка при удалении комментария')
+      showToast('Ошибка при удалении комментария', 'error')
     }
   }
 
@@ -144,7 +162,8 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
   return (
     <CommentsContainer>
       <CommentsHeader>
-        💬 Комментарии ({comments.length})
+        <IoChatbubble style={{ marginRight: '0.5rem' }} />
+        Комментарии ({comments.length})
       </CommentsHeader>
 
       <CommentForm onSubmit={handleSubmitComment}>
@@ -246,6 +265,8 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
           </div>
         ))}
       </CommentsList>
+      <ToastComponent />
+      <ConfirmComponent />
     </CommentsContainer>
   )
 }

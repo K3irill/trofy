@@ -146,8 +146,13 @@ export const StatLabel = styled.span`
   }
 `
 
-export const StatValue = styled.span`
-  color: ${(props) => props.theme.colors.primary};
+export const StatValue = styled.span<{ $status?: AchievementStatus }>`
+  color: ${(props) => {
+    if (props.$status === 'completed') return props.theme.colors.success
+    if (props.$status === 'in_progress') return '#ffa500'
+    if (props.$status === 'unlocked') return props.theme.colors.primary
+    return props.theme.colors.primary
+  }};
   font-weight: 700;
   font-size: 1rem;
 
@@ -210,22 +215,37 @@ export const AchievementPreview = styled.div`
   }
 `
 
-export const PreviewItem = styled.div<{ unlocked: boolean }>`
+type PreviewStatus = 'locked' | 'unlocked' | 'in_progress' | 'completed'
+
+export const PreviewItem = styled.div<{ $status: PreviewStatus }>`
   width: 60px;
   height: 60px;
   border-radius: 12px;
-  background: ${props => props.unlocked
-    ? `linear-gradient(145deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}1a 100%)`
-    : `linear-gradient(145deg, ${props.theme.colors.dark[700]}cc 0%, ${props.theme.colors.dark[800]}e6 100%)`};
-  border: 2px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
+  background: ${props => {
+    if (props.$status === 'completed') return `linear-gradient(145deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
+    if (props.$status === 'in_progress') return `linear-gradient(145deg, #ffa50033 0%, #ff8c001a 100%)`
+    if (props.$status === 'unlocked') return `linear-gradient(145deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}1a 100%)`
+    return `linear-gradient(145deg, ${props.theme.colors.dark[700]}cc 0%, ${props.theme.colors.dark[800]}e6 100%)`
+  }};
+  border: 2px solid ${props => {
+    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'in_progress') return `#ffa50080`
+    if (props.$status === 'unlocked') return `${props.theme.colors.primary}80`
+    return `${props.theme.colors.dark[600]}80`
+  }};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  opacity: ${props => props.unlocked ? 1 : 0.4};
+  opacity: ${props => props.$status === 'locked' ? 0.4 : 1};
   transition: all 0.3s ease;
   position: relative;
-  filter: ${props => props.unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.5)'};
+  filter: ${props => {
+    if (props.$status === 'locked') return 'grayscale(0.5)'
+    if (props.$status === 'completed') return `drop-shadow(0 0 8px ${props.theme.colors.success}60)`
+    if (props.$status === 'in_progress') return `drop-shadow(0 0 8px #ffa50060)`
+    return `drop-shadow(${props.theme.shadows.glow.primary})`
+  }};
   overflow: hidden;
 
   img {
@@ -236,7 +256,7 @@ export const PreviewItem = styled.div<{ unlocked: boolean }>`
 
   &:hover {
     transform: scale(1.1);
-    ${props => props.unlocked && `filter: drop-shadow(${props.theme.shadows.glow.primary});`}
+    ${props => props.$status !== 'locked' && `filter: drop-shadow(${props.theme.shadows.glow.primary});`}
   }
 
   @media (max-width: 768px) {
@@ -372,15 +392,21 @@ const getRarityColorForList = (theme: { colors: { rarity: { base?: string; commo
   }
 }
 
-export const ListItem = styled(motion.div) <{ rarity?: string; unlocked?: boolean }>`
+type AchievementStatus = 'locked' | 'unlocked' | 'in_progress' | 'completed'
+
+export const ListItem = styled(motion.div) <{ rarity?: string; $status: AchievementStatus }>`
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   border: 2px solid ${(props) => {
-    if (!props.unlocked) return `${props.theme.colors.dark[600]}80`
-    const rarityColor = getRarityColorForList(props.theme, props.rarity)
-    return `${rarityColor}80`
+    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'in_progress') return `#ffa50080`
+    if (props.$status === 'unlocked') {
+      const rarityColor = getRarityColorForList(props.theme, props.rarity)
+      return `${rarityColor}80`
+    }
+    return `${props.theme.colors.dark[600]}80`
   }};
   cursor: pointer;
   transition: all 0.3s ease;
@@ -397,30 +423,32 @@ export const ListItem = styled(motion.div) <{ rarity?: string; unlocked?: boolea
     top: 0;
     bottom: 0;
     width: 4px;
-    background: linear-gradient(180deg, ${(props) => {
-    if (!props.unlocked) return props.theme.colors.dark[600]
-    const rarityColor = getRarityColorForList(props.theme, props.rarity)
-    return rarityColor
-  }} 0%, ${(props) => {
-    if (!props.unlocked) return props.theme.colors.dark[600]
-    const rarityColor = getRarityColorForList(props.theme, props.rarity)
-    return `${rarityColor}cc`
-  }} 100%);
-    opacity: ${(props) => (props.unlocked ? 1 : 0)};
+    background: ${(props) => {
+      if (props.$status === 'completed') return `linear-gradient(180deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%)`
+      if (props.$status === 'in_progress') return `linear-gradient(180deg, #ffa500 0%, #ff8c00 100%)`
+      if (props.$status === 'unlocked') {
+        const rarityColor = getRarityColorForList(props.theme, props.rarity)
+        return `linear-gradient(180deg, ${rarityColor} 0%, ${rarityColor}CC 100%)`
+      }
+      return 'transparent'
+    }};
+    opacity: ${(props) => (props.$status !== 'locked' ? 0.8 : 0)};
     transition: opacity 0.3s ease;
   }
 
   &:hover {
     border-color: ${(props) => {
-    if (!props.unlocked) return props.theme.colors.dark[600]
-    return getRarityColorForList(props.theme, props.rarity)
-  }};
+      if (props.$status === 'completed') return props.theme.colors.success
+      if (props.$status === 'in_progress') return '#ffa500'
+      if (props.$status === 'unlocked') return getRarityColorForList(props.theme, props.rarity)
+      return props.theme.colors.dark[600]
+    }};
     transform: translateX(8px);
     box-shadow: ${(props) => {
-    if (!props.unlocked) return props.theme.shadows.glass.light
-    const rarityColor = getRarityColorForList(props.theme, props.rarity)
-    return `${props.theme.shadows.glass.light}, 0 0 20px ${rarityColor}40`
-  }};
+      if (props.$status === 'locked') return props.theme.shadows.glass.light
+      const rarityColor = getRarityColorForList(props.theme, props.rarity)
+      return `${props.theme.shadows.glass.light}, 0 0 20px ${rarityColor}40`
+    }};
 
     &::before {
       opacity: 1;
@@ -437,19 +465,30 @@ export const ListItem = styled(motion.div) <{ rarity?: string; unlocked?: boolea
   }
 `
 
-export const ListItemIcon = styled.div`
+export const ListItemIcon = styled.div<{ $status: AchievementStatus }>`
   width: 64px;
   height: 64px;
   border-radius: 12px;
-  background: linear-gradient(135deg, ${(props) => `${props.theme.colors.primary}26`} 0%, ${(props) => `${props.theme.colors.secondary}1a`} 100%);
+  background: ${(props) => {
+    if (props.$status === 'completed') return `linear-gradient(135deg, ${props.theme.colors.success}26 0%, ${props.theme.colors.success}1a 100%)`
+    if (props.$status === 'in_progress') return `linear-gradient(135deg, #ffa50026 0%, #ff8c001a 100%)`
+    if (props.$status === 'unlocked') return `linear-gradient(135deg, ${props.theme.colors.primary}26 0%, ${props.theme.colors.secondary}1a 100%)`
+    return `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`
+  }};
+  border: 2px solid ${(props) => {
+    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'in_progress') return `#ffa50080`
+    if (props.$status === 'unlocked') return `${props.theme.colors.primary}80`
+    return `${props.theme.colors.dark[600]}80`
+  }};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  border: 2px solid ${(props) => `${props.theme.colors.primary}4d`};
-  box-shadow: ${(props) => props.theme.shadows.glow.primary};
+  box-shadow: ${(props) => (props.$status !== 'locked' ? props.theme.shadows.glow.primary : 'none')};
   flex-shrink: 0;
   overflow: hidden;
+  filter: ${(props) => (props.$status === 'locked' ? 'grayscale(0.6) brightness(0.7)' : 'none')};
 
   img {
     width: 100%;

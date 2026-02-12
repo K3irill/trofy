@@ -431,12 +431,19 @@ export const AchievementListContainer = styled.div`
   gap: 1rem;
 `
 
-export const AchievementListItem = styled(motion.div) <{ $unlocked: boolean }>`
+type AchievementStatus = 'locked' | 'unlocked' | 'in_progress' | 'completed'
+
+export const AchievementListItem = styled(motion.div) <{ $status: AchievementStatus }>`
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
-  border: 2px solid ${props => props.$unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
+  border: 2px solid ${(props) => {
+    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'in_progress') return `#ffa50080`
+    if (props.$status === 'unlocked') return `${props.theme.colors.primary}80`
+    return `${props.theme.colors.dark[600]}80`
+  }};
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
@@ -452,13 +459,23 @@ export const AchievementListItem = styled(motion.div) <{ $unlocked: boolean }>`
     top: 0;
     bottom: 0;
     width: 4px;
-    background: linear-gradient(180deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
-    opacity: ${props => props.$unlocked ? 0.8 : 0};
+    background: ${(props) => {
+      if (props.$status === 'completed') return `linear-gradient(180deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%)`
+      if (props.$status === 'in_progress') return `linear-gradient(180deg, #ffa500 0%, #ff8c00 100%)`
+      if (props.$status === 'unlocked') return `linear-gradient(180deg, ${props.theme.colors.primary} 0%, ${props.theme.colors.secondary} 100%)`
+      return 'transparent'
+    }};
+    opacity: ${(props) => (props.$status !== 'locked' ? 0.8 : 0)};
     transition: opacity 0.3s ease;
   }
 
   &:hover {
-    border-color: ${props => props.$unlocked ? props.theme.colors.primary : props.theme.colors.dark[600]};
+    border-color: ${(props) => {
+      if (props.$status === 'completed') return props.theme.colors.success
+      if (props.$status === 'in_progress') return '#ffa500'
+      if (props.$status === 'unlocked') return props.theme.colors.primary
+      return props.theme.colors.dark[600]
+    }};
     transform: translateX(8px);
     box-shadow: ${(props) => props.theme.shadows.glass.light};
 
@@ -477,20 +494,31 @@ export const AchievementListItem = styled(motion.div) <{ $unlocked: boolean }>`
   }
 `
 
-export const AchievementListIcon = styled.div<{ $unlocked: boolean }>`
+export const AchievementListIcon = styled.div<{ $status: AchievementStatus }>`
   width: 64px;
   height: 64px;
   border-radius: 12px;
-  background: ${props => props.$unlocked
-    ? `linear-gradient(135deg, ${props.theme.colors.primary}26 0%, ${props.theme.colors.secondary}1a 100%)`
-    : `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`};
-  border: 2px solid ${props => props.$unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
+  background: ${(props) => {
+    if (props.$status === 'completed') return `linear-gradient(135deg, ${props.theme.colors.success}26 0%, ${props.theme.colors.success}1a 100%)`
+    if (props.$status === 'in_progress') return `linear-gradient(135deg, #ffa50026 0%, #ff8c001a 100%)`
+    if (props.$status === 'unlocked') return `linear-gradient(135deg, ${props.theme.colors.primary}26 0%, ${props.theme.colors.secondary}1a 100%)`
+    return `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`
+  }};
+  border: 2px solid ${(props) => {
+    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'in_progress') return `#ffa50080`
+    if (props.$status === 'unlocked') return `${props.theme.colors.primary}80`
+    return `${props.theme.colors.dark[600]}80`
+  }};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
   flex-shrink: 0;
-  filter: ${props => props.$unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.6) brightness(0.7)'};
+  filter: ${(props) => {
+    if (props.$status === 'locked') return 'grayscale(0.6) brightness(0.7)'
+    return `drop-shadow(${props.theme.shadows.glow.primary})`
+  }};
 
   img {
     width: 100%;
@@ -523,9 +551,14 @@ export const AchievementListName = styled.h3`
   }
 `
 
-export const AchievementListStatus = styled.span<{ $unlocked: boolean }>`
+export const AchievementListStatus = styled.span<{ $status: AchievementStatus }>`
   font-size: 0.875rem;
-  color: ${props => props.$unlocked ? props.theme.colors.primary : props.theme.colors.light[300]};
+  color: ${(props) => {
+    if (props.$status === 'completed') return props.theme.colors.success
+    if (props.$status === 'in_progress') return '#ffa500'
+    if (props.$status === 'unlocked') return props.theme.colors.primary
+    return props.theme.colors.light[300]
+  }};
   font-weight: 500;
 
   @media (max-width: 768px) {

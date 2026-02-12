@@ -1,53 +1,68 @@
 'use client'
 
 import { useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { ToastContainer, ToastContent, ToastIcon, ToastMessage, ToastCloseButton } from './Toast.styled'
+import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from 'framer-motion'
+import { IoCheckmarkCircle, IoCloseCircle, IoInformationCircle, IoWarning } from 'react-icons/io5'
+import { ToastContainer, ToastContent, ToastIcon, ToastMessage, ToastClose } from './Toast.styled'
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info'
+export type ToastType = 'success' | 'error' | 'info' | 'warning'
 
-export interface Toast {
-  id: string
+interface ToastProps {
   message: string
   type: ToastType
+  isOpen: boolean
+  onClose: () => void
   duration?: number
 }
 
-interface ToastProps {
-  toast: Toast
-  onClose: (id: string) => void
-}
-
-const toastIcons = {
-  success: '✓',
-  error: '✕',
-  warning: '⚠',
-  info: 'ℹ',
-}
-
-export const ToastComponent = ({ toast, onClose }: ToastProps) => {
+export const Toast = ({ message, type, isOpen, onClose, duration = 3000 }: ToastProps) => {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose(toast.id)
-    }, toast.duration || 5000)
+    if (isOpen && duration > 0) {
+      const timer = setTimeout(() => {
+        onClose()
+      }, duration)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen, duration, onClose])
 
-    return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast.id, toast.duration])
+  const getIcon = () => {
+    switch (type) {
+      case 'success':
+        return <IoCheckmarkCircle />
+      case 'error':
+        return <IoCloseCircle />
+      case 'warning':
+        return <IoWarning />
+      case 'info':
+        return <IoInformationCircle />
+      default:
+        return <IoInformationCircle />
+    }
+  }
 
-  return (
-    <ToastContainer
-      type={toast.type}
-      initial={{ x: 400, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: 400, opacity: 0 }}
-      layout
-    >
-      <ToastContent>
-        <ToastIcon type={toast.type}>{toastIcons[toast.type]}</ToastIcon>
-        <ToastMessage>{toast.message}</ToastMessage>
-        <ToastCloseButton onClick={() => onClose(toast.id)}>✕</ToastCloseButton>
-      </ToastContent>
-    </ToastContainer>
+  if (typeof window === 'undefined') return null
+
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <ToastContainer
+          initial={{ opacity: 0, y: -50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -20, scale: 0.9 }}
+          transition={{ duration: 0.3 }}
+          $type={type}
+        >
+          <ToastContent>
+            <ToastIcon $type={type}>{getIcon()}</ToastIcon>
+            <ToastMessage>{message}</ToastMessage>
+            <ToastClose onClick={onClose}>
+              <IoCloseCircle />
+            </ToastClose>
+          </ToastContent>
+        </ToastContainer>
+      )}
+    </AnimatePresence>,
+    document.body
   )
 }

@@ -19,6 +19,8 @@ export interface Achievement {
   unlocked: boolean
   rarity?: 'common' | 'rare' | 'epic' | 'legendary'
   completionDate?: string
+  progress?: number
+  completion_date?: string
 }
 
 export interface SearchAchievementsResponse {

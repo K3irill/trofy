@@ -1,6 +1,6 @@
 import { prisma } from '../../../shared/database'
 import { ApiError } from '../../../core/errors/ApiError'
-import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto } from '../dto/achievements.dto'
+import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto } from '../dto/achievements.dto'
 import { saveFileFromBuffer, deleteFile, deleteAchievementFiles } from '../../../shared/utils/fileUpload'
 
 export class AchievementsService {
@@ -75,13 +75,24 @@ export class AchievementsService {
     let userAchievementsSet: Set<string> | null = null
     let categoryUnlockedCounts: Map<string, number> | null = null
 
+    let userAchievements: Array<{
+      achievement_id: string
+      progress: number
+      completion_date: Date | null
+      achievement: {
+        category_id: string
+      }
+    }> = []
+
     if (userId) {
-      const userAchievements = await prisma.userAchievement.findMany({
+      userAchievements = await prisma.userAchievement.findMany({
         where: {
           user_id: userId,
         },
         select: {
           achievement_id: true,
+          progress: true,
+          completion_date: true,
           achievement: {
             select: {
               category_id: true,
@@ -92,12 +103,15 @@ export class AchievementsService {
 
       userAchievementsSet = new Set(userAchievements.map((ua) => ua.achievement_id))
 
-      // Подсчитываем разблокированные достижения по категориям
+      // Подсчитываем только завершенные достижения по категориям (с completion_date)
       categoryUnlockedCounts = new Map()
       userAchievements.forEach((ua) => {
-        const categoryId = ua.achievement.category_id
-        const currentCount = categoryUnlockedCounts!.get(categoryId) || 0
-        categoryUnlockedCounts!.set(categoryId, currentCount + 1)
+        // Считаем только завершенные достижения (с completion_date)
+        if (ua.completion_date) {
+          const categoryId = ua.achievement.category_id
+          const currentCount = categoryUnlockedCounts!.get(categoryId) || 0
+          categoryUnlockedCounts!.set(categoryId, currentCount + 1)
+        }
       })
     }
 
@@ -111,10 +125,17 @@ export class AchievementsService {
           ? userAchievementsSet.has(achievement.id)
           : false
 
+        // Находим UserAchievement для этого достижения, если оно разблокировано
+        const userAchievement = userId && userAchievements.length > 0
+          ? userAchievements.find((ua) => ua.achievement_id === achievement.id)
+          : null
+
         return {
           id: achievement.id,
           icon_url: achievement.icon_url,
           unlocked: isUnlocked,
+          progress: userAchievement ? userAchievement.progress || 0 : undefined,
+          completion_date: userAchievement?.completion_date?.toISOString() || undefined,
         }
       })
 
@@ -301,6 +322,8 @@ export class AchievementsService {
         unlocked_at: userAchievement?.unlocked_at.toISOString(),
         is_public: userAchievement?.is_public ?? true,
         created_at: achievement.created_at.toISOString(),
+        progress: userAchievement ? (userAchievement as any).progress || 0 : undefined,
+        completion_date: userAchievement?.completion_date?.toISOString(),
       }
     })
 
@@ -425,6 +448,8 @@ export class AchievementsService {
       is_public: userAchievement?.is_public ?? true,
       created_at: achievement.created_at.toISOString(),
       updated_at: achievement.updated_at.toISOString(),
+      progress: userAchievement ? (userAchievement as any).progress || 0 : undefined,
+      completion_date: userAchievement?.completion_date?.toISOString(),
     }
   }
 
@@ -622,6 +647,7 @@ export class AchievementsService {
           can_like: userAchievement.can_like,
           can_comment: userAchievement.can_comment,
           is_public: userAchievement.is_public,
+          progress: (userAchievement as any).progress || 0,
         }
         : null,
       likesCount,
@@ -650,7 +676,7 @@ export class AchievementsService {
       throw ApiError.notFound('Achievement not found')
     }
 
-    // Проверяем, не завершено ли уже
+    // Проверяем, не завершено ли уже (проверяем наличие completion_date, а не просто существование UserAchievement)
     const existing = await prisma.userAchievement.findUnique({
       where: {
         user_id_achievement_id: {
@@ -660,20 +686,37 @@ export class AchievementsService {
       },
     })
 
-    if (existing) {
+    if (existing && existing.completion_date) {
       throw ApiError.badRequest('Achievement already completed')
     }
 
-    // Создаем UserAchievement
-    const userAchievement = await prisma.userAchievement.create({
-      data: {
-        user_id: userId,
-        achievement_id: achievementId,
-        completion_date: new Date(dto.completion_date),
-        difficulty: dto.difficulty || null,
-        impressions: dto.impressions || null,
-      },
-    })
+    // Если UserAchievement уже существует (но без completion_date), обновляем его
+    // Иначе создаем новый
+    const userAchievement = existing
+      ? await prisma.userAchievement.update({
+        where: {
+          user_id_achievement_id: {
+            user_id: userId,
+            achievement_id: achievementId,
+          },
+        },
+        data: {
+          completion_date: new Date(dto.completion_date),
+          difficulty: dto.difficulty || null,
+          impressions: dto.impressions || null,
+          progress: 100, // Устанавливаем прогресс 100% при завершении
+        },
+      })
+      : await prisma.userAchievement.create({
+        data: {
+          user_id: userId,
+          achievement_id: achievementId,
+          completion_date: new Date(dto.completion_date),
+          difficulty: dto.difficulty || null,
+          impressions: dto.impressions || null,
+          progress: 100, // Устанавливаем прогресс 100% при завершении
+        },
+      })
 
     // Загружаем фотографии
     if (photos && photos.length > 0) {
@@ -709,6 +752,146 @@ export class AchievementsService {
     })
 
     return this.getAchievementDetail(achievementId, userId)
+  }
+
+  /**
+   * Обновление выполненного достижения
+   */
+  async updateAchievement(
+    userId: string,
+    userAchievementId: string,
+    dto: UpdateAchievementDto,
+    photos?: MulterFile[]
+  ) {
+    // Проверяем существование UserAchievement и принадлежность пользователю
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+      include: {
+        photos: true,
+      },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('User achievement not found')
+    }
+
+    if (userAchievement.user_id !== userId) {
+      throw ApiError.forbidden('You can only update your own achievements')
+    }
+
+    // Обновляем данные
+    const updateData: any = {}
+    if (dto.completion_date) {
+      updateData.completion_date = new Date(dto.completion_date)
+    }
+    if (dto.difficulty !== undefined) {
+      updateData.difficulty = dto.difficulty || null
+    }
+    if (dto.impressions !== undefined) {
+      updateData.impressions = dto.impressions || null
+    }
+
+    await prisma.userAchievement.update({
+      where: { id: userAchievementId },
+      data: updateData,
+    })
+
+    // Удаляем старые фотографии, если загружены новые
+    if (photos && photos.length > 0) {
+      // Удаляем все старые фотографии
+      const oldPhotos = await (prisma as any).achievementPhoto.findMany({
+        where: { user_achievement_id: userAchievementId },
+      })
+
+      for (const photo of oldPhotos) {
+        // Удаляем файл с диска
+        const fs = require('fs')
+        const path = require('path')
+        const filePath = path.join(process.cwd(), photo.file_path)
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+        }
+      }
+
+      await (prisma as any).achievementPhoto.deleteMany({
+        where: { user_achievement_id: userAchievementId },
+      })
+
+      // Загружаем новые фотографии
+      const photoPromises = photos.map(async (photo, index) => {
+        const uploaded = await saveFileFromBuffer(
+          photo.buffer,
+          photo.originalname,
+          photo.mimetype,
+          userAchievementId
+        )
+
+        return (prisma as any).achievementPhoto.create({
+          data: {
+            user_achievement_id: userAchievementId,
+            file_path: uploaded.path,
+            file_url: uploaded.url,
+            order: index,
+          },
+        })
+      })
+
+      await Promise.all(photoPromises)
+    }
+
+    return this.getAchievementDetail(userAchievement.achievement_id, userId)
+  }
+
+  /**
+   * Сброс выполнения достижения
+   */
+  async resetAchievement(userId: string, userAchievementId: string) {
+    // Проверяем существование UserAchievement и принадлежность пользователю
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+      include: {
+        achievement: true,
+        photos: true,
+      },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('User achievement not found')
+    }
+
+    if (userAchievement.user_id !== userId) {
+      throw ApiError.forbidden('You can only reset your own achievements')
+    }
+
+    const achievementId = userAchievement.achievement_id
+    const xpReward = userAchievement.achievement.xp_reward
+
+    // Удаляем фотографии
+    const fs = require('fs')
+    const path = require('path')
+    for (const photo of userAchievement.photos) {
+      const filePath = path.join(process.cwd(), (photo as any).file_path)
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath)
+      }
+    }
+
+    // Удаляем UserAchievement (каскадно удалятся все связанные данные)
+    await prisma.userAchievement.delete({
+      where: { id: userAchievementId },
+    })
+
+    // Уменьшаем XP пользователя
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        xp: {
+          decrement: xpReward,
+        },
+      },
+    })
+
+    return { success: true }
   }
 
   /**
@@ -767,10 +950,7 @@ export class AchievementsService {
       throw ApiError.notFound('User achievement not found')
     }
 
-    // Проверяем, не свое ли достижение
-    if (userAchievement.user_id === userId) {
-      throw ApiError.badRequest('Cannot favorite your own achievement')
-    }
+    // Разрешаем добавлять в избранное любые достижения, включая свои
 
     // Проверяем, публичное ли
     if (!userAchievement.is_public) {
@@ -1063,6 +1243,68 @@ export class AchievementsService {
     })
 
     return { success: true }
+  }
+
+  /**
+   * Обновление прогресса выполнения достижения
+   * Если UserAchievement не существует, создает его (разблокирует достижение)
+   */
+  async updateProgress(userId: string, achievementId: string, dto: UpdateProgressDto) {
+    // Проверяем существование достижения
+    const achievement = await prisma.achievement.findUnique({
+      where: { id: achievementId },
+    })
+
+    if (!achievement) {
+      throw ApiError.notFound('Achievement not found')
+    }
+
+    // Ищем существующий UserAchievement
+    let userAchievement = await prisma.userAchievement.findUnique({
+      where: {
+        user_id_achievement_id: {
+          user_id: userId,
+          achievement_id: achievementId,
+        },
+      },
+    })
+
+    const progress = Math.max(0, dto.progress)
+
+    if (userAchievement) {
+      // Если UserAchievement существует, обновляем прогресс
+      // Нельзя обновлять прогресс для завершенных достижений
+      if (userAchievement.completion_date) {
+        throw ApiError.badRequest('Cannot update progress for completed achievement')
+      }
+
+      userAchievement = await prisma.userAchievement.update({
+        where: { id: userAchievement.id },
+        data: {
+          progress,
+        },
+      })
+    } else {
+      // Если UserAchievement не существует, создаем его (разблокируем достижение)
+      // Только если прогресс > 0
+      if (progress === 0) {
+        throw ApiError.badRequest('Progress must be greater than 0 to unlock achievement')
+      }
+
+      userAchievement = await prisma.userAchievement.create({
+        data: {
+          user_id: userId,
+          achievement_id: achievementId,
+          progress,
+        },
+      })
+    }
+
+    return {
+      success: true,
+      progress: (userAchievement as any).progress,
+      achievementId,
+    }
   }
 }
 

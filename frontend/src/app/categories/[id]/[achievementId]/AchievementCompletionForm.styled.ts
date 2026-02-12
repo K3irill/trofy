@@ -1,10 +1,18 @@
 import styled from 'styled-components'
 
-export const FormContainer = styled.div`
+export const FormContainer = styled.div<{ $isComplete?: boolean }>`
   background: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
   border-radius: 16px;
   padding: 1.5rem;
   border: 2px solid rgba(55, 65, 81, 0.5);
+  transition: all 0.3s ease;
+
+  ${(props) =>
+    props.$isComplete &&
+    `
+    border-color: ${props.theme.colors.primary}80;
+    box-shadow: 0 0 20px ${props.theme.colors.primary}30;
+  `}
 `
 
 export const FormTitle = styled.h3`
@@ -43,14 +51,31 @@ export const FormInput = styled.input`
   }
 `
 
-export const DateInput = styled(FormInput)`
+export const DateInput = styled(FormInput)<{ $isComplete?: boolean }>`
   &::-webkit-calendar-picker-indicator {
     filter: invert(1);
     cursor: pointer;
   }
+
+  ${(props) =>
+    props.$isComplete &&
+    `
+    border-color: ${props.theme.colors.primary}80;
+    box-shadow: 0 0 0 3px ${props.theme.colors.primary}20, 0 0 15px ${props.theme.colors.primary}30;
+    animation: fieldPulse 2s ease-in-out infinite;
+  `}
+
+  @keyframes fieldPulse {
+    0%, 100% {
+      box-shadow: 0 0 0 3px ${(props) => props.theme.colors.primary}20, 0 0 15px ${(props) => props.theme.colors.primary}30;
+    }
+    50% {
+      box-shadow: 0 0 0 3px ${(props) => props.theme.colors.primary}40, 0 0 25px ${(props) => props.theme.colors.primary}50;
+    }
+  }
 `
 
-export const FormTextarea = styled.textarea`
+export const FormTextarea = styled.textarea<{ $isComplete?: boolean }>`
   width: 100%;
   padding: 0.75rem;
   background: rgba(17, 24, 39, 0.8);
@@ -71,6 +96,23 @@ export const FormTextarea = styled.textarea`
   &::placeholder {
     color: #6b7280;
   }
+
+  ${(props) =>
+    props.$isComplete &&
+    `
+    border-color: ${props.theme.colors.primary}80;
+    box-shadow: 0 0 0 3px ${props.theme.colors.primary}20, 0 0 15px ${props.theme.colors.primary}30;
+    animation: fieldPulse 2s ease-in-out infinite;
+  `}
+
+  @keyframes fieldPulse {
+    0%, 100% {
+      box-shadow: 0 0 0 3px ${(props) => props.theme.colors.primary}20, 0 0 15px ${(props) => props.theme.colors.primary}30;
+    }
+    50% {
+      box-shadow: 0 0 0 3px ${(props) => props.theme.colors.primary}40, 0 0 25px ${(props) => props.theme.colors.primary}50;
+    }
+  }
 `
 
 export const DifficultySelector = styled.div`
@@ -78,15 +120,15 @@ export const DifficultySelector = styled.div`
   gap: 0.5rem;
 `
 
-export const DifficultyButton = styled.button<{ active: boolean }>`
+export const DifficultyButton = styled.button<{ $active: boolean; $isComplete?: boolean }>`
   flex: 1;
   padding: 0.75rem;
-  background: ${props => props.active
+  background: ${props => props.$active
     ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.3) 0%, rgba(0, 168, 204, 0.2) 100%)'
     : 'rgba(17, 24, 39, 0.8)'};
-  border: 2px solid ${props => props.active ? '#00d4ff' : 'rgba(55, 65, 81, 0.5)'};
+  border: 2px solid ${props => props.$active ? '#00d4ff' : 'rgba(55, 65, 81, 0.5)'};
   border-radius: 8px;
-  color: ${props => props.active ? '#00d4ff' : '#9ca3af'};
+  color: ${props => props.$active ? '#00d4ff' : '#9ca3af'};
   font-size: 1.125rem;
   font-weight: 700;
   cursor: pointer;
@@ -96,6 +138,25 @@ export const DifficultyButton = styled.button<{ active: boolean }>`
     border-color: #00d4ff;
     color: #00d4ff;
     background: rgba(0, 212, 255, 0.1);
+  }
+
+  ${(props) =>
+    props.$isComplete &&
+    `
+    border-color: ${props.theme.colors.primary}60;
+    box-shadow: 0 0 10px ${props.theme.colors.primary}30;
+    animation: buttonPulse 2s ease-in-out infinite;
+  `}
+
+  @keyframes buttonPulse {
+    0%, 100% {
+      box-shadow: 0 0 10px ${(props) => props.theme.colors.primary}30;
+      border-color: ${(props) => props.theme.colors.primary}60;
+    }
+    50% {
+      box-shadow: 0 0 20px ${(props) => props.theme.colors.primary}50;
+      border-color: ${(props) => props.theme.colors.primary}80;
+    }
   }
 `
 
@@ -157,10 +218,16 @@ export const PhotoRemoveButton = styled.button`
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  z-index: 10;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: rgba(239, 68, 68, 1);
     transform: scale(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `
 

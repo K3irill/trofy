@@ -81,9 +81,24 @@ router.post(
   achievementsController.completeAchievement.bind(achievementsController)
 )
 
+// Обновление выполненного достижения
+router.put(
+  '/user-achievements/:userAchievementId',
+  authenticate,
+  upload.array('photos', 10),
+  achievementsController.updateAchievement.bind(achievementsController)
+)
+
+// Сброс выполнения достижения
+router.delete(
+  '/user-achievements/:userAchievementId',
+  authenticate,
+  achievementsController.resetAchievement.bind(achievementsController)
+)
+
 // Настройки достижения
 router.patch(
-  '/user-achievements/:userAchievementId',
+  '/user-achievements/:userAchievementId/settings',
   authenticate,
   achievementsController.updateAchievementSettings.bind(achievementsController)
 )
@@ -129,6 +144,13 @@ router.delete(
   '/user-achievements/:userAchievementId/photos/:photoId',
   authenticate,
   achievementsController.deletePhoto.bind(achievementsController)
+)
+
+// Прогресс выполнения
+router.patch(
+  '/:achievementId/progress',
+  authenticate,
+  achievementsController.updateProgress.bind(achievementsController)
 )
 
 export default router

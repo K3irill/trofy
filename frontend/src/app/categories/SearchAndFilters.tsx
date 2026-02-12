@@ -1,6 +1,7 @@
 'use client'
 
 import styled from 'styled-components'
+import { IoSearch, IoImage } from 'react-icons/io5'
 import { useGetCategoriesQuery } from '@/store/api/achievementsApi'
 import { isImageUrl } from '@/lib/utils/iconUtils'
 
@@ -72,20 +73,21 @@ const SearchInputWrapper = styled.div`
   position: relative;
   width: 100%;
 
-  &::before {
-    content: '🔍';
+  .search-icon {
     position: absolute;
     left: 0.875rem;
     top: 50%;
     transform: translateY(-50%);
     font-size: 1.25rem;
+    color: ${(props) => props.theme.colors.light[300]};
     pointer-events: none;
     z-index: 1;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, color 0.3s ease;
   }
 
-  &:focus-within::before {
+  &:focus-within .search-icon {
     transform: translateY(-50%) scale(1.1);
+    color: ${(props) => props.theme.colors.primary};
   }
 `
 
@@ -219,8 +221,8 @@ interface SearchAndFiltersProps {
   onSearchChange: (query: string) => void
   selectedCategory: string
   onCategoryChange: (categoryId: string) => void
-  unlockedFilter: string
-  onUnlockedFilterChange: (value: string) => void
+  statusFilter: string
+  onStatusFilterChange: (value: string) => void
   rarityFilter: string
   onRarityFilterChange: (value: string) => void
   sortBy: string
@@ -233,8 +235,8 @@ export const SearchAndFilters = ({
   onSearchChange,
   selectedCategory,
   onCategoryChange,
-  unlockedFilter,
-  onUnlockedFilterChange,
+  statusFilter,
+  onStatusFilterChange,
   rarityFilter,
   onRarityFilterChange,
   sortBy,
@@ -246,6 +248,7 @@ export const SearchAndFilters = ({
   return (
     <SearchFiltersContainer>
       <SearchInputWrapper>
+        <IoSearch className="search-icon" />
         <SearchInput
           type="text"
           placeholder="Поиск по названию достижения..."
@@ -261,11 +264,11 @@ export const SearchAndFilters = ({
           >
             <option value="">Все категории</option>
             {categoriesData.map((category) => {
-              const icon = category.icon_url || '📁'
-              const iconDisplay = isImageUrl(icon) ? '🖼️' : icon
+              const icon = category.icon_url
+              const iconDisplay = isImageUrl(icon || '') ? <IoImage /> : null
               return (
                 <option key={category.id} value={category.id}>
-                  {iconDisplay} {category.name}
+                  {iconDisplay ? '🖼️' : ''} {category.name}
                 </option>
               )
             })}
@@ -274,12 +277,14 @@ export const SearchAndFilters = ({
         {isAuthenticated && (
           <FilterSelectWrapper>
             <FilterSelect
-              value={unlockedFilter}
-              onChange={(e) => onUnlockedFilterChange(e.target.value)}
+              value={statusFilter}
+              onChange={(e) => onStatusFilterChange(e.target.value)}
             >
-              <option value="">Все достижения</option>
-              <option value="true">Открытые</option>
-              <option value="false">Не открытые</option>
+              <option value="">Все статусы</option>
+              <option value="completed">Завершенные</option>
+              <option value="in_progress">В работе</option>
+              <option value="unlocked">Открытые</option>
+              <option value="locked">Не открытые</option>
             </FilterSelect>
           </FilterSelectWrapper>
         )}
@@ -303,7 +308,7 @@ export const SearchAndFilters = ({
             <option value="default">Сортировка</option>
             <option value="unlocked-asc">По завершенности (сначала завершенные)</option>
             <option value="unlocked-desc">По завершенности (сначала незавершенные)</option>
-            {unlockedFilter === 'true' && (
+            {(statusFilter === 'completed' || statusFilter === 'unlocked') && (
               <>
                 <option value="date-asc">По дате (старые сначала)</option>
                 <option value="date-desc">По дате (новые сначала)</option>

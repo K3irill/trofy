@@ -664,11 +664,32 @@ export const CurrentGoals = styled.div`
 `
 
 
-export const GoalItem = styled(motion.div)`
+export const GoalItem = styled(motion.div)<{ $isComplete?: boolean }>`
   background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 12px;
   padding: 1rem;
   border: 1px solid ${(props) => props.theme.colors.neomorphLight};
+  transition: all 0.3s ease;
+
+  ${(props) =>
+    props.$isComplete &&
+    `
+    border-color: ${props.theme.colors.success || '#10b981'};
+    box-shadow: 0 0 20px ${props.theme.colors.success || '#10b981'}40;
+    background: linear-gradient(145deg, ${props.theme.colors.dark.neomorphDark} 0%, ${props.theme.colors.success || '#10b981'}15 100%);
+    animation: pulse-complete 2s infinite;
+  `}
+
+  @keyframes pulse-complete {
+    0%, 100% {
+      box-shadow: 0 0 20px ${(props) => (props.theme.colors.success || '#10b981') + '40'};
+      border-color: ${(props) => props.theme.colors.success || '#10b981'};
+    }
+    50% {
+      box-shadow: 0 0 30px ${(props) => (props.theme.colors.success || '#10b981') + '80'};
+      border-color: ${(props) => (props.theme.colors.success || '#10b981') + 'CC'};
+    }
+  }
 
   &:last-child {
     margin-bottom: 0;
@@ -720,10 +741,12 @@ export const GoalTitle = styled.div`
   font-weight: 500;
 `
 
-export const GoalProgress = styled.div`
-  color: ${(props) => props.theme.colors.primary};
+export const GoalProgress = styled.div<{ $isComplete?: boolean }>`
+  color: ${(props) => (props.$isComplete ? props.theme.colors.success || '#10b981' : props.theme.colors.primary)};
   font-size: 0.75rem;
   font-weight: 600;
+  text-shadow: ${(props) => (props.$isComplete ? `0 0 10px ${props.theme.colors.success || '#10b981'}80` : 'none')};
+  transition: all 0.3s ease;
 `
 
 export const GoalBar = styled.div`
@@ -734,10 +757,15 @@ export const GoalBar = styled.div`
   overflow: hidden;
 `
 
-export const GoalProgressBar = styled(motion.div)`
+export const GoalProgressBar = styled(motion.div)<{ $isComplete?: boolean }>`
   height: 100%;
-  background: linear-gradient(90deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
+  background: ${(props) =>
+    props.$isComplete
+      ? `linear-gradient(90deg, ${props.theme.colors.success || '#10b981'} 0%, ${props.theme.colors.success || '#10b981'}CC 100%)`
+      : `linear-gradient(90deg, ${props.theme.colors.primary} 0%, ${props.theme.colors.secondary} 100%)`};
   border-radius: 6px;
+  box-shadow: ${(props) => (props.$isComplete ? `0 0 10px ${props.theme.colors.success || '#10b981'}80` : 'none')};
+  transition: all 0.3s ease;
 `
 
 export const RemoveButton = styled(motion.button)`

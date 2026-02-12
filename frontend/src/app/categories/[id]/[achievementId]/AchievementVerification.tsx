@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AchievementDetail } from './types'
+import { useToast } from '@/hooks/useToast'
 import {
   VerificationContainer,
   VerificationStatus,
@@ -20,6 +21,7 @@ interface AchievementVerificationProps {
 
 export const AchievementVerification = ({ achievement, isOwner }: AchievementVerificationProps) => {
   const [isVerifying, setIsVerifying] = useState(false)
+  const { showToast, ToastComponent } = useToast()
 
   if (!achievement.requiresVerification) {
     return null
@@ -30,7 +32,7 @@ export const AchievementVerification = ({ achievement, isOwner }: AchievementVer
     // Здесь будет API вызов для подтверждения
     setTimeout(() => {
       setIsVerifying(false)
-      alert('Достижение подтверждено!')
+      showToast('Достижение подтверждено!', 'success')
     }, 1000)
   }
 
@@ -72,6 +74,7 @@ export const AchievementVerification = ({ achievement, isOwner }: AchievementVer
           </VerificationItem>
         </VerificationList>
       )}
+      <ToastComponent />
     </VerificationContainer>
   )
 }

@@ -1,3 +1,5 @@
+import { IoFolder, IoTrophy } from 'react-icons/io5'
+
 /**
  * Проверяет, является ли iconUrl URL изображения
  */
@@ -11,10 +13,15 @@ export const isImageUrl = (iconUrl: string | null): boolean => {
  */
 export const renderIcon = (
   iconUrl: string | null,
-  fallback: string = '📁',
+  fallback: 'folder' | 'trophy' = 'folder',
   className?: string
 ): React.ReactNode => {
-  if (!iconUrl) return fallback
+  if (!iconUrl) {
+    if (fallback === 'trophy') {
+      return <IoTrophy style={{ width: '100%', height: '100%' }} />
+    }
+    return <IoFolder style={{ width: '100%', height: '100%' }} />
+  }
 
   if (isImageUrl(iconUrl)) {
     return (

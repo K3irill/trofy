@@ -257,7 +257,6 @@ export const PriorityAchievementsModal = ({
       query: debouncedSearchQuery || undefined,
       categoryId: selectedCategory || undefined,
       rarity: selectedRarity ? (selectedRarity as 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY') : undefined,
-      unlocked: false, // Только незавершенные достижения
       limit: 100,
     },
     {
@@ -268,7 +267,17 @@ export const PriorityAchievementsModal = ({
   const filteredAchievements = useMemo(() => {
     if (!achievementsData) return []
     return achievementsData.achievements.filter(
-      (achievement) => !currentPriority.includes(achievement.id)
+      (achievement) => {
+        // Исключаем уже добавленные в приоритет
+        if (currentPriority.includes(achievement.id)) return false
+        
+        // Показываем только "в работе" (есть прогресс, но нет completion_date) или недостигнутые (не unlocked)
+        const isCompleted = achievement.completion_date !== undefined
+        const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
+        const isNotStarted = !achievement.unlocked
+        
+        return !isCompleted && (isInProgress || isNotStarted)
+      }
     )
   }, [achievementsData, currentPriority])
 

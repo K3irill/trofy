@@ -22,6 +22,14 @@ export const CommentsDisabled = styled.div`
   color: #9ca3af;
   font-size: 0.875rem;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
 `
 
 export const CommentForm = styled.form`

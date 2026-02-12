@@ -25,6 +25,8 @@ export interface Category {
     id: string
     icon: string
     unlocked: boolean
+    progress?: number
+    completion_date?: string
   }>
 }
 
@@ -36,7 +38,9 @@ interface CategoryCardProps {
 
 export const CategoryCardComponent = ({ category, onClick, isAuthenticated = false }: CategoryCardProps) => {
   const progress = category.total > 0 ? Math.round((category.unlocked / category.total) * 100) : 0
-  const unlockedCount = category.achievements.filter(a => a.unlocked).length
+  const previewAchievements = category.achievements.slice(0, 8)
+  const hasMoreAchievements = category.achievements.length > 8
+  const remainingCount = category.total - previewAchievements.length
 
   return (
     <CategoryCard
@@ -80,34 +84,47 @@ export const CategoryCardComponent = ({ category, onClick, isAuthenticated = fal
         </CategoryStats>
       )}
       <AchievementPreview>
-        {category.achievements.slice(0, 8).map((achievement) => (
+        {previewAchievements.map((achievement) => {
+          // Определяем статус на основе доступных данных
+          // Если есть progress и completion_date, используем их, иначе только unlocked
+          const status: 'locked' | 'unlocked' | 'in_progress' | 'completed' = 
+            achievement.completion_date 
+              ? 'completed'
+              : achievement.unlocked && (achievement.progress || 0) > 0
+                ? 'in_progress'
+                : achievement.unlocked
+                  ? 'unlocked'
+                  : 'locked'
+
+          return (
+            <PreviewItem
+              key={achievement.id}
+              $status={status}
+              style={{ opacity: 1, transform: 'scale(1)' }}
+            >
+              {isImageUrl(achievement.icon) ? (
+                <img
+                  src={achievement.icon}
+                  alt=""
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+              ) : (
+                achievement.icon
+              )}
+            </PreviewItem>
+          )
+        })}
+        {hasMoreAchievements && remainingCount > 0 && (
           <PreviewItem
-            key={achievement.id}
-            unlocked={achievement.unlocked}
-            style={{ opacity: 1, transform: 'scale(1)' }}
+            $status="unlocked"
+            style={{ opacity: 1, transform: 'scale(1)', position: 'relative' }}
           >
-            {isImageUrl(achievement.icon) ? (
-              <img
-                src={achievement.icon}
-                alt=""
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                }}
-              />
-            ) : (
-              achievement.icon
-            )}
-          </PreviewItem>
-        ))}
-        {isAuthenticated && unlockedCount > 0 && (
-          <PreviewItem
-            unlocked={true}
-            style={{ opacity: 1, transform: 'scale(1)' }}
-          >
-            🔒
-            <AchievementCount>+{unlockedCount}</AchievementCount>
+            <span style={{ fontSize: '1.25rem', opacity: 0.6 }}>⋯</span>
+            <AchievementCount>+{remainingCount}</AchievementCount>
           </PreviewItem>
         )}
       </AchievementPreview>

@@ -3,7 +3,7 @@ import { validate } from 'class-validator'
 import { plainToInstance } from 'class-transformer'
 import multer from 'multer'
 import { achievementsService } from '../service/achievements.service'
-import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto } from '../dto/achievements.dto'
+import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto, UpdateProgressDto } from '../dto/achievements.dto'
 import { ApiError } from '../../../core/errors/ApiError'
 import { AuthRequest } from '../../auth/middleware/auth.middleware'
 
@@ -102,7 +102,7 @@ export class AchievementsController {
   async getAchievements(req: Request | AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = (req as AuthRequest).user?.userId
-      
+
       // Очищаем пустые строки из query параметров и преобразуем типы
       const cleanedQuery: any = { ...req.query }
       if (cleanedQuery.rarity === '' || cleanedQuery.rarity === null || cleanedQuery.rarity === undefined) {
@@ -132,7 +132,7 @@ export class AchievementsController {
       if (cleanedQuery.offset) {
         cleanedQuery.offset = parseInt(cleanedQuery.offset, 10)
       }
-      
+
       const dto = plainToInstance(GetAchievementsDto, cleanedQuery)
 
       const isValid = await validateDto(dto, res, next)
@@ -156,7 +156,7 @@ export class AchievementsController {
     try {
       const { categoryId } = req.params
       const userId = (req as AuthRequest).user?.userId
-      
+
       // Очищаем пустые строки из query параметров и преобразуем типы
       const cleanedQuery: any = { ...req.query }
       if (cleanedQuery.rarity === '' || cleanedQuery.rarity === null || cleanedQuery.rarity === undefined) {
@@ -183,7 +183,7 @@ export class AchievementsController {
       if (cleanedQuery.offset) {
         cleanedQuery.offset = parseInt(cleanedQuery.offset, 10)
       }
-      
+
       const dto = plainToInstance(GetAchievementsDto, cleanedQuery)
 
       const isValid = await validateDto(dto, res, next)
@@ -333,6 +333,55 @@ export class AchievementsController {
         files || []
       )
       res.status(201).json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * PUT /api/achievements/user-achievements/:userAchievementId - Обновление выполненного достижения
+   */
+  async updateAchievement(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+      const files = req.files as Express.Multer.File[]
+
+      const { UpdateAchievementDto } = await import('../dto/achievements.dto')
+      const dto = plainToInstance(UpdateAchievementDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const result = await achievementsService.updateAchievement(
+        userId,
+        userAchievementId,
+        dto,
+        files || []
+      )
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * DELETE /api/achievements/user-achievements/:userAchievementId - Сброс выполнения достижения
+   */
+  async resetAchievement(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+
+      const result = await achievementsService.resetAchievement(userId, userAchievementId)
+      res.json(result)
     } catch (error) {
       next(error)
     }
@@ -498,6 +547,32 @@ export class AchievementsController {
       const userId = req.user.userId
 
       const result = await achievementsService.deletePhoto(photoId, userId)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * PATCH /api/achievements/:achievementId/progress - Обновление прогресса выполнения
+   */
+  async updateProgress(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { achievementId } = req.params
+      const userId = req.user.userId
+
+      if (!achievementId) {
+        return next(ApiError.badRequest('Achievement ID is required'))
+      }
+
+      const dto = plainToInstance(UpdateProgressDto, req.body)
+      if (!(await validateDto(dto, res, next))) return
+
+      const result = await achievementsService.updateProgress(userId, achievementId, dto)
       res.json(result)
     } catch (error) {
       next(error)

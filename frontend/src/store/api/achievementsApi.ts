@@ -16,6 +16,8 @@ export interface Achievement {
   unlocked_at: string | null
   is_public: boolean
   created_at: string
+  progress?: number
+  completion_date?: string
 }
 
 export interface Category {
@@ -39,6 +41,8 @@ export interface CategoryWithStats {
     id: string
     icon_url: string | null
     unlocked: boolean
+    progress?: number
+    completion_date?: string
   }>
   created_at: string
   updated_at: string
