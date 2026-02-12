@@ -1,6 +1,7 @@
 import { prisma } from '../../../shared/database'
 import { ApiError } from '../../../core/errors/ApiError'
-import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto } from '../dto/achievements.dto'
+import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto } from '../dto/achievements.dto'
+import { saveFileFromBuffer, deleteFile, deleteAchievementFiles } from '../../../shared/utils/fileUpload'
 
 export class AchievementsService {
   /**
@@ -505,6 +506,563 @@ export class AchievementsService {
       created_at: achievement.created_at.toISOString(),
       updated_at: achievement.updated_at.toISOString(),
     }
+  }
+
+  /**
+   * Получение детальной информации о достижении
+   */
+  async getAchievementDetail(achievementId: string, userId?: string) {
+    const achievementData = await this.getAchievementById(achievementId, userId)
+
+    // Если пользователь авторизован, получаем его UserAchievement
+    let userAchievement = null
+    let likesCount = 0
+    let commentsCount = 0
+    let isLiked = false
+    let isFavorite = false
+    let photos: any[] = []
+
+    if (userId) {
+      userAchievement = await prisma.userAchievement.findUnique({
+        where: {
+          user_id_achievement_id: {
+            user_id: userId,
+            achievement_id: achievementId,
+          },
+        },
+        include: {
+          photos: {
+            orderBy: { order: 'asc' as any },
+          },
+        } as any,
+      })
+
+      if (userAchievement) {
+        // Получаем статистику
+        likesCount = await (prisma as any).achievementLike.count({
+          where: { user_achievement_id: userAchievement.id },
+        })
+
+        commentsCount = await (prisma as any).achievementComment.count({
+          where: {
+            user_achievement_id: userAchievement.id,
+            deleted_at: null,
+          },
+        })
+
+        isLiked = !!(await (prisma as any).achievementLike.findUnique({
+          where: {
+            user_achievement_id_user_id: {
+              user_achievement_id: userAchievement.id,
+              user_id: userId,
+            },
+          },
+        }))
+
+        isFavorite = !!(await (prisma as any).achievementFavorite.findUnique({
+          where: {
+            user_id_user_achievement_id: {
+              user_id: userId,
+              user_achievement_id: userAchievement.id,
+            },
+          },
+        }))
+
+        photos = (userAchievement.photos as any[]).map((photo: any) => ({
+          id: photo.id,
+          url: photo.file_url,
+          order: photo.order,
+        }))
+      }
+    } else if (achievementData.unlocked) {
+      // Для неавторизованных пользователей показываем статистику первого разблокировавшего
+      const firstUserAchievement = await prisma.userAchievement.findFirst({
+        where: {
+          achievement_id: achievementId,
+          is_public: true,
+        },
+        include: {
+          photos: {
+            orderBy: { order: 'asc' as any },
+          },
+        } as any,
+        orderBy: { unlocked_at: 'asc' },
+      })
+
+      if (firstUserAchievement) {
+        likesCount = await (prisma as any).achievementLike.count({
+          where: { user_achievement_id: firstUserAchievement.id },
+        })
+
+        commentsCount = await (prisma as any).achievementComment.count({
+          where: {
+            user_achievement_id: firstUserAchievement.id,
+            deleted_at: null,
+          },
+        })
+
+        photos = (firstUserAchievement.photos as any[]).map((photo: any) => ({
+          id: photo.id,
+          url: photo.file_url,
+          order: photo.order,
+        }))
+      }
+    }
+
+    return {
+      ...achievementData,
+      userAchievement: userAchievement
+        ? {
+          id: userAchievement.id,
+          completion_date: userAchievement.completion_date?.toISOString(),
+          difficulty: userAchievement.difficulty,
+          impressions: userAchievement.impressions,
+          is_main: userAchievement.is_main,
+          is_hidden: userAchievement.is_hidden,
+          can_like: userAchievement.can_like,
+          can_comment: userAchievement.can_comment,
+          is_public: userAchievement.is_public,
+        }
+        : null,
+      likesCount,
+      commentsCount,
+      isLiked,
+      isFavorite,
+      photos,
+    }
+  }
+
+  /**
+   * Завершение достижения пользователем
+   */
+  async completeAchievement(
+    userId: string,
+    achievementId: string,
+    dto: CompleteAchievementDto,
+    photos?: MulterFile[]
+  ) {
+    // Проверяем существование достижения
+    const achievement = await prisma.achievement.findUnique({
+      where: { id: achievementId },
+    })
+
+    if (!achievement) {
+      throw ApiError.notFound('Achievement not found')
+    }
+
+    // Проверяем, не завершено ли уже
+    const existing = await prisma.userAchievement.findUnique({
+      where: {
+        user_id_achievement_id: {
+          user_id: userId,
+          achievement_id: achievementId,
+        },
+      },
+    })
+
+    if (existing) {
+      throw ApiError.badRequest('Achievement already completed')
+    }
+
+    // Создаем UserAchievement
+    const userAchievement = await prisma.userAchievement.create({
+      data: {
+        user_id: userId,
+        achievement_id: achievementId,
+        completion_date: new Date(dto.completion_date),
+        difficulty: dto.difficulty || null,
+        impressions: dto.impressions || null,
+      },
+    })
+
+    // Загружаем фотографии
+    if (photos && photos.length > 0) {
+      const photoPromises = photos.map(async (photo, index) => {
+        const uploaded = await saveFileFromBuffer(
+          photo.buffer,
+          photo.originalname,
+          photo.mimetype,
+          userAchievement.id
+        )
+
+        return (prisma as any).achievementPhoto.create({
+          data: {
+            user_achievement_id: userAchievement.id,
+            file_path: uploaded.path,
+            file_url: uploaded.url,
+            order: index,
+          },
+        })
+      })
+
+      await Promise.all(photoPromises)
+    }
+
+    // Обновляем XP пользователя
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        xp: {
+          increment: achievement.xp_reward,
+        },
+      },
+    })
+
+    return this.getAchievementDetail(achievementId, userId)
+  }
+
+  /**
+   * Обновление настроек достижения
+   */
+  async updateAchievementSettings(
+    userAchievementId: string,
+    userId: string,
+    dto: UpdateAchievementSettingsDto
+  ) {
+    // Проверяем права доступа
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('User achievement not found')
+    }
+
+    if (userAchievement.user_id !== userId) {
+      throw ApiError.forbidden('You can only update your own achievements')
+    }
+
+    // Обновляем настройки
+    const updated = await prisma.userAchievement.update({
+      where: { id: userAchievementId },
+      data: {
+        is_main: dto.is_main !== undefined ? dto.is_main : userAchievement.is_main,
+        is_hidden: dto.is_hidden !== undefined ? dto.is_hidden : userAchievement.is_hidden,
+        can_like: dto.can_like !== undefined ? dto.can_like : userAchievement.can_like,
+        can_comment: dto.can_comment !== undefined ? dto.can_comment : userAchievement.can_comment,
+        is_public: dto.is_public !== undefined ? dto.is_public : userAchievement.is_public,
+      },
+    })
+
+    return {
+      id: updated.id,
+      is_main: (updated as any).is_main,
+      is_hidden: (updated as any).is_hidden,
+      can_like: (updated as any).can_like,
+      can_comment: (updated as any).can_comment,
+      is_public: updated.is_public,
+    }
+  }
+
+  /**
+   * Переключение избранного
+   */
+  async toggleFavorite(userId: string, userAchievementId: string) {
+    // Проверяем существование
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('User achievement not found')
+    }
+
+    // Проверяем, не свое ли достижение
+    if (userAchievement.user_id === userId) {
+      throw ApiError.badRequest('Cannot favorite your own achievement')
+    }
+
+    // Проверяем, публичное ли
+    if (!userAchievement.is_public) {
+      throw ApiError.forbidden('Cannot favorite private achievement')
+    }
+
+    const existing = await (prisma as any).achievementFavorite.findUnique({
+      where: {
+        user_id_user_achievement_id: {
+          user_id: userId,
+          user_achievement_id: userAchievementId,
+        },
+      },
+    })
+
+    if (existing) {
+      await (prisma as any).achievementFavorite.delete({
+        where: { id: existing.id },
+      })
+      return { isFavorite: false }
+    } else {
+      await (prisma as any).achievementFavorite.create({
+        data: {
+          user_id: userId,
+          user_achievement_id: userAchievementId,
+        },
+      })
+      return { isFavorite: true }
+    }
+  }
+
+  /**
+   * Получение комментариев
+   */
+  async getComments(userAchievementId: string, limit: number = 50, offset: number = 0) {
+    const comments = await (prisma as any).achievementComment.findMany({
+      where: {
+        user_achievement_id: userAchievementId,
+        deleted_at: null,
+        parent_comment_id: null, // Только корневые комментарии
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+        replies: {
+          where: { deleted_at: null },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+              },
+            },
+          },
+          orderBy: { created_at: 'asc' },
+        },
+      },
+      orderBy: { created_at: 'desc' },
+      take: limit,
+      skip: offset,
+    })
+
+    return comments.map((comment: any) => ({
+      id: comment.id,
+      userId: comment.user_id,
+      username: comment.user.username,
+      text: comment.text,
+      createdAt: comment.created_at.toISOString(),
+      replies: comment.replies.map((reply: any) => ({
+        id: reply.id,
+        userId: reply.user_id,
+        username: reply.user.username,
+        text: reply.text,
+        createdAt: reply.created_at.toISOString(),
+        parentCommentId: reply.parent_comment_id,
+      })),
+    }))
+  }
+
+  /**
+   * Создание комментария
+   */
+  async createComment(userId: string, userAchievementId: string, dto: CreateCommentDto) {
+    // Проверяем существование
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('User achievement not found')
+    }
+
+    // Проверяем, разрешены ли комментарии
+    if (!(userAchievement as any).can_comment) {
+      throw ApiError.forbidden('Comments are disabled for this achievement')
+    }
+
+    // Если это ответ, проверяем существование родительского комментария
+    if (dto.parent_comment_id) {
+      const parent = await (prisma as any).achievementComment.findUnique({
+        where: { id: dto.parent_comment_id },
+      })
+
+      if (!parent || parent.user_achievement_id !== userAchievementId) {
+        throw ApiError.notFound('Parent comment not found')
+      }
+    }
+
+    const comment = await (prisma as any).achievementComment.create({
+      data: {
+        user_achievement_id: userAchievementId,
+        user_id: userId,
+        parent_comment_id: dto.parent_comment_id || null,
+        text: dto.text,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    })
+
+    return {
+      id: comment.id,
+      userId: comment.user_id,
+      username: comment.user.username,
+      text: comment.text,
+      createdAt: comment.created_at.toISOString(),
+      parentCommentId: comment.parent_comment_id,
+    }
+  }
+
+  /**
+   * Удаление комментария
+   */
+  async deleteComment(commentId: string, userId: string) {
+    const comment = await (prisma as any).achievementComment.findUnique({
+      where: { id: commentId },
+      include: {
+        userAchievement: true,
+      },
+    })
+
+    if (!comment) {
+      throw ApiError.notFound('Comment not found')
+    }
+
+    // Проверяем права: владелец комментария или владелец достижения
+    if (comment.user_id !== userId && comment.userAchievement.user_id !== userId) {
+      throw ApiError.forbidden('You can only delete your own comments or comments on your achievements')
+    }
+
+    // Soft delete
+    await (prisma as any).achievementComment.update({
+      where: { id: commentId },
+      data: { deleted_at: new Date() },
+    })
+
+    return { success: true }
+  }
+
+  /**
+   * Переключение лайка
+   */
+  async toggleLike(userId: string, userAchievementId: string) {
+    // Проверяем существование
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('User achievement not found')
+    }
+
+    // Проверяем, разрешены ли лайки
+    if (!(userAchievement as any).can_like) {
+      throw ApiError.forbidden('Likes are disabled for this achievement')
+    }
+
+    const existing = await (prisma as any).achievementLike.findUnique({
+      where: {
+        user_achievement_id_user_id: {
+          user_achievement_id: userAchievementId,
+          user_id: userId,
+        },
+      },
+    })
+
+    if (existing) {
+      await (prisma as any).achievementLike.delete({
+        where: { id: existing.id },
+      })
+      return { isLiked: false }
+    } else {
+      await (prisma as any).achievementLike.create({
+        data: {
+          user_achievement_id: userAchievementId,
+          user_id: userId,
+        },
+      })
+      return { isLiked: true }
+    }
+  }
+
+  /**
+   * Загрузка фотографий
+   */
+  async uploadPhotos(
+    userAchievementId: string,
+    userId: string,
+    photos: MulterFile[]
+  ) {
+    // Проверяем права доступа
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('User achievement not found')
+    }
+
+    if (userAchievement.user_id !== userId) {
+      throw ApiError.forbidden('You can only upload photos to your own achievements')
+    }
+
+    // Получаем текущее количество фотографий для определения order
+    const currentPhotosCount = await (prisma as any).achievementPhoto.count({
+      where: { user_achievement_id: userAchievementId },
+    })
+
+    const uploadedPhotos = await Promise.all(
+      photos.map(async (photo, index) => {
+        const uploaded = await saveFileFromBuffer(
+          photo.buffer,
+          photo.originalname,
+          photo.mimetype,
+          userAchievementId
+        )
+
+        return (prisma as any).achievementPhoto.create({
+          data: {
+            user_achievement_id: userAchievementId,
+            file_path: uploaded.path,
+            file_url: uploaded.url,
+            order: currentPhotosCount + index,
+          },
+        })
+      })
+    )
+
+    return uploadedPhotos.map((photo) => ({
+      id: photo.id,
+      url: photo.file_url,
+      order: photo.order,
+    }))
+  }
+
+  /**
+   * Удаление фотографии
+   */
+  async deletePhoto(photoId: string, userId: string) {
+    const photo = await (prisma as any).achievementPhoto.findUnique({
+      where: { id: photoId },
+      include: {
+        userAchievement: true,
+      },
+    })
+
+    if (!photo) {
+      throw ApiError.notFound('Photo not found')
+    }
+
+    if (photo.userAchievement.user_id !== userId) {
+      throw ApiError.forbidden('You can only delete photos from your own achievements')
+    }
+
+    // Удаляем файл
+    deleteFile(photo.file_path)
+
+    // Удаляем запись из БД
+    await (prisma as any).achievementPhoto.delete({
+      where: { id: photoId },
+    })
+
+    return { success: true }
   }
 }
 

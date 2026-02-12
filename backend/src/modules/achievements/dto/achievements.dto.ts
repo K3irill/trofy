@@ -51,7 +51,7 @@ export class GetAchievementsDto {
 
   @IsInt()
   @Min(1)
-  @Max(100)
+  @Max(1000)
   @IsOptional()
   @Type(() => Number)
   limit?: number
@@ -100,4 +100,58 @@ export class CreateAchievementDto {
   @IsOptional()
   @Type(() => Number)
   xp_reward?: number
+}
+
+export class CompleteAchievementDto {
+  @IsString()
+  @IsNotEmpty()
+  completion_date: string
+
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  @IsOptional()
+  @Type(() => Number)
+  difficulty?: number
+
+  @IsString()
+  @IsOptional()
+  impressions?: string
+}
+
+export class UpdateAchievementSettingsDto {
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  is_main?: boolean
+
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  is_hidden?: boolean
+
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  can_like?: boolean
+
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  can_comment?: boolean
+
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  is_public?: boolean
+}
+
+export class CreateCommentDto {
+  @IsString()
+  @IsNotEmpty()
+  text: string
+
+  @IsString()
+  @IsOptional()
+  parent_comment_id?: string
 }

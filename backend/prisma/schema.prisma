@@ -37,12 +37,15 @@ model User {
   created_at                DateTime  @default(now())
   updated_at                DateTime  @updatedAt
 
-  profile_theme    ProfileTheme?     @relation(fields: [profile_theme_id], references: [id], onDelete: SetNull)
-  userAchievements UserAchievement[]
-  categories       Category[]
-  platformAccounts PlatformAccount[]
-  refreshTokens    RefreshToken[]
-  notifications    Notification[]
+  profile_theme        ProfileTheme?         @relation(fields: [profile_theme_id], references: [id], onDelete: SetNull)
+  userAchievements     UserAchievement[]
+  categories           Category[]
+  platformAccounts     PlatformAccount[]
+  refreshTokens        RefreshToken[]
+  notifications        Notification[]
+  achievementComments  AchievementComment[]
+  achievementLikes     AchievementLike[]
+  achievementFavorites AchievementFavorite[]
 
   @@index([email])
   @@index([phone])
@@ -82,14 +85,26 @@ model Category {
 }
 
 model UserAchievement {
-  id             String   @id @default(uuid())
-  user_id        String
-  achievement_id String
-  unlocked_at    DateTime @default(now())
-  is_public      Boolean  @default(true)
+  id              String    @id @default(uuid())
+  user_id         String
+  achievement_id  String
+  unlocked_at     DateTime  @default(now())
+  is_public       Boolean   @default(true)
+  completion_date DateTime?
+  difficulty      Int? // 1-5
+  impressions     String?
+  is_main         Boolean   @default(false)
+  can_like        Boolean   @default(true)
+  can_comment     Boolean   @default(true)
+  is_hidden       Boolean   @default(false)
 
   user        User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
   achievement Achievement @relation(fields: [achievement_id], references: [id], onDelete: Cascade)
+
+  comments  AchievementComment[]
+  likes     AchievementLike[]
+  favorites AchievementFavorite[]
+  photos    AchievementPhoto[]
 
   @@unique([user_id, achievement_id])
   @@index([user_id])
@@ -155,6 +170,69 @@ model Notification {
   @@index([user_id])
   @@index([is_read])
   @@index([created_at])
+}
+
+model AchievementComment {
+  id                  String    @id @default(uuid())
+  user_achievement_id String
+  user_id             String
+  parent_comment_id   String?
+  text                String
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
+  deleted_at          DateTime?
+
+  userAchievement UserAchievement      @relation(fields: [user_achievement_id], references: [id], onDelete: Cascade)
+  user            User                 @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  parentComment   AchievementComment?  @relation("CommentReplies", fields: [parent_comment_id], references: [id], onDelete: Cascade)
+  replies         AchievementComment[] @relation("CommentReplies")
+
+  @@index([user_achievement_id])
+  @@index([user_id])
+  @@index([parent_comment_id])
+  @@index([created_at])
+}
+
+model AchievementLike {
+  id                  String   @id @default(uuid())
+  user_achievement_id String
+  user_id             String
+  created_at          DateTime @default(now())
+
+  userAchievement UserAchievement @relation(fields: [user_achievement_id], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_achievement_id, user_id])
+  @@index([user_achievement_id])
+  @@index([user_id])
+}
+
+model AchievementFavorite {
+  id                  String   @id @default(uuid())
+  user_id             String
+  user_achievement_id String
+  created_at          DateTime @default(now())
+
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  userAchievement UserAchievement @relation(fields: [user_achievement_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, user_achievement_id])
+  @@index([user_id])
+  @@index([user_achievement_id])
+}
+
+model AchievementPhoto {
+  id                  String   @id @default(uuid())
+  user_achievement_id String
+  file_path           String
+  file_url            String
+  order               Int      @default(0)
+  created_at          DateTime @default(now())
+
+  userAchievement UserAchievement @relation(fields: [user_achievement_id], references: [id], onDelete: Cascade)
+
+  @@index([user_achievement_id])
+  @@index([order])
 }
 
 enum Rarity {

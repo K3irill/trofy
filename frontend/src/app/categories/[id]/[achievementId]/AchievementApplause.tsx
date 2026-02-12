@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { AchievementDetail } from './types'
+import { useToggleLikeMutation } from '@/store/api/achievementDetailApi'
 import {
   ApplauseContainer,
   ApplauseButton,
@@ -13,12 +13,14 @@ interface AchievementApplauseProps {
   achievement: AchievementDetail
   isOwner: boolean
   currentUserId?: string
+  userAchievementId?: string
 }
 
-export const AchievementApplause = ({ achievement, isOwner, currentUserId }: AchievementApplauseProps) => {
-  const [likesCount, setLikesCount] = useState(achievement.likesCount || 0)
-  const [isLiked, setIsLiked] = useState(achievement.isLiked || false)
-  const [isToggling, setIsToggling] = useState(false)
+export const AchievementApplause = ({ achievement, isOwner, currentUserId, userAchievementId }: AchievementApplauseProps) => {
+  const [toggleLike, { isLoading: isToggling }] = useToggleLikeMutation()
+
+  const likesCount = achievement.likesCount || 0
+  const isLiked = achievement.isLiked || false
 
   if (!achievement.unlocked) {
     return null
@@ -35,38 +37,12 @@ export const AchievementApplause = ({ achievement, isOwner, currentUserId }: Ach
   }
 
   const handleToggleLike = async () => {
-    if (isToggling) return
-
-    setIsToggling(true)
-    
-    // Оптимистичное обновление
-    const newLiked = !isLiked
-    const newCount = newLiked ? likesCount + 1 : Math.max(0, likesCount - 1)
-    
-    setIsLiked(newLiked)
-    setLikesCount(newCount)
+    if (isToggling || !userAchievementId) return
 
     try {
-      // Здесь будет API вызов
-      // await toggleApplause(achievement.id, newLiked)
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await toggleLike(userAchievementId).unwrap()
     } catch (error) {
-      // Откат при ошибке
-      setIsLiked(!newLiked)
-      setLikesCount(likesCount)
-    } finally {
-      setIsToggling(false)
-    }
-  }
-
-  const handleRemoveAllLikes = () => {
-    if (!isOwner) return
-    
-    if (confirm('Вы уверены, что хотите удалить все аплодисменты?')) {
-      setLikesCount(0)
-      setIsLiked(false)
-      // Здесь будет API вызов
-      // await removeAllApplause(achievement.id)
+      alert('Ошибка при обновлении лайка')
     }
   }
 
@@ -80,31 +56,7 @@ export const AchievementApplause = ({ achievement, isOwner, currentUserId }: Ach
         <span>{isLiked ? '👏' : '👋'}</span>
         <ApplauseCount>{likesCount}</ApplauseCount>
       </ApplauseButton>
-      
-      {isOwner && likesCount > 0 && (
-        <button
-          onClick={handleRemoveAllLikes}
-          style={{
-            marginLeft: '1rem',
-            padding: '0.5rem 1rem',
-            background: 'rgba(239, 68, 68, 0.2)',
-            border: '1px solid #ef4444',
-            borderRadius: '8px',
-            color: '#ef4444',
-            fontSize: '0.75rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'
-          }}
-        >
-          Удалить все
-        </button>
-      )}
+
     </ApplauseContainer>
   )
 }

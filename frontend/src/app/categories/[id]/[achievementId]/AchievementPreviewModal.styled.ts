@@ -75,14 +75,14 @@ export const ModalCloseButton = styled.button`
   }
 `
 
-export const ModalIcon = styled.div<{ unlocked: boolean }>`
+export const ModalIcon = styled.div<{ $unlocked: boolean }>`
   width: 280px;
   height: 280px;
   border-radius: 32px;
-  background: ${props => props.unlocked
+  background: ${props => props.$unlocked
     ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.25) 0%, rgba(0, 168, 204, 0.15) 100%)'
     : 'linear-gradient(135deg, rgba(55, 65, 81, 0.6) 0%, rgba(31, 41, 55, 0.8) 100%)'};
-  border: 3px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.6)' : 'rgba(75, 85, 99, 0.6)'};
+  border: 3px solid ${props => props.$unlocked ? 'rgba(0, 212, 255, 0.6)' : 'rgba(75, 85, 99, 0.6)'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -105,7 +105,7 @@ export const ModalIcon = styled.div<{ unlocked: boolean }>`
     left: 0;
     right: 0;
     bottom: 0;
-    background: ${props => props.unlocked
+    background: ${props => props.$unlocked
     ? 'radial-gradient(circle at center, rgba(0, 212, 255, 0.15) 0%, transparent 70%)'
     : 'transparent'};
     opacity: 0;
@@ -125,24 +125,24 @@ export const ModalIcon = styled.div<{ unlocked: boolean }>`
   }
 `
 
-export const ModalImage = styled.img<{ unlocked: boolean }>`
+export const ModalImage = styled.div<{ $unlocked: boolean }>`
   width: 280px;
   height: 280px;
   border-radius: 32px;
-  border: 3px solid ${props => props.unlocked ? 'rgba(0, 212, 255, 0.6)' : 'rgba(75, 85, 99, 0.6)'};
-  object-fit: cover;
-  filter: ${props => props.unlocked
+  border: 3px solid ${props => props.$unlocked ? 'rgba(0, 212, 255, 0.6)' : 'rgba(75, 85, 99, 0.6)'};
+  filter: ${props => props.$unlocked
     ? 'drop-shadow(0 0 40px rgba(0, 212, 255, 0.5))'
     : 'grayscale(0.6) brightness(0.7)'};
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: ${props => props.unlocked
+  box-shadow: ${props => props.$unlocked
     ? '0 20px 60px rgba(0, 212, 255, 0.3)'
     : '0 10px 30px rgba(0, 0, 0, 0.3)'};
   cursor: pointer;
   position: relative;
-  background: ${props => props.unlocked
+  background: ${props => props.$unlocked
     ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 168, 204, 0.05) 100%)'
     : 'linear-gradient(135deg, rgba(55, 65, 81, 0.3) 0%, rgba(31, 41, 55, 0.5) 100%)'};
+  overflow: hidden;
 
   &::after {
     content: '';
@@ -151,7 +151,7 @@ export const ModalImage = styled.img<{ unlocked: boolean }>`
     left: 0;
     right: 0;
     bottom: 0;
-    background: ${props => props.unlocked
+    background: ${props => props.$unlocked
     ? 'radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%)'
     : 'transparent'};
     opacity: 0;

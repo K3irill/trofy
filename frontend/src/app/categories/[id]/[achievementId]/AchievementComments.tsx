@@ -3,6 +3,12 @@
 import { useState } from 'react'
 import { AchievementDetail, AchievementComment } from './types'
 import {
+  useGetCommentsQuery,
+  useCreateCommentMutation,
+  useDeleteCommentMutation,
+} from '@/store/api/achievementDetailApi'
+import { BlockLoader } from '@/components/Loader/BlockLoader'
+import {
   CommentsContainer,
   CommentsHeader,
   CommentsDisabled,
@@ -25,6 +31,7 @@ interface AchievementCommentsProps {
   achievement: AchievementDetail
   isOwner: boolean
   currentUserId?: string
+  userAchievementId?: string
 }
 
 const mockComments: AchievementComment[] = [
@@ -46,10 +53,17 @@ const mockComments: AchievementComment[] = [
   },
 ]
 
-export const AchievementComments = ({ achievement, isOwner, currentUserId }: AchievementCommentsProps) => {
-  const [comments, setComments] = useState<AchievementComment[]>(mockComments)
+export const AchievementComments = ({ achievement, isOwner, currentUserId, userAchievementId }: AchievementCommentsProps) => {
   const [newComment, setNewComment] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState('')
+
+  const { data: comments = [], isLoading } = useGetCommentsQuery(
+    { userAchievementId: userAchievementId || '' },
+    { skip: !userAchievementId || !achievement.unlocked }
+  )
+  const [createComment, { isLoading: isSubmitting }] = useCreateCommentMutation()
+  const [deleteComment] = useDeleteCommentMutation()
 
   if (!achievement.unlocked) {
     return null
@@ -67,45 +81,41 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId }: Ach
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newComment.trim() || isSubmitting) return
-
-    setIsSubmitting(true)
-
-    const comment: AchievementComment = {
-      id: Date.now().toString(),
-      userId: currentUserId || 'current',
-      username: 'Вы',
-      text: newComment,
-      createdAt: new Date().toISOString(),
-      isOwner: isOwner,
-    }
+    if (!newComment.trim() || isSubmitting || !userAchievementId) return
 
     try {
-      // Здесь будет API вызов
-      // await addComment(achievement.id, newComment)
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      setComments([...comments, comment])
+      await createComment({
+        userAchievementId,
+        data: {
+          text: newComment,
+          parent_comment_id: replyingTo || undefined,
+        },
+      }).unwrap()
       setNewComment('')
+      setReplyingTo(null)
+      setReplyText('')
     } catch (error) {
       alert('Ошибка при добавлении комментария')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!confirm('Удалить комментарий?')) return
+    if (!confirm('Удалить комментарий?') || !userAchievementId) return
 
     try {
-      // Здесь будет API вызов
-      // await deleteComment(achievement.id, commentId)
-      await new Promise(resolve => setTimeout(resolve, 300))
-      
-      setComments(comments.filter(c => c.id !== commentId))
+      await deleteComment({ userAchievementId, commentId }).unwrap()
     } catch (error) {
       alert('Ошибка при удалении комментария')
     }
+  }
+
+  const handleReply = (commentId: string) => {
+    setReplyingTo(commentId)
+  }
+
+  const handleCancelReply = () => {
+    setReplyingTo(null)
+    setReplyText('')
   }
 
   const formatDate = (dateString: string) => {
@@ -123,6 +133,14 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId }: Ach
     return date.toLocaleDateString('ru-RU')
   }
 
+  if (isLoading) {
+    return (
+      <CommentsContainer>
+        <BlockLoader text="Загрузка комментариев..." size="small" />
+      </CommentsContainer>
+    )
+  }
+
   return (
     <CommentsContainer>
       <CommentsHeader>
@@ -131,35 +149,101 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId }: Ach
 
       <CommentForm onSubmit={handleSubmitComment}>
         <CommentInput
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Написать комментарий..."
+          value={replyingTo ? replyText : newComment}
+          onChange={(e) => {
+            if (replyingTo) {
+              setReplyText(e.target.value)
+            } else {
+              setNewComment(e.target.value)
+            }
+          }}
+          placeholder={replyingTo ? 'Написать ответ...' : 'Написать комментарий...'}
           rows={3}
         />
-        <CommentSubmitButton type="submit" disabled={!newComment.trim() || isSubmitting}>
-          {isSubmitting ? 'Отправка...' : 'Отправить'}
-        </CommentSubmitButton>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {replyingTo && (
+            <button
+              type="button"
+              onClick={handleCancelReply}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'rgba(156, 163, 175, 0.2)',
+                border: '1px solid rgba(156, 163, 175, 0.3)',
+                borderRadius: '8px',
+                color: '#9ca3af',
+                cursor: 'pointer',
+                fontSize: '0.875rem',
+              }}
+            >
+              Отмена
+            </button>
+          )}
+          <CommentSubmitButton type="submit" disabled={(!newComment.trim() && !replyText.trim()) || isSubmitting}>
+            {isSubmitting ? 'Отправка...' : replyingTo ? 'Ответить' : 'Отправить'}
+          </CommentSubmitButton>
+        </div>
       </CommentForm>
 
       <CommentsList>
         {comments.map((comment) => (
-          <CommentItem key={comment.id}>
-            <CommentHeader>
-              <CommentAvatar>{comment.username[0].toUpperCase()}</CommentAvatar>
-              <CommentInfo>
-                <CommentAuthor>{comment.username}</CommentAuthor>
-                <CommentDate>{formatDate(comment.createdAt)}</CommentDate>
-              </CommentInfo>
-            </CommentHeader>
-            <CommentText>{comment.text}</CommentText>
-            {(isOwner || comment.userId === currentUserId) && (
+          <div key={comment.id}>
+            <CommentItem>
+              <CommentHeader>
+                <CommentAvatar>{comment.username[0].toUpperCase()}</CommentAvatar>
+                <CommentInfo>
+                  <CommentAuthor>{comment.username}</CommentAuthor>
+                  <CommentDate>{formatDate(comment.createdAt)}</CommentDate>
+                </CommentInfo>
+              </CommentHeader>
+              <CommentText>{comment.text}</CommentText>
               <CommentActions>
-                <CommentDeleteButton onClick={() => handleDeleteComment(comment.id)}>
-                  Удалить
-                </CommentDeleteButton>
+                {currentUserId && comment.userId !== currentUserId && (
+                  <button
+                    onClick={() => handleReply(comment.id)}
+                    style={{
+                      padding: '0.25rem 0.75rem',
+                      background: 'transparent',
+                      border: '1px solid rgba(156, 163, 175, 0.3)',
+                      borderRadius: '6px',
+                      color: '#9ca3af',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    Ответить
+                  </button>
+                )}
+                {(isOwner || comment.userId === currentUserId) && (
+                  <CommentDeleteButton onClick={() => handleDeleteComment(comment.id)}>
+                    Удалить
+                  </CommentDeleteButton>
+                )}
               </CommentActions>
+            </CommentItem>
+            {comment.replies && comment.replies.length > 0 && (
+              <div style={{ marginLeft: '3rem', marginTop: '0.5rem' }}>
+                {comment.replies.map((reply) => (
+                  <CommentItem key={reply.id} style={{ marginBottom: '0.75rem' }}>
+                    <CommentHeader>
+                      <CommentAvatar>{reply.username[0].toUpperCase()}</CommentAvatar>
+                      <CommentInfo>
+                        <CommentAuthor>{reply.username}</CommentAuthor>
+                        <CommentDate>{formatDate(reply.createdAt)}</CommentDate>
+                      </CommentInfo>
+                    </CommentHeader>
+                    <CommentText>{reply.text}</CommentText>
+                    {(isOwner || reply.userId === currentUserId) && (
+                      <CommentActions>
+                        <CommentDeleteButton onClick={() => handleDeleteComment(reply.id)}>
+                          Удалить
+                        </CommentDeleteButton>
+                      </CommentActions>
+                    )}
+                  </CommentItem>
+                ))}
+              </div>
             )}
-          </CommentItem>
+          </div>
         ))}
       </CommentsList>
     </CommentsContainer>

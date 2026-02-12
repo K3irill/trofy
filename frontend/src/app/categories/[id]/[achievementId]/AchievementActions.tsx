@@ -1,7 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import { AchievementDetail } from './types'
+import {
+  useUpdateAchievementSettingsMutation,
+  useToggleFavoriteMutation,
+} from '@/store/api/achievementDetailApi'
 import {
   ActionsContainer,
   ActionButton,
@@ -12,14 +15,18 @@ interface AchievementActionsProps {
   achievement: AchievementDetail
   isOwner?: boolean
   onUpdate?: (updates: Partial<AchievementDetail>) => void
+  userAchievementId?: string
 }
 
-export const AchievementActions = ({ achievement, isOwner = false, onUpdate }: AchievementActionsProps) => {
-  const [isMain, setIsMain] = useState(achievement.isMain || false)
-  const [isFavorite, setIsFavorite] = useState(achievement.isFavorite || false)
-  const [isHidden, setIsHidden] = useState(achievement.isHidden || false)
-  const [canLike, setCanLike] = useState(achievement.canLike !== false)
-  const [canComment, setCanComment] = useState(achievement.canComment !== false)
+export const AchievementActions = ({ achievement, isOwner = false, onUpdate, userAchievementId }: AchievementActionsProps) => {
+  const [updateSettings] = useUpdateAchievementSettingsMutation()
+  const [toggleFavorite] = useToggleFavoriteMutation()
+
+  const isMain = achievement.isMain || false
+  const isFavorite = achievement.isFavorite || false
+  const isHidden = achievement.isHidden || false
+  const canLike = achievement.canLike !== false
+  const canComment = achievement.canComment !== false
 
   const handleShare = () => {
     if (navigator.share) {
@@ -38,37 +45,66 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate }: A
     }
   }
 
-  const handleToggleMain = () => {
-    setIsMain(!isMain)
-    // Здесь будет API вызов
-    console.log('Set as main:', !isMain)
+  const handleToggleMain = async () => {
+    if (!userAchievementId) return
+    try {
+      await updateSettings({
+        userAchievementId,
+        data: { is_main: !isMain },
+      }).unwrap()
+      onUpdate?.({ isMain: !isMain })
+    } catch (error) {
+      alert('Ошибка при обновлении настроек')
+    }
   }
 
-  const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite)
-    // Здесь будет API вызов
-    console.log('Toggle favorite:', !isFavorite)
+  const handleToggleFavorite = async () => {
+    if (!userAchievementId) return
+    try {
+      await toggleFavorite(userAchievementId).unwrap()
+      onUpdate?.({ isFavorite: !isFavorite })
+    } catch (error) {
+      alert('Ошибка при обновлении избранного')
+    }
   }
 
-  const handleToggleHidden = () => {
-    setIsHidden(!isHidden)
-    // Здесь будет API вызов
-    console.log('Toggle hidden:', !isHidden)
-    onUpdate?.({ isHidden: !isHidden })
+  const handleToggleHidden = async () => {
+    if (!userAchievementId) return
+    try {
+      await updateSettings({
+        userAchievementId,
+        data: { is_hidden: !isHidden },
+      }).unwrap()
+      onUpdate?.({ isHidden: !isHidden })
+    } catch (error) {
+      alert('Ошибка при обновлении настроек')
+    }
   }
 
-  const handleToggleLikes = () => {
-    setCanLike(!canLike)
-    // Здесь будет API вызов
-    console.log('Toggle likes:', !canLike)
-    onUpdate?.({ canLike: !canLike })
+  const handleToggleLikes = async () => {
+    if (!userAchievementId) return
+    try {
+      await updateSettings({
+        userAchievementId,
+        data: { can_like: !canLike },
+      }).unwrap()
+      onUpdate?.({ canLike: !canLike })
+    } catch (error) {
+      alert('Ошибка при обновлении настроек')
+    }
   }
 
-  const handleToggleComments = () => {
-    setCanComment(!canComment)
-    // Здесь будет API вызов
-    console.log('Toggle comments:', !canComment)
-    onUpdate?.({ canComment: !canComment })
+  const handleToggleComments = async () => {
+    if (!userAchievementId) return
+    try {
+      await updateSettings({
+        userAchievementId,
+        data: { can_comment: !canComment },
+      }).unwrap()
+      onUpdate?.({ canComment: !canComment })
+    } catch (error) {
+      alert('Ошибка при обновлении настроек')
+    }
   }
 
   return (

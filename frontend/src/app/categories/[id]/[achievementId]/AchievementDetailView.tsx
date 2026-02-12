@@ -68,7 +68,7 @@ export const AchievementDetailView = ({ achievement }: AchievementDetailViewProp
           <PhotoGrid>
             {achievement.photos.map((photo, index) => (
               <PhotoItem key={index}>
-                <img src={photo} alt={`Фото ${index + 1}`} />
+                <img src={process.env.NEXT_PUBLIC_BACK_URL + photo} alt={`Фото ${index + 1}`} />
               </PhotoItem>
             ))}
           </PhotoGrid>

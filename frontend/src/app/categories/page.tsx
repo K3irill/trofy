@@ -36,6 +36,7 @@ import { AchievementGrid } from './AchievementGrid.styled'
 import { type Achievement } from './api'
 
 import Container from '@/components/Container/Container'
+import { BlockLoader } from '@/components/Loader/BlockLoader'
 
 // Преобразование достижения из API формата в формат компонента
 const transformAchievement = (apiAchievement: ApiAchievement): Achievement => {
@@ -204,16 +205,7 @@ export default function CategoriesPage() {
               transition={{ duration: 0.3 }}
             >
               {isLoading ? (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: '4rem 2rem',
-                    color: 'rgba(255, 255, 255, 0.5)',
-                  }}
-                >
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-                  <div style={{ fontSize: '1.25rem' }}>Загрузка категорий...</div>
-                </div>
+                <BlockLoader text="Загрузка категорий..." />
               ) : hasError ? (
                 <div
                   style={{
@@ -271,16 +263,7 @@ export default function CategoriesPage() {
                 isAuthenticated={isAuthenticated}
               />
               {isLoading ? (
-                <div
-                  style={{
-                    textAlign: 'center',
-                    padding: '4rem 2rem',
-                    color: 'rgba(255, 255, 255, 0.5)',
-                  }}
-                >
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-                  <div style={{ fontSize: '1.25rem' }}>Загрузка достижений...</div>
-                </div>
+                <BlockLoader text="Загрузка достижений..." />
               ) : hasError ? (
                 <div
                   style={{

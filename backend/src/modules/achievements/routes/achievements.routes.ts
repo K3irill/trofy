@@ -1,7 +1,16 @@
 import { Router } from 'express'
+import multer from 'multer'
 import { achievementsController } from '../controller/achievements.controller'
 import { authenticate, optionalAuthenticate } from '../../auth/middleware/auth.middleware'
 import { requireAdmin } from '../../auth/middleware/admin.middleware'
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+    files: 10, // Максимум 10 файлов
+  },
+})
 
 const router = Router()
 
@@ -55,6 +64,71 @@ router.post(
   '/custom',
   authenticate,
   achievementsController.createCustomAchievement.bind(achievementsController)
+)
+
+// Детальная информация о достижении
+router.get(
+  '/:id/detail',
+  optionalAuthenticate,
+  achievementsController.getAchievementDetail.bind(achievementsController)
+)
+
+// Завершение достижения
+router.post(
+  '/:id/complete',
+  authenticate,
+  upload.array('photos', 10),
+  achievementsController.completeAchievement.bind(achievementsController)
+)
+
+// Настройки достижения
+router.patch(
+  '/user-achievements/:userAchievementId',
+  authenticate,
+  achievementsController.updateAchievementSettings.bind(achievementsController)
+)
+
+// Избранное
+router.post(
+  '/user-achievements/:userAchievementId/favorite',
+  authenticate,
+  achievementsController.toggleFavorite.bind(achievementsController)
+)
+
+// Комментарии
+router.get(
+  '/user-achievements/:userAchievementId/comments',
+  achievementsController.getComments.bind(achievementsController)
+)
+router.post(
+  '/user-achievements/:userAchievementId/comments',
+  authenticate,
+  achievementsController.createComment.bind(achievementsController)
+)
+router.delete(
+  '/user-achievements/:userAchievementId/comments/:commentId',
+  authenticate,
+  achievementsController.deleteComment.bind(achievementsController)
+)
+
+// Лайки
+router.post(
+  '/user-achievements/:userAchievementId/likes',
+  authenticate,
+  achievementsController.toggleLike.bind(achievementsController)
+)
+
+// Фотографии
+router.post(
+  '/user-achievements/:userAchievementId/photos',
+  authenticate,
+  upload.array('photos', 10),
+  achievementsController.uploadPhotos.bind(achievementsController)
+)
+router.delete(
+  '/user-achievements/:userAchievementId/photos/:photoId',
+  authenticate,
+  achievementsController.deletePhoto.bind(achievementsController)
 )
 
 export default router

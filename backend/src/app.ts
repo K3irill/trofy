@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import path from 'path'
 import { config } from './core/config'
 import { errorHandler } from './core/middlewares/errorHandler'
 import authRoutes from './modules/auth/routes/auth.routes'
@@ -24,6 +25,9 @@ app.use(
 //   })
 // )
 app.use(express.json())
+
+// Статическая раздача загруженных файлов
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
 // API routes
 app.use('/api/auth', authRoutes)

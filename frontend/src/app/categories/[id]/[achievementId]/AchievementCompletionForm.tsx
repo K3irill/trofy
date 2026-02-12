@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AchievementDetail } from './types'
+import { useCompleteAchievementMutation } from '@/store/api/achievementDetailApi'
 import {
   FormContainer,
   FormTitle,
@@ -20,37 +21,58 @@ import {
 
 interface AchievementCompletionFormProps {
   achievement: AchievementDetail
+  achievementId: string
+  onComplete?: () => void
 }
 
-export const AchievementCompletionForm = ({ achievement }: AchievementCompletionFormProps) => {
+export const AchievementCompletionForm = ({ achievement, achievementId, onComplete }: AchievementCompletionFormProps) => {
   const [date, setDate] = useState('')
   const [difficulty, setDifficulty] = useState<1 | 2 | 3 | 4 | 5 | undefined>(undefined)
   const [impressions, setImpressions] = useState('')
-  const [photos, setPhotos] = useState<string[]>([])
+  const [photoFiles, setPhotoFiles] = useState<File[]>([])
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
+
+  const [completeAchievement, { isLoading: isSubmitting }] = useCompleteAchievementMutation()
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
 
     Array.from(files).forEach((file) => {
+      setPhotoFiles((prev) => [...prev, file])
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
-        setPhotos((prev) => [...prev, result])
+        setPhotoPreviews((prev) => [...prev, result])
       }
       reader.readAsDataURL(file)
     })
   }
 
   const removePhoto = (index: number) => {
-    setPhotos((prev) => prev.filter((_, i) => i !== index))
+    setPhotoFiles((prev) => prev.filter((_, i) => i !== index))
+    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Здесь будет логика отправки данных
-    console.log({ date, difficulty, impressions, photos })
-    alert('Достижение отмечено как выполненное!')
+    if (!date || isSubmitting) return
+
+    try {
+      await completeAchievement({
+        id: achievementId,
+        data: {
+          completion_date: date,
+          difficulty,
+          impressions: impressions || undefined,
+          photos: photoFiles.length > 0 ? photoFiles : undefined,
+        },
+      }).unwrap()
+      onComplete?.()
+      alert('Достижение отмечено как выполненное!')
+    } catch (error) {
+      alert('Ошибка при завершении достижения')
+    }
   }
 
   return (
@@ -111,9 +133,9 @@ export const AchievementCompletionForm = ({ achievement }: AchievementCompletion
               </div>
             </label>
           </PhotoUploadArea>
-          {photos.length > 0 && (
+          {photoPreviews.length > 0 && (
             <PhotoPreview>
-              {photos.map((photo, index) => (
+              {photoPreviews.map((photo, index) => (
                 <div key={index} style={{ position: 'relative' }}>
                   <img src={photo} alt={`Preview ${index + 1}`} />
                   <PhotoRemoveButton onClick={() => removePhoto(index)}>×</PhotoRemoveButton>
@@ -123,7 +145,9 @@ export const AchievementCompletionForm = ({ achievement }: AchievementCompletion
           )}
         </FormGroup>
 
-        <FormButton type="submit">Отметить как достигнуто ✔️</FormButton>
+        <FormButton type="submit" disabled={!date || isSubmitting}>
+          {isSubmitting ? 'Отправка...' : 'Отметить как достигнуто ✔️'}
+        </FormButton>
       </form>
     </FormContainer>
   )

@@ -1,10 +1,19 @@
 import { Request, Response, NextFunction } from 'express'
 import { validate } from 'class-validator'
 import { plainToInstance } from 'class-transformer'
+import multer from 'multer'
 import { achievementsService } from '../service/achievements.service'
-import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto } from '../dto/achievements.dto'
+import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto } from '../dto/achievements.dto'
 import { ApiError } from '../../../core/errors/ApiError'
 import { AuthRequest } from '../../auth/middleware/auth.middleware'
+
+// Настройка multer для загрузки файлов
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+})
 
 /**
  * Валидация DTO
@@ -281,6 +290,215 @@ export class AchievementsController {
 
       const achievement = await achievementsService.createAchievement(dto, userId, false)
       res.status(201).json(achievement)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/achievements/:id/detail - Получение детальной информации о достижении
+   */
+  async getAchievementDetail(req: Request | AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+      const userId = (req as AuthRequest).user?.userId
+      const detail = await achievementsService.getAchievementDetail(id, userId)
+      res.json(detail)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/:id/complete - Завершение достижения
+   */
+  async completeAchievement(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { id } = req.params
+      const userId = req.user.userId
+      const files = req.files as Express.Multer.File[]
+
+      const dto = plainToInstance(CompleteAchievementDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const result = await achievementsService.completeAchievement(
+        userId,
+        id,
+        dto,
+        files || []
+      )
+      res.status(201).json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * PATCH /api/achievements/user-achievements/:userAchievementId - Обновление настроек
+   */
+  async updateAchievementSettings(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+
+      const dto = plainToInstance(UpdateAchievementSettingsDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const result = await achievementsService.updateAchievementSettings(
+        userAchievementId,
+        userId,
+        dto
+      )
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/user-achievements/:userAchievementId/favorite - Переключение избранного
+   */
+  async toggleFavorite(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+
+      const result = await achievementsService.toggleFavorite(userId, userAchievementId)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/achievements/user-achievements/:userAchievementId/comments - Получение комментариев
+   */
+  async getComments(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userAchievementId } = req.params
+      const limit = parseInt(req.query.limit as string) || 50
+      const offset = parseInt(req.query.offset as string) || 0
+
+      const comments = await achievementsService.getComments(userAchievementId, limit, offset)
+      res.json(comments)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/user-achievements/:userAchievementId/comments - Создание комментария
+   */
+  async createComment(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+
+      const dto = plainToInstance(CreateCommentDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const comment = await achievementsService.createComment(userId, userAchievementId, dto)
+      res.status(201).json(comment)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * DELETE /api/achievements/user-achievements/:userAchievementId/comments/:commentId - Удаление комментария
+   */
+  async deleteComment(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { commentId } = req.params
+      const userId = req.user.userId
+
+      const result = await achievementsService.deleteComment(commentId, userId)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/user-achievements/:userAchievementId/likes - Переключение лайка
+   */
+  async toggleLike(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+
+      const result = await achievementsService.toggleLike(userId, userAchievementId)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/user-achievements/:userAchievementId/photos - Загрузка фотографий
+   */
+  async uploadPhotos(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+      const files = req.files as Express.Multer.File[]
+
+      if (!files || files.length === 0) {
+        throw ApiError.badRequest('No files provided')
+      }
+
+      const photos = await achievementsService.uploadPhotos(userAchievementId, userId, files)
+      res.status(201).json(photos)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * DELETE /api/achievements/user-achievements/:userAchievementId/photos/:photoId - Удаление фотографии
+   */
+  async deletePhoto(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { photoId } = req.params
+      const userId = req.user.userId
+
+      const result = await achievementsService.deletePhoto(photoId, userId)
+      res.json(result)
     } catch (error) {
       next(error)
     }

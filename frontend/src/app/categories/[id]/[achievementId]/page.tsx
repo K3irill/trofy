@@ -2,9 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { useAppSelector } from '@/store/hooks'
+import { useGetMeQuery } from '@/store/api/userApi'
+import {
+  useGetAchievementDetailQuery,
+} from '@/store/api/achievementDetailApi'
+import { renderIcon } from '@/lib/utils/iconUtils'
 import Container from '@/components/Container/Container'
-import { categories } from '../../page.constants'
-import { AchievementDetail } from './types'
+import { BlockLoader } from '@/components/Loader/BlockLoader'
 import { AchievementDetailView } from './AchievementDetailView'
 import { AchievementActions } from './AchievementActions'
 import { AchievementProgress } from './AchievementProgress'
@@ -23,62 +28,58 @@ import {
   ContentSection,
 } from './page.styled'
 
-// Мок данных для демонстрации
-const getAchievementData = (categoryId: string, achievementId: string, isAuthenticated: boolean = false): AchievementDetail | null => {
-  const category = categories.find(cat => cat.id === categoryId)
-  if (!category) return null
-
-  const achievement = category.achievements.find(ach => ach.id === achievementId)
-  if (!achievement) return null
-
-  // Для демонстрации создаем полные данные
-  const requiresVerification = achievement.id === '1' || achievement.id === '9' // Пример: некоторые достижения требуют подтверждения
-
-  return {
-    id: achievement.id,
-    categoryId: category.id,
-    name: achievement.name || `Достижение ${achievement.id}`,
-    description: achievement.description || 'Описание достижения',
-    icon: achievement.icon,
-    imageUrl: achievement.imageUrl,
-    unlocked: achievement.unlocked,
-    progress: achievement.unlocked ? 100 : (isAuthenticated ? 45 : undefined),
-    maxProgress: 100,
-    rarity: achievement.unlocked ? 'rare' : 'common',
-    xpReward: achievement.unlocked ? 150 : 100,
-    completionDate: achievement.unlocked ? '2024-01-15' : undefined,
-    difficulty: achievement.unlocked ? 3 : undefined,
-    impressions: achievement.unlocked ? 'Это было незабываемое впечатление!' : undefined,
-    photos: achievement.unlocked ? ['/photo1.jpg', '/photo2.jpg'] : undefined,
-    isMain: achievement.unlocked ? false : undefined,
-    isFavorite: achievement.unlocked ? true : undefined,
-    isHidden: false,
-    requiresVerification: requiresVerification && achievement.unlocked,
-    isVerified: achievement.unlocked && achievement.id === '1' ? true : (achievement.unlocked && achievement.id === '9' ? false : undefined),
-    verificationCount: achievement.unlocked && requiresVerification ? (achievement.id === '1' ? 5 : 2) : undefined,
-    canLike: true,
-    canComment: true,
-    likesCount: achievement.unlocked ? 12 : undefined,
-    isLiked: achievement.unlocked ? false : undefined,
-    commentsCount: achievement.unlocked ? 3 : undefined,
-    ownerId: 'current-user',
-    createdAt: '2024-01-01',
-  }
-}
-
 export default function AchievementDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const [isAuthenticated] = useState(true) // В реальном приложении получать из контекста/состояния
-  const [currentUserId] = useState('current-user') // В реальном приложении получать из контекста/состояния
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const { data: currentUser } = useGetMeQuery(undefined, { skip: !isAuthenticated })
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [iconTransform, setIconTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
 
   const categoryId = params?.id as string
   const achievementId = params?.achievementId as string
 
-  const achievement = getAchievementData(categoryId, achievementId, isAuthenticated)
-  const isOwner = achievement?.ownerId === currentUserId
+  const {
+    data: achievementDetail,
+    isLoading,
+    error,
+  } = useGetAchievementDetailQuery(achievementId, { skip: !achievementId })
+
+  // Преобразуем данные из API в формат компонентов
+  const achievement = achievementDetail
+    ? {
+      id: achievementDetail.id,
+      categoryId: achievementDetail.category.id,
+      name: achievementDetail.title,
+      description: achievementDetail.description,
+      icon: achievementDetail.icon_url || '🏆',
+      imageUrl: achievementDetail.photos?.[0]?.url,
+      unlocked: achievementDetail.unlocked,
+      progress: achievementDetail.unlocked ? 100 : undefined,
+      maxProgress: 100,
+      rarity: achievementDetail.rarity,
+      xpReward: achievementDetail.xp_reward,
+      completionDate: achievementDetail.userAchievement?.completion_date,
+      difficulty: achievementDetail.userAchievement?.difficulty as 1 | 2 | 3 | 4 | 5 | undefined,
+      impressions: achievementDetail.userAchievement?.impressions,
+      photos: achievementDetail.photos?.map((p) => p.url),
+      isMain: achievementDetail.userAchievement?.is_main,
+      isFavorite: achievementDetail.isFavorite,
+      isHidden: achievementDetail.userAchievement?.is_hidden,
+      requiresVerification: false, // TODO: реализовать позже
+      isVerified: undefined,
+      verificationCount: undefined,
+      canLike: achievementDetail.userAchievement?.can_like ?? true,
+      canComment: achievementDetail.userAchievement?.can_comment ?? true,
+      likesCount: achievementDetail.likesCount,
+      isLiked: achievementDetail.isLiked,
+      commentsCount: achievementDetail.commentsCount,
+      ownerId: achievementDetail.userAchievement?.id ? currentUser?.id : undefined,
+      createdAt: achievementDetail.created_at,
+    }
+    : null
+
+  const isOwner = achievement?.ownerId === currentUser?.id
 
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!achievement) return
@@ -129,7 +130,15 @@ export default function AchievementDetailPage() {
     setIconTransform({ rotateX: 0, rotateY: 0, scale: 1 })
   }
 
-  if (!achievement) {
+  if (isLoading) {
+    return (
+      <Container>
+        <BlockLoader text="Загрузка достижения..." />
+      </Container>
+    )
+  }
+
+  if (error || !achievementDetail || !achievement) {
     return (
       <Container>
         <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
@@ -140,8 +149,6 @@ export default function AchievementDetailPage() {
     )
   }
 
-  const category = categories.find(cat => cat.id === categoryId)
-
   return (
     <Container>
       <PageContainer>
@@ -151,7 +158,7 @@ export default function AchievementDetailPage() {
 
         <AchievementHeader>
           <AchievementIcon
-            unlocked={achievement.unlocked}
+            $unlocked={achievement.unlocked}
             onClick={() => setIsPreviewOpen(true)}
             onMouseMove={handleIconMouseMove}
             onMouseLeave={handleIconMouseLeave}
@@ -162,27 +169,24 @@ export default function AchievementDetailPage() {
               transformStyle: 'preserve-3d',
             }}
           >
-            {achievement.icon}
+            {renderIcon(achievementDetail.icon_url, '🏆')}
           </AchievementIcon>
           <div>
             <AchievementTitle>{achievement.name}</AchievementTitle>
-            {category && (
-              <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                {category.icon} {category.name}
-              </div>
-            )}
+            <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              {renderIcon(achievementDetail.category.icon_url, '📁')} {achievementDetail.category.name}
+            </div>
           </div>
         </AchievementHeader>
 
-        {achievement && (
+        {achievementDetail && (
           <AchievementPreviewModal
             isOpen={isPreviewOpen}
             onClose={() => setIsPreviewOpen(false)}
-            icon={achievement.icon}
-            imageUrl={achievement.imageUrl}
-            name={achievement.name}
-            description={achievement.description}
-            unlocked={achievement.unlocked}
+            icon={achievementDetail.icon_url}
+            name={achievementDetail.title}
+            description={achievementDetail.description}
+            unlocked={achievementDetail.unlocked}
           />
         )}
 
@@ -194,14 +198,17 @@ export default function AchievementDetailPage() {
               <ContentSection>
                 <AchievementVerification achievement={achievement} isOwner={isOwner} />
                 <AchievementDetailView achievement={achievement} />
-                <AchievementApplause achievement={achievement} isOwner={isOwner} currentUserId={currentUserId} />
-                <AchievementComments achievement={achievement} isOwner={isOwner} currentUserId={currentUserId} />
-                <AchievementActions achievement={achievement} isOwner={isOwner} />
+                <AchievementApplause achievement={achievement} isOwner={isOwner} currentUserId={currentUser?.id} userAchievementId={achievementDetail.userAchievement?.id} />
+                <AchievementComments achievement={achievement} isOwner={isOwner} currentUserId={currentUser?.id} userAchievementId={achievementDetail.userAchievement?.id} />
+                <AchievementActions achievement={achievement} isOwner={isOwner} userAchievementId={achievementDetail.userAchievement?.id} />
               </ContentSection>
             ) : (
               <ContentSection>
                 <AchievementProgress achievement={achievement} />
-                <AchievementCompletionForm achievement={achievement} />
+                <AchievementCompletionForm achievement={achievement} achievementId={achievementId} onComplete={() => {
+                  // Обновление данных после завершения
+                  window.location.reload()
+                }} />
                 <AchievementActions achievement={achievement} />
               </ContentSection>
             )}

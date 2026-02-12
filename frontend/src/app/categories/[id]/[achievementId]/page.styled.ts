@@ -50,19 +50,19 @@ export const AchievementHeader = styled.div`
   }
 `
 
-export const AchievementIcon = styled.div<{ unlocked: boolean }>`
+export const AchievementIcon = styled.div<{ $unlocked: boolean }>`
   width: 200px;
   height: 200px;
   border-radius: 24px;
-  background: ${props => props.unlocked
+  background: ${props => props.$unlocked
     ? `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}1a 100%)`
     : `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`};
-  border: 3px solid ${props => props.unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
+  border: 3px solid ${props => props.$unlocked ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 6rem;
-  filter: ${props => props.unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.6) brightness(0.7)'};
+  filter: ${props => props.$unlocked ? `drop-shadow(${props.theme.shadows.glow.primary})` : 'grayscale(0.6) brightness(0.7)'};
   flex-shrink: 0;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -77,7 +77,7 @@ export const AchievementIcon = styled.div<{ unlocked: boolean }>`
     left: 0;
     right: 0;
     bottom: 0;
-    background: ${props => props.unlocked
+    background: ${props => props.$unlocked
     ? `radial-gradient(circle at center, ${props.theme.colors.primary}1a 0%, transparent 70%)`
     : 'transparent'};
     opacity: 0;
@@ -87,8 +87,8 @@ export const AchievementIcon = styled.div<{ unlocked: boolean }>`
 
   &:hover {
     transform: translateZ(20px) scale(1.05);
-    border-color: ${props => props.unlocked ? props.theme.colors.primary : props.theme.colors.light[300]};
-    box-shadow: ${props => props.unlocked
+    border-color: ${props => props.$unlocked ? props.theme.colors.primary : props.theme.colors.light[300]};
+    box-shadow: ${props => props.$unlocked
     ? `${props.theme.shadows.glass.heavy}, ${props.theme.shadows.glow.primary}`
     : props.theme.shadows.glass.medium};
 
@@ -99,6 +99,12 @@ export const AchievementIcon = styled.div<{ unlocked: boolean }>`
 
   &:active {
     transform: translateZ(10px) scale(1.02);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   @media (max-width: 768px) {

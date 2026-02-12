@@ -13,12 +13,13 @@ import {
   ModalDescription,
 } from './AchievementPreviewModal.styled'
 import { ActionButton } from './AchievementActions.styled'
+import { isImageUrl } from '@/lib/utils/iconUtils'
+import Image from 'next/image'
 
 interface AchievementPreviewModalProps {
   isOpen: boolean
   onClose: () => void
-  icon?: string
-  imageUrl?: string
+  icon: string | null
   name: string
   description: string
   unlocked: boolean
@@ -28,11 +29,11 @@ export const AchievementPreviewModal = ({
   isOpen,
   onClose,
   icon,
-  imageUrl,
   name,
   description,
   unlocked,
 }: AchievementPreviewModalProps) => {
+  const isIconImage = icon && isImageUrl(icon)
   const [transform, setTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
 
   useEffect(() => {
@@ -136,11 +137,9 @@ export const AchievementPreviewModal = ({
             onClick={(e) => e.stopPropagation()}
           >
             <ModalCloseButton onClick={onClose}>×</ModalCloseButton>
-            {imageUrl ? (
+            {isIconImage ? (
               <ModalImage
-                unlocked={unlocked}
-                src={imageUrl}
-                alt={name}
+                $unlocked={unlocked}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
                 onTouchMove={handleTouchMove}
@@ -149,10 +148,12 @@ export const AchievementPreviewModal = ({
                   transform: `perspective(1000px) rotateX(${transform.rotateX}deg) rotateY(${transform.rotateY}deg) scale(${transform.scale})`,
                   transformStyle: 'preserve-3d',
                 }}
-              />
+              >
+                <Image src={icon!} alt={name} fill style={{ objectFit: 'contain' }} />
+              </ModalImage>
             ) : (
               <ModalIcon
-                unlocked={unlocked}
+                $unlocked={unlocked}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
                 onTouchMove={handleTouchMove}

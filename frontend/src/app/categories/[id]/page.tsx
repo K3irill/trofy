@@ -35,6 +35,7 @@ import {
 import { AchievementCard } from './AchievementCard'
 import { ViewModeSelector, AchievementViewMode } from './ViewModeSelector'
 import Container from '@/components/Container/Container'
+import { BlockLoader } from '@/components/Loader/BlockLoader'
 
 export default function CategoryPage() {
   const router = useRouter()
@@ -70,10 +71,7 @@ export default function CategoryPage() {
   if (isLoading) {
     return (
       <Container>
-        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ fontSize: '4rem' }}>⏳</div>
-          <div style={{ fontSize: '1.125rem' }}>Загрузка...</div>
-        </div>
+        <BlockLoader text="Загрузка категории..." />
       </Container>
     )
   }
