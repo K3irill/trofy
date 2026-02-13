@@ -24,6 +24,28 @@ export interface Achievement {
   }
 }
 
+export interface ShowcaseAchievement {
+  id: string
+  title: string
+  description: string
+  icon_url: string | null
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  category: {
+    id: string
+    name: string
+    icon_url: string | null
+  }
+  xp_reward: number
+  unlocked: boolean
+  unlocked_at: string
+  completion_date?: string
+  owner: {
+    id: string
+    username: string
+  }
+  is_current_user: boolean
+}
+
 export interface Category {
   id: string
   name: string
@@ -114,6 +136,13 @@ export const achievementsApi = baseApi.injectEndpoints({
       query: (id) => `/achievements/${id}`,
       providesTags: ['Achievement'],
     }),
+    getShowcaseAchievements: builder.query<ShowcaseAchievement[], { type: 'best' | 'recent'; limit?: number }>({
+      query: ({ type, limit = 10 }) => ({
+        url: `/achievements/showcase/${type}`,
+        params: { limit },
+      }),
+      providesTags: ['Achievement'],
+    }),
   }),
 })
 
@@ -126,4 +155,5 @@ export const {
   useGetAchievementsQuery,
   useGetAchievementsByCategoryQuery,
   useGetAchievementByIdQuery,
+  useGetShowcaseAchievementsQuery,
 } = achievementsApi

@@ -59,15 +59,24 @@ export const SwitchOption = styled(motion.button) <{ active: boolean; position: 
   background: transparent;
   border: none;
   border-radius: 16px;
-  color: ${(props) => props.active ? props.theme.colors.light[100] : props.theme.colors.light[300]};
+  color: ${(props) => props.active ? props.theme.colors.dark[900] : props.theme.colors.light[300]};
   font-size: 0.6875rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
 
+  svg {
+    color: ${(props) => props.active ? props.theme.colors.dark[900] : props.theme.colors.light[300]};
+    transition: color 0.3s ease;
+  }
+
   &:hover {
-    color: ${(props) => props.theme.colors.light[100]};
+    color: ${(props) => props.active ? props.theme.colors.dark[900] : props.theme.colors.light[100]};
+    
+    svg {
+      color: ${(props) => props.active ? props.theme.colors.dark[900] : props.theme.colors.light[100]};
+    }
   }
 
   @media (max-width: 768px) {
@@ -253,7 +262,11 @@ export const TrophyHeader = styled.div <{ rarity: string }>`
 
 export const TrophyIcon = styled.span`
   font-size: 2rem;
+  color: ${(props) => props.theme.colors.light[100]};
   filter: drop-shadow(${(props) => props.theme.shadows.glow.primary});
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   @media (max-width: 768px) {
     font-size: 1.75rem;

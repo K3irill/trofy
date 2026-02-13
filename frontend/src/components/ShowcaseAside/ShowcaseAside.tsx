@@ -1,6 +1,13 @@
 'use client'
 
-
+import { useMemo } from 'react'
+import { IoTrophy, IoTime, IoPerson } from 'react-icons/io5'
+import { useGetShowcaseAchievementsQuery } from '@/store/api/achievementsApi'
+import { useGetRecentAchievementsQuery } from '@/store/api/userApi'
+import { useGetMeQuery } from '@/store/api/userApi'
+import { formatDistanceToNow } from 'date-fns'
+import { ru } from 'date-fns/locale'
+import { renderIcon } from '@/lib/utils/iconUtils'
 import {
   ShowcaseContainer,
   ShowcaseHeader,
@@ -21,39 +28,6 @@ import {
   TrophyHeaderInfo,
 } from './styled'
 
-interface Trophy {
-  id: string
-  name: string
-  rarity: 'base' | 'rare' | 'epic' | 'legendary'
-  owner: string
-  date: string
-  icon: string
-}
-
-const trophies: Trophy[] = [
-  { id: '1', name: 'Эльбрус', rarity: 'legendary', owner: 'AlexM', date: '2 дня назад', icon: '🏔️' },
-  { id: '2', name: 'Sky Diver', rarity: 'epic', owner: 'NinjaX', date: '1 неделя назад', icon: '🪂' },
-  { id: '3', name: 'Night Owl', rarity: 'rare', owner: 'WolfPack', date: '3 дня назад', icon: '🦉' },
-  { id: '4', name: 'First Flight', rarity: 'base', owner: 'Birdie', date: '5 дней назад', icon: '✈️' },
-  { id: '5', name: 'Road Master', rarity: 'rare', owner: 'Speedy', date: '1 день назад', icon: '🚗' },
-]
-
-const recentTrophies: Trophy[] = [
-  { id: '6', name: 'Прыжок с парашютом', rarity: 'epic', owner: 'Adrenaline', date: 'Сегодня', icon: '🪂' },
-  { id: '7', name: 'Права категории B', rarity: 'base', owner: 'Novice', date: 'Вчера', icon: '🚗' },
-  { id: '8', name: 'Первое путешествие', rarity: 'rare', owner: 'Explorer', date: '2 дня назад', icon: '✈️' },
-  { id: '9', name: 'Марафон 10км', rarity: 'rare', owner: 'Runner', date: '3 дня назад', icon: '🏃' },
-  { id: '10', name: 'Высшее образование', rarity: 'legendary', owner: 'Scholar', date: '1 неделя назад', icon: '🎓' },
-]
-
-const myTrophies: Trophy[] = [
-  { id: '11', name: 'Путешественник', rarity: 'rare', owner: 'Вы', date: '2 дня назад', icon: '✈️' },
-  { id: '12', name: 'Водитель', rarity: 'base', owner: 'Вы', date: '5 дней назад', icon: '🚗' },
-  { id: '13', name: 'Спортсмен', rarity: 'rare', owner: 'Вы', date: '1 неделя назад', icon: '🏃' },
-  { id: '14', name: 'Высшее образование', rarity: 'legendary', owner: 'Вы', date: '1 месяц назад', icon: '🎓' },
-  { id: '15', name: 'Альпинист', rarity: 'epic', owner: 'Вы', date: '2 месяца назад', icon: '🏔️' },
-]
-
 interface ShowcaseAsideProps {
   filter?: 'best' | 'recent' | 'mine'
   onFilterChange?: (filter: 'best' | 'recent' | 'mine') => void
@@ -63,6 +37,88 @@ interface ShowcaseAsideProps {
 export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated = true }: ShowcaseAsideProps) => {
   // Если не авторизован и выбран фильтр "mine", используем "best"
   const activeFilter = (!isAuthenticated && filter === 'mine') ? 'best' : filter
+
+  const { data: currentUser } = useGetMeQuery(undefined, { skip: !isAuthenticated })
+
+  // Получаем лучшие достижения (глобальные, среди всех пользователей)
+  const { data: bestAchievementsData, isLoading: isLoadingBest } = useGetShowcaseAchievementsQuery(
+    {
+      type: 'best',
+      limit: 10,
+    },
+    { skip: activeFilter !== 'best' }
+  )
+
+  // Получаем последние достижения (глобальные, среди всех пользователей)
+  const { data: recentAchievementsData, isLoading: isLoadingRecent } = useGetShowcaseAchievementsQuery(
+    {
+      type: 'recent',
+      limit: 10,
+    },
+    { skip: activeFilter !== 'recent' }
+  )
+
+  // Получаем мои достижения (только текущего пользователя)
+  const { data: myAchievementsData, isLoading: isLoadingMine } = useGetRecentAchievementsQuery(10, {
+    skip: !isAuthenticated || activeFilter !== 'mine',
+  })
+
+  const isLoading = isLoadingBest || isLoadingRecent || isLoadingMine
+
+  const trophies = useMemo(() => {
+    if (!bestAchievementsData) return []
+    return bestAchievementsData.map((achievement) => ({
+      id: achievement.id,
+      name: achievement.title,
+      rarity: achievement.rarity,
+      owner: achievement.is_current_user ? 'Вы' : achievement.owner.username,
+      date: achievement.unlocked_at
+        ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
+        : 'Недавно',
+      icon: achievement.icon_url || '🏆',
+    }))
+  }, [bestAchievementsData])
+
+  const recentTrophies = useMemo(() => {
+    if (!recentAchievementsData) return []
+    // Сортируем по completion_date (самые новые первыми)
+    const sorted = [...recentAchievementsData].sort((a, b) => {
+      const dateA = a.completion_date ? new Date(a.completion_date).getTime() : 0
+      const dateB = b.completion_date ? new Date(b.completion_date).getTime() : 0
+      return dateB - dateA // По убыванию (новые первыми)
+    })
+
+    return sorted.map((achievement) => ({
+      id: achievement.id,
+      name: achievement.title,
+      rarity: achievement.rarity,
+      owner: achievement.is_current_user ? 'Вы' : achievement.owner.username,
+      date: achievement.completion_date
+        ? formatDistanceToNow(new Date(achievement.completion_date), { addSuffix: true, locale: ru })
+        : achievement.unlocked_at
+          ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
+          : 'Недавно',
+      icon: achievement.icon_url || '🏆',
+    }))
+  }, [recentAchievementsData])
+
+  const myTrophies = useMemo(() => {
+    if (!myAchievementsData || !currentUser) return []
+    // myAchievementsData - это массив RecentAchievement из /users/me/achievements/recent
+    // Это достижения текущего пользователя, поэтому всегда "Вы"
+    return myAchievementsData
+      .filter((achievement) => achievement.is_achieved)
+      .map((achievement) => ({
+        id: achievement.id,
+        name: achievement.title,
+        rarity: achievement.rarity,
+        owner: 'Вы',
+        date: achievement.unlocked_at
+          ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
+          : 'Недавно',
+        icon: achievement.icon_url || '🏆',
+      }))
+  }, [myAchievementsData, currentUser])
 
   const getTrophies = () => {
     switch (activeFilter) {
@@ -89,11 +145,11 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
   const getIcon = () => {
     switch (activeFilter) {
       case 'recent':
-        return '🆕'
+        return <IoTime />
       case 'mine':
-        return '👤'
+        return <IoPerson />
       default:
-        return '🏆'
+        return <IoTrophy />
     }
   }
 
@@ -110,7 +166,11 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
       transition={{ duration: 0.5 }}
     >
       <ShowcaseHeader>
-        <ShowcaseTitle>{getIcon()} {getTitle()}</ShowcaseTitle>
+        <ShowcaseTitle>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            {getIcon()} {getTitle()}
+          </span>
+        </ShowcaseTitle>
         {onFilterChange && (
           <ToggleContainer>
             <SwitchOption
@@ -118,14 +178,14 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
               onClick={() => handleFilterChange('best')}
               position="left"
             >
-              🏆 Лучшие
+              <IoTrophy style={{ marginRight: '0.25rem' }} /> Лучшие
             </SwitchOption>
             <SwitchOption
               active={activeFilter === 'recent'}
               onClick={() => handleFilterChange('recent')}
               position={isAuthenticated ? 'center' : 'right'}
             >
-              🆕 Последние
+              <IoTime style={{ marginRight: '0.25rem' }} /> Последние
             </SwitchOption>
             {isAuthenticated && (
               <SwitchOption
@@ -133,7 +193,7 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
                 onClick={() => handleFilterChange('mine')}
                 position="right"
               >
-                👤 Мои
+                <IoPerson style={{ marginRight: '0.25rem' }} /> Мои
               </SwitchOption>
             )}
 
@@ -143,34 +203,44 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
 
       <TrophiesList>
         <TrophiesScrollTrack>
-          {getTrophies().map((trophy, index) => (
-            <TrophyItem
-              key={trophy.id}
-              rarity={trophy.rarity}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              whileHover={{ scale: 1.02, x: 5 }}
-            >
-              <TrophyHeader rarity={trophy.rarity}>
-                <TrophyIcon>{trophy.icon}</TrophyIcon>
-                <TrophyHeaderInfo>
+          {isLoading ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #666)' }}>
+              Загрузка...
+            </div>
+          ) : getTrophies().length === 0 ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #666)' }}>
+              {!isAuthenticated && activeFilter !== 'best' ? 'Войдите, чтобы увидеть достижения' : 'Достижения не найдены'}
+            </div>
+          ) : (
+            getTrophies().map((trophy, index) => (
+              <TrophyItem
+                key={trophy.id}
+                rarity={trophy.rarity}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                whileHover={{ scale: 1.02, x: 5 }}
+              >
+                <TrophyHeader rarity={trophy.rarity}>
+                  <TrophyIcon>{renderIcon(trophy.icon, 'trophy')}</TrophyIcon>
+                  <TrophyHeaderInfo>
+                    <TrophyOwner>{trophy.owner}</TrophyOwner>
+                    <TrophyDate>{trophy.date}</TrophyDate>
+                  </TrophyHeaderInfo>
+                </TrophyHeader>
+                <TrophyContent>
+                  <TrophyInfo>
+                    <TrophyName>{trophy.name}</TrophyName>
+                    <TrophyRarity rarity={trophy.rarity}>
+                      {trophy.rarity.toUpperCase()}
+                    </TrophyRarity>
+                  </TrophyInfo>
                   <TrophyOwner>{trophy.owner}</TrophyOwner>
                   <TrophyDate>{trophy.date}</TrophyDate>
-                </TrophyHeaderInfo>
-              </TrophyHeader>
-              <TrophyContent>
-                <TrophyInfo>
-                  <TrophyName>{trophy.name}</TrophyName>
-                  <TrophyRarity rarity={trophy.rarity}>
-                    {trophy.rarity.toUpperCase()}
-                  </TrophyRarity>
-                </TrophyInfo>
-                <TrophyOwner>👤 {trophy.owner}</TrophyOwner>
-                <TrophyDate>📅 {trophy.date}</TrophyDate>
-              </TrophyContent>
-            </TrophyItem>
-          ))}
+                </TrophyContent>
+              </TrophyItem>
+            ))
+          )}
           {/* Дублируем для бесконечного скролла на мобилке */}
           {/* <DuplicateItems>
             {getTrophies().map((trophy, index) => (

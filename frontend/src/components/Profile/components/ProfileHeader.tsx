@@ -230,17 +230,26 @@ const AvatarEditButton = styled.button`
   border-radius: 50%;
   background: ${(props) => props.theme.colors.primary};
   border: 2px solid ${(props) => props.theme.colors.dark[800]};
-  color: ${(props) => props.theme.colors.light[100]};
+  color: ${(props) => props.theme.colors.dark[900]};
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 2;
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
+
+  svg {
+    color: ${(props) => props.theme.colors.dark[900]};
+  }
 
   &:hover {
     background: ${(props) => props.theme.colors.secondary};
     transform: scale(1.1);
     box-shadow: 0 0 15px ${(props) => props.theme.colors.primary}80;
+    
+    svg {
+      color: ${(props) => props.theme.colors.dark[900]};
+    }
   }
 `
