@@ -245,7 +245,9 @@ export const PinnedAchievementsModal = ({
     return achievementsData.achievements.filter(
       (achievement) =>
         !currentPinned.includes(achievement.id) &&
-        achievement.completion_date !== undefined // Только завершенные достижения
+        achievement.completion_date !== undefined && // Только завершенные достижения
+        !achievement.is_hidden && // Исключаем скрытые достижения
+        !achievement.user_achievement?.is_hidden // Исключаем скрытые достижения из user_achievement
     )
   }, [achievementsData, currentPinned])
 

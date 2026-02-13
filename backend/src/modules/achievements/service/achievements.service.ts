@@ -325,8 +325,17 @@ export class AchievementsService {
         created_at: achievement.created_at.toISOString(),
         progress: userAchievement ? (userAchievement as any).progress || 0 : undefined,
         completion_date: userAchievement?.completion_date?.toISOString(),
+        is_hidden: userAchievement?.is_hidden || false,
+        user_achievement: userAchievement ? {
+          is_hidden: userAchievement.is_hidden,
+        } : undefined,
       }
     })
+
+    // Фильтруем скрытые достижения для авторизованных пользователей
+    if (userId) {
+      formatted = formatted.filter((a) => !a.is_hidden)
+    }
 
     // Фильтр по разблокированности (если указан)
     // Для фильтра по unlocked требуется авторизация

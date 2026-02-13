@@ -75,4 +75,8 @@ export class UpdateUserDto {
   @ArrayMaxSize(2, { message: 'Maximum 2 priority achievements allowed' })
   @IsUUID('4', { each: true, message: 'Each achievement ID must be a valid UUID' })
   priority_achievements?: string[]
+
+  @IsString()
+  @IsOptional()
+  avatar_url?: string
 }

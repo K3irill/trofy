@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useGetAchievementByIdQuery } from '@/store/api/achievementsApi'
+import { useGetAchievementDetailQuery } from '@/store/api/achievementDetailApi'
 import { useUpdateMeMutation, useGetMeQuery } from '@/store/api/userApi'
 import type { User } from '@/types'
 import { Rarity } from '@/types'
@@ -25,15 +25,15 @@ export function usePinnedAchievements(user: User) {
   // Используем актуальные данные из кэша или fallback на пропс
   const activeUser = currentUser || user
   const pinnedIds = activeUser.pinned_achievements || []
-  const achievement1 = useGetAchievementByIdQuery(pinnedIds[0] || '', {
+  const achievement1 = useGetAchievementDetailQuery(pinnedIds[0] || '', {
     skip: !pinnedIds[0],
     refetchOnMountOrArgChange: true,
   })
-  const achievement2 = useGetAchievementByIdQuery(pinnedIds[1] || '', {
+  const achievement2 = useGetAchievementDetailQuery(pinnedIds[1] || '', {
     skip: !pinnedIds[1],
     refetchOnMountOrArgChange: true,
   })
-  const achievement3 = useGetAchievementByIdQuery(pinnedIds[2] || '', {
+  const achievement3 = useGetAchievementDetailQuery(pinnedIds[2] || '', {
     skip: !pinnedIds[2],
     refetchOnMountOrArgChange: true,
   })
@@ -44,8 +44,12 @@ export function usePinnedAchievements(user: User) {
 
     for (let i = 0; i < 3; i++) {
       const achievement = achievementData[i]
-      // Показываем только завершенные достижения (с completion_date)
-      if (achievement && achievement.completion_date) {
+      // Показываем только завершенные достижения (с completion_date) и не скрытые
+      if (
+        achievement &&
+        achievement.userAchievement?.completion_date &&
+        !achievement.userAchievement?.is_hidden
+      ) {
         achievements.push({
           id: achievement.id,
           title: achievement.title,

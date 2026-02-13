@@ -180,6 +180,10 @@ export class UserService {
       updateData.priority_achievements = dto.priority_achievements
     }
 
+    if (dto.avatar_url !== undefined) {
+      updateData.avatar_url = dto.avatar_url
+    }
+
     const user = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -359,6 +363,7 @@ export class UserService {
       where: {
         user_id: userId,
         completion_date: { not: null }, // Только достигнутые достижения
+        is_hidden: false, // Исключаем скрытые достижения
       },
       include: {
         achievement: {
@@ -393,6 +398,7 @@ export class UserService {
       start_at: ua.unlocked_at.toISOString(), // Дата начала работы
       is_achieved: !!ua.completion_date, // Явный флаг достижения
       is_public: ua.is_public,
+      is_hidden: ua.is_hidden, // Добавляем поле is_hidden
     }))
   }
 }

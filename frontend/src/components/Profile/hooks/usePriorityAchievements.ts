@@ -54,9 +54,10 @@ export function usePriorityAchievements(user: User) {
         const isCompleted = achievement.userAchievement?.completion_date !== undefined
         const isInProgress = achievement.unlocked && !isCompleted && (achievement.userAchievement?.progress || 0) > 0
         const isNotStarted = !achievement.unlocked
+        const isHidden = achievement.userAchievement?.is_hidden || false
 
-        // Показываем только "в работе" или недостигнутые (не завершенные)
-        if (!isCompleted && (isInProgress || isNotStarted)) {
+        // Показываем только "в работе" или недостигнутые (не завершенные) и не скрытые
+        if (!isCompleted && !isHidden && (isInProgress || isNotStarted)) {
           achievements.push({
             id: achievement.id,
             title: achievement.title,
@@ -66,7 +67,7 @@ export function usePriorityAchievements(user: User) {
             progress: achievement.userAchievement?.progress || 0,
           })
         } else {
-          // Если достижение завершено, не показываем его
+          // Если достижение завершено или скрыто, не показываем его
           achievements.push(null)
         }
       } else {

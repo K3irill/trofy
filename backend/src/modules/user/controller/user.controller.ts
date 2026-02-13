@@ -5,6 +5,7 @@ import { userService } from '../service/user.service'
 import { UpdateUserDto } from '../dto/user.dto'
 import { ApiError } from '../../../core/errors/ApiError'
 import { AuthRequest } from '../../auth/middleware/auth.middleware'
+import { saveAvatar, validateFile } from '../../../shared/utils/fileUpload'
 
 /**
  * Валидация DTO
@@ -106,6 +107,37 @@ export class UserController {
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5
       const achievements = await userService.getRecentAchievements(req.user.userId, limit)
       res.json(achievements)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/users/me/avatar - Загрузка аватарки пользователя
+   */
+  async uploadAvatar(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const file = req.file
+      if (!file) {
+        throw ApiError.badRequest('Файл не предоставлен')
+      }
+
+      const validation = validateFile(file)
+      if (!validation.valid) {
+        throw ApiError.badRequest(validation.error || 'Ошибка валидации файла')
+      }
+
+      const uploadedFile = await saveAvatar(file.buffer, file.mimetype, req.user.userId)
+      const user = await userService.updateUser(req.user.userId, { avatar_url: uploadedFile.url })
+
+      res.status(201).json({
+        avatar_url: uploadedFile.url,
+        user,
+      })
     } catch (error) {
       next(error)
     }

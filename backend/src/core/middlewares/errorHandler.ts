@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { ApiError } from '../errors/ApiError'
 import { Prisma } from '@prisma/client'
+import { MulterError } from 'multer'
 
 export function errorHandler(
   err: Error | ApiError,
@@ -8,6 +9,32 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
+  // Обработка Multer ошибок
+  if (err instanceof MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        error: 'Размер файла превышает максимально допустимый (10MB)',
+        status: 400,
+      })
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        error: 'Превышено максимальное количество файлов',
+        status: 400,
+      })
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+        error: 'Неожиданное поле файла',
+        status: 400,
+      })
+    }
+    return res.status(400).json({
+      error: err.message || 'Ошибка загрузки файла',
+      status: 400,
+    })
+  }
+
   // Если это наш кастомный ApiError
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { Toast, ToastType } from '@/components/Toast/Toast'
 
 export const useToast = (): {
@@ -30,8 +30,8 @@ export const useToast = (): {
     setToast((prev) => ({ ...prev, isOpen: false }))
   }, [])
 
-  const ToastComponent = useMemo(() => {
-    return () => (
+  const ToastComponent = useCallback(() => {
+    return (
       <Toast
         message={toast.message}
         type={toast.type}

@@ -241,12 +241,16 @@ export const Avatar = styled.div`
   z-index: 1;
   overflow: hidden;
 
-  img{
+  img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     position: absolute;
+  }
 
+  svg {
+    position: relative;
+    z-index: 1;
   }
 
   @media (max-width: 768px) {
@@ -751,6 +755,7 @@ export const GoalHeader = styled.div`
   align-items: center;
   margin-bottom: 0.5rem;
   gap: 1rem;
+  width: 100%;
 `
 
 export const GoalIcon = styled.div`
@@ -777,6 +782,7 @@ export const GoalContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  
 `
 
 export const GoalTitle = styled.div`

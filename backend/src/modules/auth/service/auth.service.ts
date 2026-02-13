@@ -41,6 +41,9 @@ interface UserResponse {
     days: number
   } | null
   platform_accounts?: any[]
+  avatar_url?: string | null
+  main_info_theme?: string | null
+  background_icons?: string[]
 }
 
 /**
@@ -114,6 +117,7 @@ export function formatUser(
             avatar_url: pa.avatar_url,
           }))
         : [],
+      avatar_url: user.avatar_url || null,
     }
   }
 
@@ -191,6 +195,7 @@ export function formatUser(
           avatar_url: pa.avatar_url,
         }))
       : [],
+    avatar_url: privacy.show_profile ? (user.avatar_url || null) : null,
   }
 
   return response

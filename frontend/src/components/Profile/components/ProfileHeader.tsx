@@ -16,11 +16,13 @@ import {
   StatusInput,
   MainInfo,
   mapProfileColorToTheme,
+  type ProfileThemeType,
 } from '../styled'
 import { useProfileBio } from '../hooks/useProfileBio'
 import { ProfileThemeModal } from './ProfileThemeModal'
 import { BackgroundIcons } from './BackgroundIcons'
-import { IoColorPaletteOutline } from 'react-icons/io5'
+import { AvatarUploadModal } from './AvatarUploadModal'
+import { IoColorPaletteOutline, IoPerson, IoCamera } from 'react-icons/io5'
 import styled from 'styled-components'
 
 const ThemeButton = styled.button`
@@ -72,10 +74,11 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel, 
   } = useProfileBio(user, isAuthenticated)
 
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
 
   // Используем main_info_theme если есть, иначе fallback на profile_theme.profile_color
   const currentTheme = user.main_info_theme
-    ? (user.main_info_theme as any)
+    ? (user.main_info_theme as ProfileThemeType)
     : mapProfileColorToTheme(user.profile_theme.profile_color || 'dark')
 
   // Используем background_icons из пользователя
@@ -93,7 +96,34 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel, 
         </ThemeButton>
       )}
       <div style={{ position: 'relative', display: 'inline-block' }}>
-        <Avatar>👤</Avatar>
+        <Avatar
+          onClick={() => isAuthenticated && setIsAvatarModalOpen(true)}
+          style={{ cursor: isAuthenticated ? 'pointer' : 'default' }}
+        >
+          {user.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={user.avatar_url}
+              src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
+              alt={user.username}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute' }}
+              onError={(e) => {
+                // Если изображение не загрузилось, показываем иконку
+                e.currentTarget.style.display = 'none'
+              }}
+            />
+          ) : (
+            <IoPerson size={48} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+          )}
+        </Avatar>
+        {isAuthenticated && (
+          <AvatarEditButton
+            onClick={() => setIsAvatarModalOpen(true)}
+            title="Изменить аватарку"
+          >
+            <IoCamera size={16} />
+          </AvatarEditButton>
+        )}
       </div>
 
       <Username>{user.username}</Username>
@@ -182,6 +212,35 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel, 
         currentTheme={currentTheme}
         currentIcons={backgroundIcons}
       />
+
+      <AvatarUploadModal
+        isOpen={isAvatarModalOpen}
+        onClose={() => setIsAvatarModalOpen(false)}
+      />
     </MainInfo>
   )
 }
+
+const AvatarEditButton = styled.button`
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: ${(props) => props.theme.colors.primary};
+  border: 2px solid ${(props) => props.theme.colors.dark[800]};
+  color: ${(props) => props.theme.colors.light[100]};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
+
+  &:hover {
+    background: ${(props) => props.theme.colors.secondary};
+    transform: scale(1.1);
+    box-shadow: 0 0 15px ${(props) => props.theme.colors.primary}80;
+  }
+`

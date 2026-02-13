@@ -247,6 +247,9 @@ export const PriorityAchievementsModal = ({
         // Исключаем уже добавленные в приоритет
         if (currentPriority.includes(achievement.id)) return false
 
+        // Исключаем скрытые достижения
+        if (achievement.is_hidden || achievement.user_achievement?.is_hidden) return false
+
         // Показываем только "в работе" (есть прогресс, но нет completion_date) или недостигнутые (не unlocked)
         const isCompleted = achievement.completion_date !== undefined
         const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0

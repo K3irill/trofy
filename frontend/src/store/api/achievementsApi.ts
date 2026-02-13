@@ -18,6 +18,10 @@ export interface Achievement {
   created_at: string
   progress?: number
   completion_date?: string
+  is_hidden?: boolean
+  user_achievement?: {
+    is_hidden: boolean
+  }
 }
 
 export interface Category {

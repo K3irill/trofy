@@ -23,6 +23,7 @@ export interface User {
   created_at: string
   updated_at: string
   bio?: string
+  avatar_url?: string | null
   badges?: string[]
   pinned_achievements?: string[]
   priority_achievements?: string[]

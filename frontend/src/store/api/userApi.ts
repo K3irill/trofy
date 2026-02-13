@@ -50,6 +50,10 @@ export interface RecentAchievement {
   start_at: string | null
   is_achieved: boolean
   is_public: boolean
+  is_hidden?: boolean
+  user_achievement?: {
+    is_hidden: boolean
+  }
 }
 
 export const userApi = baseApi.injectEndpoints({
