@@ -2,6 +2,7 @@ import { prisma } from '../../../shared/database'
 import { hashPassword, comparePassword } from '../../../core/utils/password'
 import { generateTokens, verifyToken } from '../../../core/utils/jwt'
 import { ApiError } from '../../../core/errors/ApiError'
+import { calculateLevel } from '../../../shared/utils/levelCalculator'
 import {
   LoginDto,
   RegisterDto,
@@ -402,6 +403,16 @@ export class AuthService {
 
     if (!user) {
       throw ApiError.notFound('User not found')
+    }
+
+    // Проверяем и исправляем уровень, если он не соответствует XP
+    const correctLevel = calculateLevel(user.xp)
+    if (user.level !== correctLevel) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { level: correctLevel },
+      })
+      user.level = correctLevel
     }
 
     return formatUser(user, true)

@@ -2,6 +2,7 @@ import { prisma } from '../../../shared/database'
 import { ApiError } from '../../../core/errors/ApiError'
 import { UpdateUserDto } from '../dto/user.dto'
 import { formatUser } from '../../auth/service/auth.service'
+import { calculateLevel } from '../../../shared/utils/levelCalculator'
 
 export class UserService {
   /**
@@ -73,48 +74,48 @@ export class UserService {
 
     if (dto.profile_theme_id !== undefined) {
       // Проверяем существование темы
-        if (dto.profile_theme_id) {
-            const theme = await prisma.profileTheme.findUnique({
-              where: { id: dto.profile_theme_id },
-            })
+      if (dto.profile_theme_id) {
+        const theme = await prisma.profileTheme.findUnique({
+          where: { id: dto.profile_theme_id },
+        })
 
-            if (!theme) {
-              throw ApiError.notFound('Profile theme not found')
-            }
-          }
-          updateData.profile_theme_id = dto.profile_theme_id || null
+        if (!theme) {
+          throw ApiError.notFound('Profile theme not found')
         }
+      }
+      updateData.profile_theme_id = dto.profile_theme_id || null
+    }
 
-        if (dto.main_info_theme !== undefined) {
-          // Валидация темы блока основной информации
-          const validThemes = [
-            'midnight',
-            'deepBlue',
-            'velvetPurple',
-            'forest',
-            'cosmic',
-            'sunset',
-            'nebula',
-            'aurora',
-            'gold',
-            'platinum',
-            'dragonScale',
-          ]
-          if (dto.main_info_theme && !validThemes.includes(dto.main_info_theme)) {
-            throw ApiError.badRequest('Invalid main_info_theme')
-          }
-          updateData.main_info_theme = dto.main_info_theme || null
-        }
+    if (dto.main_info_theme !== undefined) {
+      // Валидация темы блока основной информации
+      const validThemes = [
+        'midnight',
+        'deepBlue',
+        'velvetPurple',
+        'forest',
+        'cosmic',
+        'sunset',
+        'nebula',
+        'aurora',
+        'gold',
+        'platinum',
+        'dragonScale',
+      ]
+      if (dto.main_info_theme && !validThemes.includes(dto.main_info_theme)) {
+        throw ApiError.badRequest('Invalid main_info_theme')
+      }
+      updateData.main_info_theme = dto.main_info_theme || null
+    }
 
-        if (dto.background_icons !== undefined) {
-          // Валидация иконок для фона
-          if (dto.background_icons.length > 10) {
-            throw ApiError.badRequest('Maximum 10 background icons allowed')
-          }
-          updateData.background_icons = dto.background_icons
-        }
+    if (dto.background_icons !== undefined) {
+      // Валидация иконок для фона
+      if (dto.background_icons.length > 10) {
+        throw ApiError.badRequest('Maximum 10 background icons allowed')
+      }
+      updateData.background_icons = dto.background_icons
+    }
 
-        if (dto.privacy_settings) {
+    if (dto.privacy_settings) {
       const currentUser = await prisma.user.findUnique({
         where: { id: userId },
         select: { privacy_settings: true },
@@ -270,7 +271,7 @@ export class UserService {
 
     // Считаем только завершенные достижения (с completion_date)
     const completedAchievements = user.userAchievements.filter((ua) => ua.completion_date !== null)
-    
+
     const totalAchievements = completedAchievements.length
     const achievementsByRarity = {
       common: 0,
@@ -337,15 +338,28 @@ export class UserService {
       throw ApiError.notFound('User not found')
     }
 
+    // Проверяем и исправляем уровень, если он не соответствует XP
+    const correctLevel = calculateLevel(user.xp)
+    if (user.level !== correctLevel) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { level: correctLevel },
+      })
+      user.level = correctLevel
+    }
+
     return formatUser(user, true)
   }
 
   /**
-   * Получение последних разблокированных достижений пользователя
+   * Получение последних достигнутых достижений пользователя
    */
   async getRecentAchievements(userId: string, limit: number = 5) {
     const userAchievements = await prisma.userAchievement.findMany({
-      where: { user_id: userId },
+      where: {
+        user_id: userId,
+        completion_date: { not: null }, // Только достигнутые достижения
+      },
       include: {
         achievement: {
           include: {
@@ -359,7 +373,7 @@ export class UserService {
           },
         },
       },
-      orderBy: { unlocked_at: 'desc' },
+      orderBy: { completion_date: 'desc' }, // Сортируем по дате завершения
       take: limit,
     })
 
@@ -375,7 +389,9 @@ export class UserService {
         icon_url: ua.achievement.category.icon_url,
       },
       xp_reward: ua.achievement.xp_reward,
-      unlocked_at: ua.unlocked_at.toISOString(),
+      unlocked_at: ua.completion_date?.toISOString() || null, // Дата завершения для достигнутых
+      start_at: ua.unlocked_at.toISOString(), // Дата начала работы
+      is_achieved: !!ua.completion_date, // Явный флаг достижения
       is_public: ua.is_public,
     }))
   }

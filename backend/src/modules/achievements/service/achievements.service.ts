@@ -2,6 +2,7 @@ import { prisma } from '../../../shared/database'
 import { ApiError } from '../../../core/errors/ApiError'
 import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto } from '../dto/achievements.dto'
 import { saveFileFromBuffer, deleteFile, deleteAchievementFiles } from '../../../shared/utils/fileUpload'
+import { calculateLevel } from '../../../shared/utils/levelCalculator'
 
 export class AchievementsService {
   /**
@@ -741,13 +742,24 @@ export class AchievementsService {
       await Promise.all(photoPromises)
     }
 
-    // Обновляем XP пользователя
+    // Обновляем XP пользователя и пересчитываем уровень
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { xp: true, level: true },
+    })
+
+    if (!user) {
+      throw ApiError.notFound('User not found')
+    }
+
+    const newXP = user.xp + achievement.xp_reward
+    const newLevel = calculateLevel(newXP)
+
     await prisma.user.update({
       where: { id: userId },
       data: {
-        xp: {
-          increment: achievement.xp_reward,
-        },
+        xp: newXP,
+        level: newLevel,
       },
     })
 
@@ -881,13 +893,24 @@ export class AchievementsService {
       where: { id: userAchievementId },
     })
 
-    // Уменьшаем XP пользователя
+    // Уменьшаем XP пользователя и пересчитываем уровень
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { xp: true, level: true },
+    })
+
+    if (!user) {
+      throw ApiError.notFound('User not found')
+    }
+
+    const newXP = Math.max(0, user.xp - xpReward)
+    const newLevel = calculateLevel(newXP)
+
     await prisma.user.update({
       where: { id: userId },
       data: {
-        xp: {
-          decrement: xpReward,
-        },
+        xp: newXP,
+        level: newLevel,
       },
     })
 
