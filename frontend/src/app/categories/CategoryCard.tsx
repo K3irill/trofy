@@ -87,14 +87,12 @@ export const CategoryCardComponent = ({ category, onClick, isAuthenticated = fal
         {previewAchievements.map((achievement) => {
           // Определяем статус на основе доступных данных
           // Если есть progress и completion_date, используем их, иначе только unlocked
-          const status: 'locked' | 'unlocked' | 'in_progress' | 'completed' = 
-            achievement.completion_date 
-              ? 'completed'
-              : achievement.unlocked && (achievement.progress || 0) > 0
+          const status: 'not_achieved' | 'in_progress' | 'achieved' =
+            achievement.completion_date
+              ? 'achieved'
+              : (achievement.progress || 0) > 0 && (achievement.progress || 0) <= 100
                 ? 'in_progress'
-                : achievement.unlocked
-                  ? 'unlocked'
-                  : 'locked'
+                : 'not_achieved'
 
           return (
             <PreviewItem

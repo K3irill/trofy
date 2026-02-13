@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { IoAddCircleOutline } from 'react-icons/io5'
 import { HiOutlineSearch } from 'react-icons/hi'
 import { renderIcon } from '@/lib/utils/iconUtils'
+import { ThemedSelect, ThemedSelectOption } from '@/components/Select/ThemedSelect'
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -111,38 +112,13 @@ const SearchInput = styled.input`
   }
 `
 
-const CategorySelect = styled.select`
-  padding: 0.5rem 1rem;
-  background: ${(props) => props.theme.colors.dark.glassLight};
-  border: ${(props) => props.theme.glass.border};
-  border-radius: 8px;
-  color: ${(props) => props.theme.colors.light[100]};
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  outline: none;
+const FilterSelectWrapper = styled.div`
   min-width: 200px;
 
-  &:focus {
-    border-color: ${(props) => props.theme.colors.primary};
-    box-shadow: ${(props) => props.theme.shadows.glow.primary};
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: unset;
   }
-
-  &:hover {
-    background: ${(props) => `${props.theme.colors.primary}1a`};
-    border-color: ${(props) => `${props.theme.colors.primary}4d`};
-  }
-
-  option {
-    background: ${(props) => props.theme.colors.dark[900]};
-    color: ${(props) => props.theme.colors.light[100]};
-    padding: 0.5rem;
-  }
-`
-
-const RaritySelect = styled(CategorySelect)`
-  min-width: 180px;
 `
 
 const AchievementsList = styled.div`
@@ -270,12 +246,12 @@ export const PriorityAchievementsModal = ({
       (achievement) => {
         // Исключаем уже добавленные в приоритет
         if (currentPriority.includes(achievement.id)) return false
-        
+
         // Показываем только "в работе" (есть прогресс, но нет completion_date) или недостигнутые (не unlocked)
         const isCompleted = achievement.completion_date !== undefined
         const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
         const isNotStarted = !achievement.unlocked
-        
+
         return !isCompleted && (isInProgress || isNotStarted)
       }
     )
@@ -318,29 +294,43 @@ export const PriorityAchievementsModal = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
 
-              <CategorySelect
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                <option value="">Все категории</option>
-                {categories?.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </CategorySelect>
+              <FilterSelectWrapper>
+                <ThemedSelect
+                  options={[
+                    { value: '', label: 'Все категории' },
+                    ...(categories?.map((category) => ({
+                      value: category.id,
+                      label: category.name,
+                    })) || []),
+                  ]}
+                  value={
+                    selectedCategory
+                      ? { value: selectedCategory, label: categories?.find((c) => c.id === selectedCategory)?.name || selectedCategory }
+                      : { value: '', label: 'Все категории' }
+                  }
+                  onChange={(option) => setSelectedCategory(option?.value || '')}
+                  placeholder="Все категории"
+                />
+              </FilterSelectWrapper>
 
-              <RaritySelect
-                value={selectedRarity}
-                onChange={(e) => setSelectedRarity(e.target.value)}
-              >
-                <option value="">Все редкости</option>
-                {rarities?.map((rarity) => (
-                  <option key={rarity.value} value={rarity.value}>
-                    {rarity.label}
-                  </option>
-                ))}
-              </RaritySelect>
+              <FilterSelectWrapper>
+                <ThemedSelect
+                  options={[
+                    { value: '', label: 'Все редкости' },
+                    ...(rarities?.map((rarity) => ({
+                      value: rarity.value,
+                      label: rarity.label,
+                    })) || []),
+                  ]}
+                  value={
+                    selectedRarity
+                      ? { value: selectedRarity, label: rarities?.find((r) => r.value === selectedRarity)?.label || selectedRarity }
+                      : { value: '', label: 'Все редкости' }
+                  }
+                  onChange={(option) => setSelectedRarity(option?.value || '')}
+                  placeholder="Все редкости"
+                />
+              </FilterSelectWrapper>
 
               {isLoading ? (
                 <EmptyState>Загрузка...</EmptyState>
@@ -359,7 +349,7 @@ export const PriorityAchievementsModal = ({
                       onClick={() => handleSelect(achievement.id)}
                     >
                       <AchievementIcon rarity={achievement.rarity}>
-                        {renderIcon(achievement.icon_url, '🏆')}
+                        {renderIcon(achievement.icon_url, 'trophy')}
                       </AchievementIcon>
                       <AchievementInfo>
                         <AchievementTitle>{achievement.title}</AchievementTitle>

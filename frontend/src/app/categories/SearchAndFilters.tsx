@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { IoSearch, IoImage } from 'react-icons/io5'
 import { useGetCategoriesQuery } from '@/store/api/achievementsApi'
 import { isImageUrl } from '@/lib/utils/iconUtils'
+import { ThemedSelect, ThemedSelectOption } from '@/components/Select/ThemedSelect'
 
 const SearchFiltersContainer = styled.div`
   display: flex;
@@ -111,109 +112,6 @@ const FilterSelectWrapper = styled.div`
     width: 100%;
     min-width: unset;
   }
-
-  &::after {
-    content: '';
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 8px solid ${(props) => props.theme.colors.light[300]};
-    pointer-events: none;
-    transition: all 0.3s ease;
-    z-index: 1;
-  }
-
-  &:hover::after {
-    border-top-color: ${(props) => props.theme.colors.primary};
-    transform: translateY(-50%) scale(1.1);
-  }
-`
-
-const FilterSelect = styled.select`
-  background: linear-gradient(
-    145deg,
-    ${(props) => props.theme.colors.dark[700]}e6 0%,
-    ${(props) => props.theme.colors.dark[800]}f2 100%
-  );
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
-  border-radius: 12px;
-  padding: 0.875rem 1rem;
-  padding-right: 2.5rem;
-  color: ${(props) => props.theme.colors.light[100]};
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  outline: none;
-  appearance: none;
-  width: 100%;
-  position: relative;
-  box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
-
-  &:hover {
-    border-color: ${(props) => `${props.theme.colors.primary}66`};
-    background: linear-gradient(
-      145deg,
-      ${(props) => props.theme.colors.dark[700]}f0 0%,
-      ${(props) => props.theme.colors.dark[800]}f8 100%
-    );
-    box-shadow: ${(props) => props.theme.shadows.glass.light},
-      ${(props) => `0 0 15px ${props.theme.colors.primary}20`};
-    transform: translateY(-2px);
-  }
-
-  &:focus {
-    border-color: ${(props) => props.theme.colors.primary};
-    background: linear-gradient(
-      145deg,
-      ${(props) => props.theme.colors.dark[700]}f0 0%,
-      ${(props) => props.theme.colors.dark[800]}f8 100%
-    );
-    box-shadow: ${(props) => props.theme.shadows.glow.primary},
-      ${(props) => props.theme.shadows.glass.medium};
-    transform: translateY(-2px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  option {
-    background: ${(props) => props.theme.colors.dark[800]};
-    color: ${(props) => props.theme.colors.light[100]};
-    padding: 0.75rem;
-    font-size: 0.875rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: ${(props) => props.theme.colors.dark[700]};
-      color: ${(props) => props.theme.colors.primary};
-    }
-
-    &:checked {
-      background: ${(props) => `${props.theme.colors.primary}1a`};
-      color: ${(props) => props.theme.colors.primary};
-      font-weight: 600;
-    }
-  }
-
-  &::-ms-expand {
-    display: none;
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    min-width: unset;
-  }
 `
 
 interface SearchAndFiltersProps {
@@ -245,6 +143,42 @@ export const SearchAndFilters = ({
 }: SearchAndFiltersProps) => {
   const { data: categoriesData = [] } = useGetCategoriesQuery()
 
+  const categoryOptions: ThemedSelectOption[] = [
+    { value: '', label: 'Все категории' },
+    ...categoriesData.map((category) => ({
+      value: category.id,
+      label: category.name,
+    })),
+  ]
+
+  const statusOptions: ThemedSelectOption[] = [
+    { value: '', label: 'Все статусы' },
+    { value: 'achieved', label: 'Достигнуто' },
+    { value: 'in_progress', label: 'В работе' },
+    { value: 'not_achieved', label: 'Не достигнуто' },
+  ]
+
+  const rarityOptions: ThemedSelectOption[] = [
+    { value: '', label: 'Вся редкость' },
+    { value: 'common', label: 'Обычные' },
+    { value: 'rare', label: 'Редкие' },
+    { value: 'epic', label: 'Эпические' },
+    { value: 'legendary', label: 'Легендарные' },
+  ]
+
+  const sortOptions: ThemedSelectOption[] = [
+    { value: 'default', label: 'Сортировка' },
+    { value: 'achieved-first', label: 'Достигнуто' },
+    { value: 'not-achieved-first', label: 'Не достигнуто' },
+    { value: 'in-progress-first', label: 'В работе' },
+    ...(statusFilter === 'achieved'
+      ? [
+        { value: 'date-asc', label: 'По дате (старые сначала)' },
+        { value: 'date-desc', label: 'По дате (новые сначала)' },
+      ]
+      : []),
+  ]
+
   return (
     <SearchFiltersContainer>
       <SearchInputWrapper>
@@ -258,63 +192,41 @@ export const SearchAndFilters = ({
       </SearchInputWrapper>
       <FiltersRow>
         <FilterSelectWrapper>
-          <FilterSelect
-            value={selectedCategory}
-            onChange={(e) => onCategoryChange(e.target.value)}
-          >
-            <option value="">Все категории</option>
-            {categoriesData.map((category) => {
-              const icon = category.icon_url
-              const iconDisplay = isImageUrl(icon || '') ? <IoImage /> : null
-              return (
-                <option key={category.id} value={category.id}>
-                  {iconDisplay ? '🖼️' : ''} {category.name}
-                </option>
-              )
-            })}
-          </FilterSelect>
+          <ThemedSelect
+            options={categoryOptions}
+            value={categoryOptions.find((opt) => opt.value === selectedCategory)}
+            onChange={(option) => onCategoryChange(option?.value || '')}
+            isClearable
+            placeholder="Все категории"
+          />
         </FilterSelectWrapper>
         {isAuthenticated && (
           <FilterSelectWrapper>
-            <FilterSelect
-              value={statusFilter}
-              onChange={(e) => onStatusFilterChange(e.target.value)}
-            >
-              <option value="">Все статусы</option>
-              <option value="completed">Завершенные</option>
-              <option value="in_progress">В работе</option>
-              <option value="unlocked">Открытые</option>
-              <option value="locked">Не открытые</option>
-            </FilterSelect>
+            <ThemedSelect
+              options={statusOptions}
+              value={statusOptions.find((opt) => opt.value === statusFilter)}
+              onChange={(option) => onStatusFilterChange(option?.value || '')}
+              isClearable
+              placeholder="Все статусы"
+            />
           </FilterSelectWrapper>
         )}
         <FilterSelectWrapper>
-          <FilterSelect
-            value={rarityFilter}
-            onChange={(e) => onRarityFilterChange(e.target.value)}
-          >
-            <option value="">Вся редкость</option>
-            <option value="common">Обычные</option>
-            <option value="rare">Редкие</option>
-            <option value="epic">Эпические</option>
-            <option value="legendary">Легендарные</option>
-          </FilterSelect>
+          <ThemedSelect
+            options={rarityOptions}
+            value={rarityOptions.find((opt) => opt.value === rarityFilter)}
+            onChange={(option) => onRarityFilterChange(option?.value || '')}
+            isClearable
+            placeholder="Вся редкость"
+          />
         </FilterSelectWrapper>
         <FilterSelectWrapper>
-          <FilterSelect
-            value={sortBy}
-            onChange={(e) => onSortChange(e.target.value)}
-          >
-            <option value="default">Сортировка</option>
-            <option value="unlocked-asc">По завершенности (сначала завершенные)</option>
-            <option value="unlocked-desc">По завершенности (сначала незавершенные)</option>
-            {(statusFilter === 'completed' || statusFilter === 'unlocked') && (
-              <>
-                <option value="date-asc">По дате (старые сначала)</option>
-                <option value="date-desc">По дате (новые сначала)</option>
-              </>
-            )}
-          </FilterSelect>
+          <ThemedSelect
+            options={sortOptions}
+            value={sortOptions.find((opt) => opt.value === sortBy)}
+            onChange={(option) => onSortChange(option?.value || 'default')}
+            placeholder="Сортировка"
+          />
         </FilterSelectWrapper>
       </FiltersRow>
     </SearchFiltersContainer>

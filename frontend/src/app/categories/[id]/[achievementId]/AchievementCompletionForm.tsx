@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { IoCameraOutline, IoCheckmarkCircle, IoClose } from 'react-icons/io5'
 import { AchievementDetail } from './types'
 import { useCompleteAchievementMutation } from '@/store/api/achievementDetailApi'
 import { useToast } from '@/hooks/useToast'
@@ -9,7 +10,6 @@ import {
   FormTitle,
   FormGroup,
   FormLabel,
-  FormInput,
   FormTextarea,
   FormButton,
   PhotoUploadArea,
@@ -133,8 +133,8 @@ export const AchievementCompletionForm = ({ achievement, achievementId, onComple
               id="photo-upload"
             />
             <label htmlFor="photo-upload" style={{ cursor: 'pointer', textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📷</div>
-              <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+              <IoCameraOutline style={{ fontSize: '2rem', marginBottom: '0.5rem' }} />
+              <div style={{ fontSize: '0.875rem' }}>
                 Нажмите для загрузки фотографий
               </div>
             </label>
@@ -144,7 +144,9 @@ export const AchievementCompletionForm = ({ achievement, achievementId, onComple
               {photoPreviews.map((photo, index) => (
                 <div key={index} style={{ position: 'relative' }}>
                   <img src={photo} alt={`Preview ${index + 1}`} />
-                  <PhotoRemoveButton onClick={() => removePhoto(index)}>×</PhotoRemoveButton>
+                  <PhotoRemoveButton onClick={() => removePhoto(index)}>
+                    <IoClose />
+                  </PhotoRemoveButton>
                 </div>
               ))}
             </PhotoPreview>
@@ -152,7 +154,11 @@ export const AchievementCompletionForm = ({ achievement, achievementId, onComple
         </FormGroup>
 
         <FormButton type="submit" disabled={!date || isSubmitting}>
-          {isSubmitting ? 'Отправка...' : 'Отметить как достигнуто ✔️'}
+          {isSubmitting ? 'Отправка...' : (
+            <>
+              Отметить как достигнуто <IoCheckmarkCircle style={{ marginLeft: '0.5rem' }} />
+            </>
+          )}
         </FormButton>
       </form>
       <ToastComponent />

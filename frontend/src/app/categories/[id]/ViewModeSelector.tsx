@@ -1,5 +1,6 @@
 'use client'
 
+import { IoListOutline } from 'react-icons/io5'
 import { ViewModeSelectorWrapper, ModeButton } from './ViewModeSelector.styled'
 
 export type AchievementViewMode = 'grid6' | 'grid2' | 'list'
@@ -19,7 +20,7 @@ export const ViewModeSelector = ({ mode, onChange }: ViewModeSelectorProps) => {
         2
       </ModeButton>
       <ModeButton active={mode === 'list'} onClick={() => onChange('list')}>
-        📝
+        <IoListOutline />
       </ModeButton>
     </ViewModeSelectorWrapper>
   )

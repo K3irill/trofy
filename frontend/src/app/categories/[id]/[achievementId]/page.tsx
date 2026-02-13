@@ -74,8 +74,8 @@ export default function AchievementDetailPage() {
       description: achievementDetail.description,
       icon: achievementDetail.icon_url || '🏆',
       imageUrl: achievementDetail.photos?.[0]?.url,
-      unlocked: achievementDetail.unlocked,
-      progress: achievementDetail.userAchievement?.progress || (achievementDetail.unlocked ? 100 : undefined),
+      unlocked: achievementDetail.unlocked || !!achievementDetail.userAchievement, // unlocked если есть UserAchievement
+      progress: achievementDetail.userAchievement?.progress || 0,
       maxProgress: 100,
       rarity: achievementDetail.rarity,
       xpReward: achievementDetail.xp_reward,
@@ -323,15 +323,16 @@ export default function AchievementDetailPage() {
         {isAuthenticated && (
           <>
             {(() => {
-              const isCompleted = achievementDetail.userAchievement?.completion_date
-              const isInProgress = achievement.unlocked && !isCompleted && (achievementDetail.userAchievement?.progress || 0) > 0
-              const isNotStarted = !achievement.unlocked
+              const isAchieved = !!achievementDetail.userAchievement?.completion_date
+              const progress = achievementDetail.userAchievement?.progress || 0
+              const isInProgress = !isAchieved && progress > 0 && progress <= 100
+              const isNotAchieved = !isAchieved && progress === 0
 
-              // Завершено - показываем детали выполнения
-              if (isCompleted) {
+              // Достигнуто - показываем детали выполнения
+              if (isAchieved) {
                 return (
                   <ContentSection>
-                    <StatusBadge status="completed" />
+                    <StatusBadge status="achieved" />
                     <AchievementVerification achievement={achievement} isOwner={isOwner} />
                     <div ref={detailViewRef} id="achievement-detail-view">
                       <AchievementDetailView
@@ -370,8 +371,8 @@ export default function AchievementDetailPage() {
                 <ContentSection>
                   {isInProgress ? (
                     <StatusBadge status="in_progress" />
-                  ) : isNotStarted ? (
-                    <StatusBadge status="not_started" />
+                  ) : isNotAchieved ? (
+                    <StatusBadge status="not_achieved" />
                   ) : null}
                   <AchievementProgress
                     achievement={achievement}

@@ -7,6 +7,8 @@ import { IoTimeOutline, IoCheckmarkCircle } from 'react-icons/io5'
 import { Achievement } from './api'
 import { renderIcon } from '@/lib/utils/iconUtils'
 
+type AchievementStatus = 'not_achieved' | 'in_progress' | 'achieved'
+
 const getRarityColor = (theme: DefaultTheme, rarity?: string) => {
   if (!rarity) return theme.colors.dark[600]
   const rarityColors = theme.colors.rarity
@@ -30,7 +32,7 @@ const getRarityGlow = (theme: DefaultTheme, rarity?: string) => {
   return `0 0 20px ${rarityColor}40, 0 0 40px ${rarityColor}20`
 }
 
-const AchievementCardContainer = styled(motion.div) <{ unlocked: boolean; rarity?: string }>`
+const AchievementCardContainer = styled(motion.div) <{ $status: AchievementStatus; rarity?: string }>`
   background: linear-gradient(
     145deg,
     ${(props) => props.theme.colors.dark[700]}e6 0%,
@@ -41,7 +43,7 @@ const AchievementCardContainer = styled(motion.div) <{ unlocked: boolean; rarity
   padding: 1.5rem;
   border: 2px solid
     ${(props) => {
-    if (!props.unlocked) return `${props.theme.colors.dark[600]}80`
+    if (props.$status === 'not_achieved') return `${props.theme.colors.dark[600]}80`
     const rarityColor = getRarityColor(props.theme, props.rarity)
     return `${rarityColor}80`
   }};
@@ -49,7 +51,7 @@ const AchievementCardContainer = styled(motion.div) <{ unlocked: boolean; rarity
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  opacity: ${(props) => (props.unlocked ? 1 : 0.6)};
+  opacity: 1;
 
   &::before {
     content: '';
@@ -61,28 +63,28 @@ const AchievementCardContainer = styled(motion.div) <{ unlocked: boolean; rarity
     background: linear-gradient(
       90deg,
       ${(props) => {
-    if (!props.unlocked) return props.theme.colors.dark[600]
+    if (props.$status === 'not_achieved') return props.theme.colors.dark[600]
     const rarityColor = getRarityColor(props.theme, props.rarity)
     return rarityColor
   }} 0%,
       ${(props) => {
-    if (!props.unlocked) return props.theme.colors.dark[600]
+    if (props.$status === 'not_achieved') return props.theme.colors.dark[600]
     const rarityColor = getRarityColor(props.theme, props.rarity)
     return `${rarityColor}cc`
   }} 100%
     );
-    transform: scaleX(${(props) => (props.unlocked ? 1 : 0)});
+    transform: scaleX(${(props) => (props.$status !== 'not_achieved' ? 1 : 0)});
     transition: transform 0.4s ease;
   }
 
   &:hover {
     border-color: ${(props) => {
-    if (!props.unlocked) return props.theme.colors.dark[600]
+    if (props.$status === 'not_achieved') return props.theme.colors.dark[600]
     return getRarityColor(props.theme, props.rarity)
   }};
     transform: translateY(-8px);
     box-shadow: ${(props) => props.theme.shadows.glass.medium},
-      ${(props) => (props.unlocked ? getRarityGlow(props.theme, props.rarity) : 'none')};
+      ${(props) => (props.$status !== 'not_achieved' ? getRarityGlow(props.theme, props.rarity) : 'none')};
   }
 `
 
@@ -91,15 +93,13 @@ const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   height: 80px;
   border-radius: 16px;
   background: ${(props) => {
-    if (props.$status === 'completed') return `linear-gradient(135deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
+    if (props.$status === 'achieved') return `linear-gradient(135deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
     if (props.$status === 'in_progress') return `linear-gradient(135deg, #ffa50033 0%, #ff8c001a 100%)`
-    if (props.$status === 'unlocked') return `linear-gradient(135deg, ${props.theme.colors.primary}26 0%, ${props.theme.colors.secondary}1a 100%)`
     return `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`
   }};
   border: 2px solid ${(props) => {
-    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'achieved') return `${props.theme.colors.success}80`
     if (props.$status === 'in_progress') return `#ffa50080`
-    if (props.$status === 'unlocked') return `${props.theme.colors.primary}80`
     return `${props.theme.colors.dark[600]}80`
   }};
   display: flex;
@@ -108,10 +108,10 @@ const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   font-size: 2.5rem;
   position: relative;
   transition: all 0.3s ease;
-  filter: ${(props) => (props.$status === 'locked' ? 'grayscale(0.6) brightness(0.7)' : 'none')};
+  filter: ${(props) => (props.$status === 'not_achieved' ? 'grayscale(0.6) brightness(0.7)' : 'none')};
   cursor: pointer;
   transform-style: preserve-3d;
-  box-shadow: ${(props) => (props.$status !== 'locked' ? props.theme.shadows.glow.primary : 'none')};
+  box-shadow: ${(props) => (props.$status !== 'not_achieved' ? props.theme.shadows.glow.primary : 'none')};
 
   img {
     width: 100%;
@@ -120,7 +120,7 @@ const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   }
 `
 
-const StatusBadge = styled.div<{ $status: 'completed' | 'in_progress' }>`
+const StatusBadge = styled.div<{ $status: 'achieved' | 'in_progress' }>`
   position: absolute;
   top: -8px;
   right: -8px;
@@ -137,7 +137,7 @@ const StatusBadge = styled.div<{ $status: 'completed' | 'in_progress' }>`
   transform: translateZ(30px);
 
   ${(props) =>
-    props.$status === 'completed' &&
+    props.$status === 'achieved' &&
     `
     background: linear-gradient(135deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%);
     color: ${props.theme.colors.dark.bg};
@@ -162,9 +162,8 @@ const StatusBadge = styled.div<{ $status: 'completed' | 'in_progress' }>`
 const AchievementStatus = styled.span<{ $status: AchievementStatus }>`
   font-size: 0.75rem;
   color: ${(props) => {
-    if (props.$status === 'completed') return props.theme.colors.success
+    if (props.$status === 'achieved') return props.theme.colors.success
     if (props.$status === 'in_progress') return '#ffa500'
-    if (props.$status === 'unlocked') return props.theme.colors.primary
     return props.theme.colors.light[300]
   }};
   font-weight: 500;
@@ -206,7 +205,6 @@ const AchievementCategory = styled.div`
   font-size: 0.75rem;
   color: ${(props) => props.theme.colors.primary};
   border: 1px solid ${(props) => `${props.theme.colors.primary}33`};
-  margin-bottom: 0.5rem;
 `
 
 const RarityBadge = styled.div<{ rarity?: string }>`
@@ -263,15 +261,14 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
   const [iconTransform, setIconTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
 
   // Определяем статус достижения
-  const isCompleted = !!achievement.completion_date
-  const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
-  const status: AchievementStatus = isCompleted
-    ? 'completed'
+  const isAchieved = !!achievement.completion_date
+  const progress = achievement.progress || 0
+  const isInProgress = !isAchieved && progress > 0 && progress <= 100
+  const status: AchievementStatus = isAchieved
+    ? 'achieved'
     : isInProgress
       ? 'in_progress'
-      : achievement.unlocked
-        ? 'unlocked'
-        : 'locked'
+      : 'not_achieved'
 
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -326,49 +323,52 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      <AchievementIcon
-        $status={status}
-        onMouseMove={handleIconMouseMove}
-        onMouseLeave={handleIconMouseLeave}
-        onTouchMove={handleIconTouchMove}
-        onTouchEnd={handleIconTouchEnd}
-        style={{
-          transform: `perspective(1000px) rotateX(${iconTransform.rotateX}deg) rotateY(${iconTransform.rotateY}deg) scale(${iconTransform.scale})`,
-          transformStyle: 'preserve-3d',
-        }}
-      >
-        {renderIcon(achievement.icon, 'trophy')}
-        {isCompleted && (
-          <StatusBadge $status="completed">
-            <IoCheckmarkCircle />
-          </StatusBadge>
-        )}
-        {isInProgress && (
-          <StatusBadge $status="in_progress">
-            <IoTimeOutline />
-          </StatusBadge>
-        )}
-      </AchievementIcon>
       <AchievementName>{achievement.name}</AchievementName>
       {achievement.description && (
         <AchievementDescription>{achievement.description}</AchievementDescription>
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%', alignItems: 'center' }}>
-        <AchievementCategory>
-          <span>{achievement.categoryName}</span>
-        </AchievementCategory>
-        <AchievementStatus $status={status}>
-          {isCompleted
-            ? 'Завершено'
-            : isInProgress
-              ? `В работе ${achievement.progress}%`
-              : achievement.unlocked
-                ? 'Открыто'
-                : 'Не открыто'}
-        </AchievementStatus>
-        <RarityBadge rarity={achievement.rarity}>
-          {getRarityLabel(achievement.rarity)}
-        </RarityBadge>
+      <div style={{ display: 'flex', gap: '1rem', width: '100%', alignItems: 'flex-start' }}>
+        <AchievementIcon
+          $status={status}
+          onMouseMove={handleIconMouseMove}
+          onMouseLeave={handleIconMouseLeave}
+          onTouchMove={handleIconTouchMove}
+          onTouchEnd={handleIconTouchEnd}
+          style={{
+            transform: `perspective(1000px) rotateX(${iconTransform.rotateX}deg) rotateY(${iconTransform.rotateY}deg) scale(${iconTransform.scale})`,
+            transformStyle: 'preserve-3d',
+            flexShrink: 0,
+          }}
+        >
+          {renderIcon(achievement.icon, 'trophy')}
+          {isAchieved && (
+            <StatusBadge $status="achieved">
+              <IoCheckmarkCircle />
+            </StatusBadge>
+          )}
+          {isInProgress && (
+            <StatusBadge $status="in_progress">
+              <IoTimeOutline />
+            </StatusBadge>
+          )}
+        </AchievementIcon>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, alignItems: 'flex-end' }}>
+          <AchievementStatus $status={status}>
+            {isAchieved
+              ? 'Достигнуто'
+              : isInProgress
+                ? `В работе ${achievement.progress}%`
+                : 'Не достигнуто'}
+          </AchievementStatus>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}>
+            <AchievementCategory>
+              <span>{achievement.categoryName}</span>
+            </AchievementCategory>
+            <RarityBadge rarity={achievement.rarity}>
+              {getRarityLabel(achievement.rarity)}
+            </RarityBadge>
+          </div>
+        </div>
       </div>
     </AchievementCardContainer>
   )

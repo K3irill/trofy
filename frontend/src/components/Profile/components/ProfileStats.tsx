@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { IoStatsChart } from 'react-icons/io5'
 import type { UserStats } from '@/store/api/userApi'
 import {
   StatsSection,
@@ -19,7 +20,10 @@ interface ProfileStatsProps {
 export function ProfileStats({ isAuthenticated, stats }: ProfileStatsProps) {
   return (
     <StatsSection>
-      <SectionTitle>📊 Статистика</SectionTitle>
+      <SectionTitle>
+        <IoStatsChart style={{ fontSize: '1.25rem' }} />
+        Статистика
+      </SectionTitle>
       <Stats>
         <StatItem>
           <StatValue

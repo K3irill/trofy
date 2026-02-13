@@ -26,9 +26,18 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
     skip: !isAuthenticated,
   })
 
-  const xpToNextLevel = Math.pow(user.level, 2) * 100
-  const currentLevelXP = Math.pow(user.level - 1, 2) * 100
-  const progress = Math.max(0, Math.min(100, ((user.xp - currentLevelXP) / (xpToNextLevel - currentLevelXP)) * 100))
+  // Расчет опыта для текущего уровня
+  // XP для уровня N = (N-1)^2 * 100
+  // Например: уровень 1 = 0 XP, уровень 2 = 100 XP, уровень 3 = 400 XP, уровень 4 = 900 XP
+  const currentLevelXP = Math.pow(Math.max(0, user.level - 1), 2) * 100
+  const nextLevelXP = Math.pow(user.level, 2) * 100
+  const xpToNextLevel = nextLevelXP - currentLevelXP
+  const currentXP = Math.max(0, user.xp - currentLevelXP)
+  
+  // Прогресс в процентах (0-100)
+  const progress = xpToNextLevel > 0 
+    ? Math.max(0, Math.min(100, (currentXP / xpToNextLevel) * 100))
+    : 100
 
   const pinnedAchievementsHook = usePinnedAchievements(user)
   const priorityAchievementsHook = usePriorityAchievements(user)
@@ -53,6 +62,7 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
           isAuthenticated={isAuthenticated}
           progress={progress}
           xpToNextLevel={xpToNextLevel}
+          currentXP={currentXP}
         />
         <div>
           <PriorityAchievements

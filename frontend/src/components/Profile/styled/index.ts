@@ -517,6 +517,11 @@ export const TrophyCard = styled(motion.div) <{ isNew: boolean }>`
   overflow: hidden;
   transition: all 0.3s ease;
   border: 1px solid ${(props) => props.theme.colors.neomorphLight};
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
   ${props => props.isNew && `
     animation: pulse-border 2s infinite;
@@ -616,7 +621,6 @@ export const AddTrophyButton = styled(motion.button)`
     min-height: 100px;
   }
 `
-
 export const AddTrophyIcon = styled.div`
   font-size: 2.5rem;
   color: ${(props) => props.theme.colors.light[300]};
@@ -630,12 +634,45 @@ export const AddTrophyIcon = styled.div`
     width: 100%;
     height: 100%;
   }
+`
 
-  ${AddTrophyButton}:hover & {
+export const AddGoalButton = styled(motion.button)`
+  background: ${(props) => props.theme.colors.dark.neomorphDark};
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2px dashed ${(props) => props.theme.colors.dark[600]};
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 80px;
+  width: 100%;
+
+  .trophy-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+  }
+
+  .trophy-text {
+    font-size: 0.8125rem;
+  }
+
+  &:hover .trophy-icon {
     color: ${(props) => props.theme.colors.primary};
     transform: scale(1.1);
   }
+
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 `
+
+
 
 export const AddTrophyText = styled.div`
   color: ${(props) => props.theme.colors.light[300]};
@@ -644,6 +681,10 @@ export const AddTrophyText = styled.div`
   text-align: center;
 
   ${AddTrophyButton}:hover & {
+    color: ${(props) => props.theme.colors.primary};
+  }
+
+  ${AddGoalButton}:hover & {
     color: ${(props) => props.theme.colors.primary};
   }
 `
@@ -664,12 +705,15 @@ export const CurrentGoals = styled.div`
 `
 
 
-export const GoalItem = styled(motion.div)<{ $isComplete?: boolean }>`
+export const GoalItem = styled(motion.div) <{ $isComplete?: boolean }>`
   background: ${(props) => props.theme.colors.dark.neomorphDark};
   border-radius: 12px;
   padding: 1rem;
   border: 1px solid ${(props) => props.theme.colors.neomorphLight};
   transition: all 0.3s ease;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
 
   ${(props) =>
     props.$isComplete &&
@@ -757,7 +801,7 @@ export const GoalBar = styled.div`
   overflow: hidden;
 `
 
-export const GoalProgressBar = styled(motion.div)<{ $isComplete?: boolean }>`
+export const GoalProgressBar = styled(motion.div) <{ $isComplete?: boolean }>`
   height: 100%;
   background: ${(props) =>
     props.$isComplete

@@ -2,7 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { IoShareSocial } from 'react-icons/io5'
 import type { User } from '@/types'
+import { useToast } from '@/hooks/useToast'
 import {
   ShareButton,
   ParticlesContainer,
@@ -16,6 +18,7 @@ interface ProfileShareProps {
 
 export function ProfileShare({ isAuthenticated, user }: ProfileShareProps) {
   const [showParticles, setShowParticles] = useState(false)
+  const { showToast, ToastComponent } = useToast()
 
   const particlePositions = useMemo(
     () =>
@@ -26,10 +29,38 @@ export function ProfileShare({ isAuthenticated, user }: ProfileShareProps) {
     []
   )
 
-  const handleShare = () => {
+  const profileUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/u/${user.username}`
+    : `trofy.art/u/${user.username}`
+
+  const handleShare = async () => {
     setShowParticles(true)
     setTimeout(() => setShowParticles(false), 2000)
-    navigator.clipboard?.writeText(`Мой профиль trofy.art/u/${user.username}`)
+
+    // Используем navigator.share если доступен
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Профиль ${user.username}`,
+          text: `Посмотрите мой профиль на Trofy!`,
+          url: profileUrl,
+        })
+      } catch (error) {
+        // Пользователь отменил или произошла ошибка
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Ошибка при попытке поделиться:', error)
+        }
+      }
+    } else {
+      // Fallback: копируем ссылку в буфер обмена
+      try {
+        await navigator.clipboard.writeText(profileUrl)
+        showToast('Ссылка скопирована в буфер обмена!', 'success')
+      } catch (error) {
+        console.error('Ошибка при копировании:', error)
+        showToast('Не удалось скопировать ссылку', 'error')
+      }
+    }
   }
 
   if (!isAuthenticated) return null
@@ -67,8 +98,10 @@ export function ProfileShare({ isAuthenticated, user }: ProfileShareProps) {
         whileTap={{ scale: 0.98 }}
         onClick={handleShare}
       >
-        <span>📤</span> Поделиться профилем
+        <IoShareSocial style={{ fontSize: '1.25rem' }} />
+        Поделиться профилем
       </ShareButton>
+      <ToastComponent />
     </>
   )
 }

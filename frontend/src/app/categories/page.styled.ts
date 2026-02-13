@@ -19,10 +19,21 @@ export const Title = styled.h1`
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 
   @media (max-width: 768px) {
     font-size: 2rem;
   }
+`
+
+export const TitleIcon = styled.span`
+  color: ${(props) => props.theme.colors.primary};
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  flex-shrink: 0;
 `
 
 export const Grid = styled.div`
@@ -148,9 +159,8 @@ export const StatLabel = styled.span`
 
 export const StatValue = styled.span<{ $status?: AchievementStatus }>`
   color: ${(props) => {
-    if (props.$status === 'completed') return props.theme.colors.success
+    if (props.$status === 'achieved') return props.theme.colors.success
     if (props.$status === 'in_progress') return '#ffa500'
-    if (props.$status === 'unlocked') return props.theme.colors.primary
     return props.theme.colors.primary
   }};
   font-weight: 700;
@@ -222,9 +232,8 @@ export const PreviewItem = styled.div<{ $status: PreviewStatus }>`
   height: 60px;
   border-radius: 12px;
   background: ${props => {
-    if (props.$status === 'completed') return `linear-gradient(145deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
+    if (props.$status === 'achieved') return `linear-gradient(145deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
     if (props.$status === 'in_progress') return `linear-gradient(145deg, #ffa50033 0%, #ff8c001a 100%)`
-    if (props.$status === 'unlocked') return `linear-gradient(145deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}1a 100%)`
     return `linear-gradient(145deg, ${props.theme.colors.dark[700]}cc 0%, ${props.theme.colors.dark[800]}e6 100%)`
   }};
   border: 2px solid ${props => {
@@ -237,12 +246,12 @@ export const PreviewItem = styled.div<{ $status: PreviewStatus }>`
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  opacity: ${props => props.$status === 'locked' ? 0.4 : 1};
+  opacity: ${props => props.$status === 'not_achieved' ? 0.4 : 1};
   transition: all 0.3s ease;
   position: relative;
   filter: ${props => {
-    if (props.$status === 'locked') return 'grayscale(0.5)'
-    if (props.$status === 'completed') return `drop-shadow(0 0 8px ${props.theme.colors.success}60)`
+    if (props.$status === 'not_achieved') return 'grayscale(0.5)'
+    if (props.$status === 'achieved') return `drop-shadow(0 0 8px ${props.theme.colors.success}60)`
     if (props.$status === 'in_progress') return `drop-shadow(0 0 8px #ffa50060)`
     return `drop-shadow(${props.theme.shadows.glow.primary})`
   }};
@@ -256,7 +265,7 @@ export const PreviewItem = styled.div<{ $status: PreviewStatus }>`
 
   &:hover {
     transform: scale(1.1);
-    ${props => props.$status !== 'locked' && `filter: drop-shadow(${props.theme.shadows.glow.primary});`}
+    ${props => props.$status !== 'not_achieved' && `filter: drop-shadow(${props.theme.shadows.glow.primary});`}
   }
 
   @media (max-width: 768px) {
@@ -339,6 +348,14 @@ export const TumblerThumb = styled.div<{ position: number }>`
 
 export const ViewLabel = styled.span`
   font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${(props) => props.theme.colors.primary};
+
+  svg {
+    color: ${(props) => props.theme.colors.primary};
+  }
 
   @media (max-width: 768px) {
     font-size: 1.25rem;
@@ -353,9 +370,25 @@ export const Label = styled.button<{ active: boolean }>`
   cursor: pointer;
   transition: all 0.3s ease;
 
+  ${ViewLabel} {
+    color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.light[300]};
+    
+    svg {
+      color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.light[300]};
+    }
+  }
+
   &:hover {
     background: ${props => `${props.theme.colors.primary}1a`};
     border-color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.dark[600]};
+    
+    ${ViewLabel} {
+      color: ${props => props.theme.colors.primary};
+      
+      svg {
+        color: ${props => props.theme.colors.primary};
+      }
+    }
   }
 
   @media (max-width: 768px) {
@@ -392,7 +425,7 @@ const getRarityColorForList = (theme: { colors: { rarity: { base?: string; commo
   }
 }
 
-type AchievementStatus = 'locked' | 'unlocked' | 'in_progress' | 'completed'
+type AchievementStatus = 'not_achieved' | 'in_progress' | 'achieved'
 
 export const ListItem = styled(motion.div) <{ rarity?: string; $status: AchievementStatus }>`
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
@@ -400,12 +433,8 @@ export const ListItem = styled(motion.div) <{ rarity?: string; $status: Achievem
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   border: 2px solid ${(props) => {
-    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'achieved') return `${props.theme.colors.success}80`
     if (props.$status === 'in_progress') return `#ffa50080`
-    if (props.$status === 'unlocked') {
-      const rarityColor = getRarityColorForList(props.theme, props.rarity)
-      return `${rarityColor}80`
-    }
     return `${props.theme.colors.dark[600]}80`
   }};
   cursor: pointer;
@@ -424,31 +453,26 @@ export const ListItem = styled(motion.div) <{ rarity?: string; $status: Achievem
     bottom: 0;
     width: 4px;
     background: ${(props) => {
-      if (props.$status === 'completed') return `linear-gradient(180deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%)`
-      if (props.$status === 'in_progress') return `linear-gradient(180deg, #ffa500 0%, #ff8c00 100%)`
-      if (props.$status === 'unlocked') {
-        const rarityColor = getRarityColorForList(props.theme, props.rarity)
-        return `linear-gradient(180deg, ${rarityColor} 0%, ${rarityColor}CC 100%)`
-      }
-      return 'transparent'
-    }};
-    opacity: ${(props) => (props.$status !== 'locked' ? 0.8 : 0)};
+    if (props.$status === 'achieved') return `linear-gradient(180deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%)`
+    if (props.$status === 'in_progress') return `linear-gradient(180deg, #ffa500 0%, #ff8c00 100%)`
+    return 'transparent'
+  }};
+    opacity: ${(props) => (props.$status !== 'not_achieved' ? 0.8 : 0)};
     transition: opacity 0.3s ease;
   }
 
   &:hover {
     border-color: ${(props) => {
-      if (props.$status === 'completed') return props.theme.colors.success
-      if (props.$status === 'in_progress') return '#ffa500'
-      if (props.$status === 'unlocked') return getRarityColorForList(props.theme, props.rarity)
-      return props.theme.colors.dark[600]
-    }};
+    if (props.$status === 'achieved') return props.theme.colors.success
+    if (props.$status === 'in_progress') return '#ffa500'
+    return props.theme.colors.dark[600]
+  }};
     transform: translateX(8px);
     box-shadow: ${(props) => {
-      if (props.$status === 'locked') return props.theme.shadows.glass.light
-      const rarityColor = getRarityColorForList(props.theme, props.rarity)
-      return `${props.theme.shadows.glass.light}, 0 0 20px ${rarityColor}40`
-    }};
+    if (props.$status === 'not_achieved') return props.theme.shadows.glass.light
+    const rarityColor = getRarityColorForList(props.theme, props.rarity)
+    return `${props.theme.shadows.glass.light}, 0 0 20px ${rarityColor}40`
+  }};
 
     &::before {
       opacity: 1;
@@ -470,9 +494,8 @@ export const ListItemIcon = styled.div<{ $status: AchievementStatus }>`
   height: 64px;
   border-radius: 12px;
   background: ${(props) => {
-    if (props.$status === 'completed') return `linear-gradient(135deg, ${props.theme.colors.success}26 0%, ${props.theme.colors.success}1a 100%)`
+    if (props.$status === 'achieved') return `linear-gradient(135deg, ${props.theme.colors.success}26 0%, ${props.theme.colors.success}1a 100%)`
     if (props.$status === 'in_progress') return `linear-gradient(135deg, #ffa50026 0%, #ff8c001a 100%)`
-    if (props.$status === 'unlocked') return `linear-gradient(135deg, ${props.theme.colors.primary}26 0%, ${props.theme.colors.secondary}1a 100%)`
     return `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`
   }};
   border: 2px solid ${(props) => {
@@ -485,10 +508,10 @@ export const ListItemIcon = styled.div<{ $status: AchievementStatus }>`
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  box-shadow: ${(props) => (props.$status !== 'locked' ? props.theme.shadows.glow.primary : 'none')};
+  box-shadow: ${(props) => (props.$status !== 'not_achieved' ? props.theme.shadows.glow.primary : 'none')};
   flex-shrink: 0;
   overflow: hidden;
-  filter: ${(props) => (props.$status === 'locked' ? 'grayscale(0.6) brightness(0.7)' : 'none')};
+  filter: ${(props) => (props.$status === 'not_achieved' ? 'grayscale(0.6) brightness(0.7)' : 'none')};
 
   img {
     width: 100%;

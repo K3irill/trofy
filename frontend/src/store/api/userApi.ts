@@ -46,7 +46,9 @@ export interface RecentAchievement {
     icon_url: string | null
   }
   xp_reward: number
-  unlocked_at: string
+  unlocked_at: string | null
+  start_at: string | null
+  is_achieved: boolean
   is_public: boolean
 }
 

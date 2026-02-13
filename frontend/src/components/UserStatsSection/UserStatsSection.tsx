@@ -1,3 +1,4 @@
+import { IoStatsChart } from 'react-icons/io5'
 import {
   Container,
   Header,
@@ -26,7 +27,10 @@ export const UserStatsSection = ({
   return (
     <Container>
       <Header>
-        <Title>📊 Статистика</Title>
+        <Title>
+          <IoStatsChart style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+          Статистика
+        </Title>
       </Header>
       <Stats>
         <StatCard>

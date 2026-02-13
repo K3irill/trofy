@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-type AchievementStatus = 'locked' | 'unlocked' | 'in_progress' | 'completed'
+type AchievementStatus = 'not_achieved' | 'in_progress' | 'achieved'
 
 export const AchievementCardContainer = styled.div<{ $status: AchievementStatus }>`
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
@@ -32,26 +32,24 @@ export const AchievementCardContainer = styled.div<{ $status: AchievementStatus 
     right: 0;
     height: 3px;
     background: ${(props) => {
-      if (props.$status === 'completed') return `linear-gradient(90deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%)`
-      if (props.$status === 'in_progress') return `linear-gradient(90deg, #ffa500 0%, #ff8c00 100%)`
-      if (props.$status === 'unlocked') return `linear-gradient(90deg, ${props.theme.colors.primary} 0%, ${props.theme.colors.secondary} 100%)`
-      return 'transparent'
-    }};
-    opacity: ${(props) => (props.$status !== 'locked' ? 1 : 0)};
+    if (props.$status === 'achieved') return `linear-gradient(90deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%)`
+    if (props.$status === 'in_progress') return `linear-gradient(90deg, #ffa500 0%, #ff8c00 100%)`
+    return 'transparent'
+  }};
+    opacity: ${(props) => (props.$status !== 'not_achieved' ? 1 : 0)};
     transition: opacity 0.3s ease;
   }
 
   &:hover {
     border-color: ${(props) => {
-      if (props.$status === 'completed') return props.theme.colors.success
-      if (props.$status === 'in_progress') return '#ffa500'
-      if (props.$status === 'unlocked') return props.theme.colors.primary
-      return props.theme.colors.dark[600]
-    }};
+    if (props.$status === 'achieved') return props.theme.colors.success
+    if (props.$status === 'in_progress') return '#ffa500'
+    return props.theme.colors.dark[600]
+  }};
     box-shadow: ${(props) => {
-      if (props.$status === 'locked') return props.theme.shadows.glass.light
-      return `${props.theme.shadows.glass.medium}, ${props.theme.shadows.glow.primary}`
-    }};
+    if (props.$status === 'not_achieved') return props.theme.shadows.glass.light
+    return `${props.theme.shadows.glass.medium}, ${props.theme.shadows.glow.primary}`
+  }};
   }
 
   &:active {
@@ -69,15 +67,13 @@ export const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   height: 80px;
   border-radius: 16px;
   background: ${(props) => {
-    if (props.$status === 'completed') return `linear-gradient(135deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
+    if (props.$status === 'achieved') return `linear-gradient(135deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
     if (props.$status === 'in_progress') return `linear-gradient(135deg, #ffa50033 0%, #ff8c001a 100%)`
-    if (props.$status === 'unlocked') return `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}1a 100%)`
     return `linear-gradient(135deg, ${props.theme.colors.dark[600]}80 0%, ${props.theme.colors.dark[700]}b3 100%)`
   }};
   border: 2px solid ${(props) => {
-    if (props.$status === 'completed') return `${props.theme.colors.success}80`
+    if (props.$status === 'achieved') return `${props.theme.colors.success}80`
     if (props.$status === 'in_progress') return `#ffa50080`
-    if (props.$status === 'unlocked') return `${props.theme.colors.primary}80`
     return `${props.theme.colors.dark[600]}80`
   }};
   display: flex;
@@ -87,7 +83,7 @@ export const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   position: relative;
   transition: all 0.3s ease;
   filter: ${(props) => {
-    if (props.$status === 'locked') return 'grayscale(0.6) brightness(0.7)'
+    if (props.$status === 'not_achieved') return 'grayscale(0.6) brightness(0.7)'
     return `drop-shadow(${props.theme.shadows.glow.primary})`
   }};
   transform: translateZ(20px);
@@ -105,7 +101,7 @@ export const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   }
 `
 
-export const StatusBadge = styled.div<{ $status: 'completed' | 'in_progress' }>`
+export const StatusBadge = styled.div<{ $status: 'achieved' | 'in_progress' }>`
   position: absolute;
   top: -8px;
   right: -8px;
@@ -122,7 +118,7 @@ export const StatusBadge = styled.div<{ $status: 'completed' | 'in_progress' }>`
   transform: translateZ(30px);
 
   ${(props) =>
-    props.$status === 'completed' &&
+    props.$status === 'achieved' &&
     `
     background: linear-gradient(135deg, ${props.theme.colors.success} 0%, ${props.theme.colors.success}CC 100%);
     color: ${props.theme.colors.dark.bg};
@@ -167,9 +163,8 @@ export const AchievementName = styled.h3`
 export const AchievementStatus = styled.span<{ $status: AchievementStatus }>`
   font-size: 0.75rem;
   color: ${(props) => {
-    if (props.$status === 'completed') return props.theme.colors.success
+    if (props.$status === 'achieved') return props.theme.colors.success
     if (props.$status === 'in_progress') return '#ffa500'
-    if (props.$status === 'unlocked') return props.theme.colors.primary
     return props.theme.colors.light[300]
   }};
   font-weight: 500;

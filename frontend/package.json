@@ -26,6 +26,7 @@
     "react-icons": "^5.5.0",
     "react-parallax-tilt": "^1.7.218",
     "react-redux": "^9.1.0",
+    "react-select": "^5.10.2",
     "styled-components": "^6.3.9",
     "swiper": "^12.1.0",
     "yup": "^1.7.1"

@@ -15,6 +15,7 @@ import {
 import {
   Header as PageHeader,
   Title,
+  TitleIcon,
   Grid,
   ListContainer,
   ListItem,
@@ -133,7 +134,7 @@ export default function CategoriesPage() {
       categoryId?: string
       rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
       unlocked?: boolean
-      sortBy?: 'default' | 'unlocked-asc' | 'unlocked-desc' | 'date-asc' | 'date-desc' | 'xp-asc' | 'xp-desc'
+      sortBy?: 'default' | 'achieved-first' | 'not-achieved-first' | 'in-progress-first' | 'unlocked-asc' | 'unlocked-desc' | 'date-asc' | 'date-desc' | 'xp-asc' | 'xp-desc'
     } = {
       limit: 1000,
     }
@@ -151,14 +152,10 @@ export default function CategoriesPage() {
     }
 
     // Фильтр по статусу обрабатывается на фронтенде после получения данных
-    // Для совместимости с API оставляем unlocked фильтр
-    if (isAuthenticated && statusFilter === 'unlocked') {
-      params.unlocked = true
-    } else if (isAuthenticated && statusFilter === 'locked') {
-      params.unlocked = false
-    }
+    // API фильтр не используется, так как статусы определяются на фронтенде
 
-    if (sortBy !== 'default') {
+    // Старые типы сортировки отправляем на API, новые обрабатываем на фронтенде
+    if (sortBy !== 'default' && ['unlocked-asc', 'unlocked-desc', 'date-asc', 'date-desc', 'xp-asc', 'xp-desc'].includes(sortBy)) {
       params.sortBy = sortBy as 'unlocked-asc' | 'unlocked-desc' | 'date-asc' | 'date-desc' | 'xp-asc' | 'xp-desc'
     }
 
@@ -183,28 +180,64 @@ export default function CategoriesPage() {
     // Фильтрация по статусу на фронтенде
     if (isAuthenticated && statusFilter) {
       filtered = filtered.filter((achievement) => {
-        const isCompleted = !!achievement.completion_date
-        const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
-        const isUnlocked = achievement.unlocked && !isInProgress && !isCompleted
-        const isLocked = !achievement.unlocked
+        const isAchieved = !!achievement.completion_date
+        const progress = achievement.progress || 0
+        const isInProgress = !isAchieved && progress > 0 && progress <= 100
+        const isNotAchieved = !isAchieved && progress === 0
 
         switch (statusFilter) {
-          case 'completed':
-            return isCompleted
+          case 'achieved':
+            return isAchieved
           case 'in_progress':
             return isInProgress
-          case 'unlocked':
-            return isUnlocked
-          case 'locked':
-            return isLocked
+          case 'not_achieved':
+            return isNotAchieved
           default:
             return true
         }
       })
     }
 
+    // Сортировка на фронтенде
+    if (sortBy && sortBy !== 'default') {
+      filtered.sort((a, b) => {
+        const aIsAchieved = !!a.completion_date
+        const aProgress = a.progress || 0
+        const aIsInProgress = !aIsAchieved && aProgress > 0 && aProgress <= 100
+        const aIsNotAchieved = !aIsAchieved && aProgress === 0
+
+        const bIsAchieved = !!b.completion_date
+        const bProgress = b.progress || 0
+        const bIsInProgress = !bIsAchieved && bProgress > 0 && bProgress <= 100
+        const bIsNotAchieved = !bIsAchieved && bProgress === 0
+
+        switch (sortBy) {
+          case 'achieved-first':
+            if (aIsAchieved && !bIsAchieved) return -1
+            if (!aIsAchieved && bIsAchieved) return 1
+            return 0
+          case 'not-achieved-first':
+            if (aIsNotAchieved && !bIsNotAchieved) return -1
+            if (!aIsNotAchieved && bIsNotAchieved) return 1
+            return 0
+          case 'in-progress-first':
+            if (aIsInProgress && !bIsInProgress) return -1
+            if (!aIsInProgress && bIsInProgress) return 1
+            return 0
+          case 'date-asc':
+            if (!a.completion_date || !b.completion_date) return 0
+            return new Date(a.completion_date).getTime() - new Date(b.completion_date).getTime()
+          case 'date-desc':
+            if (!a.completion_date || !b.completion_date) return 0
+            return new Date(b.completion_date).getTime() - new Date(a.completion_date).getTime()
+          default:
+            return 0
+        }
+      })
+    }
+
     return filtered
-  }, [achievementsData, statusFilter, isAuthenticated])
+  }, [achievementsData, statusFilter, sortBy, isAuthenticated])
 
   const isLoading = mode === 'categories'
     ? (isAuthenticated ? categoriesWithStatsLoading : categoriesLoading)
@@ -222,12 +255,12 @@ export default function CategoriesPage() {
             <Title>
               {mode === 'categories' ? (
                 <>
-                  <IoFolder style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                  <TitleIcon as={IoFolder} />
                   Категории достижений
                 </>
               ) : (
                 <>
-                  <IoTrophy style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                  <TitleIcon as={IoTrophy} />
                   Все достижения
                 </>
               )}
@@ -340,15 +373,14 @@ export default function CategoriesPage() {
               ) : viewMode === 'list' ? (
                 <ListContainer>
                   {achievements.map((achievement) => {
-                    const isCompleted = !!achievement.completion_date
-                    const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
-                    const status: 'locked' | 'unlocked' | 'in_progress' | 'completed' = isCompleted
-                      ? 'completed'
+                    const isAchieved = !!achievement.completion_date
+                    const progress = achievement.progress || 0
+                    const isInProgress = !isAchieved && progress > 0 && progress <= 100
+                    const status: 'not_achieved' | 'in_progress' | 'achieved' = isAchieved
+                      ? 'achieved'
                       : isInProgress
                         ? 'in_progress'
-                        : achievement.unlocked
-                          ? 'unlocked'
-                          : 'locked'
+                        : 'not_achieved'
 
                     return (
                       <ListItem
@@ -370,13 +402,11 @@ export default function CategoriesPage() {
                             <StatItem>
                               <StatLabel>Статус:</StatLabel>
                               <StatValue $status={status}>
-                                {isCompleted
-                                  ? 'Завершено'
+                                {isAchieved
+                                  ? 'Достигнуто'
                                   : isInProgress
                                     ? `В работе ${achievement.progress}%`
-                                    : achievement.unlocked
-                                      ? 'Открыто'
-                                      : 'Не открыто'}
+                                    : 'Не достигнуто'}
                               </StatValue>
                             </StatItem>
                             <StatItem>
@@ -410,7 +440,7 @@ export default function CategoriesPage() {
                             </StatItem>
                           </ListItemStats>
                         </ListItemContent>
-                        <ProgressRing progress={isCompleted ? 100 : isInProgress ? (achievement.progress || 0) : 0} />
+                        <ProgressRing progress={isAchieved ? 100 : isInProgress ? (achievement.progress || 0) : 0} />
                       </ListItem>
                     )
                   })}

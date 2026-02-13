@@ -7,7 +7,7 @@ export const ModalOverlay = styled(motion.div)`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 14, 23, 0.95);
+  background: ${(props) => props.theme.colors.dark.bg}f2;
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -25,11 +25,11 @@ export const ModalContainer = styled(motion.div)`
   position: relative;
   max-width: 600px;
   width: 100%;
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.98) 0%, rgba(17, 24, 39, 0.98) 100%);
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}fa 0%, ${(props) => props.theme.colors.dark[800]}fa 100%);
   border-radius: 24px;
   padding: 3rem;
-  border: 2px solid rgba(0, 212, 255, 0.3);
-  box-shadow: 0 20px 60px rgba(0, 212, 255, 0.2);
+  border: 2px solid ${(props) => props.theme.colors.primary}4d;
+  box-shadow: 0 20px 60px ${(props) => props.theme.colors.primary}33;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,10 +47,10 @@ export const ModalCloseButton = styled.button`
   right: 1rem;
   width: 40px;
   height: 40px;
-  background: rgba(55, 65, 81, 0.8);
-  border: 2px solid rgba(75, 85, 99, 0.5);
+  background: ${(props) => props.theme.colors.dark[600]}cc;
+  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
   border-radius: 50%;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1.5rem;
   font-weight: 700;
   cursor: pointer;
@@ -61,8 +61,8 @@ export const ModalCloseButton = styled.button`
   z-index: 10;
 
   &:hover {
-    background: rgba(239, 68, 68, 0.8);
-    border-color: #ef4444;
+    background: ${(props) => props.theme.colors.danger}cc;
+    border-color: ${(props) => props.theme.colors.danger};
     transform: rotate(90deg);
   }
 
@@ -80,19 +80,19 @@ export const ModalIcon = styled.div<{ $unlocked: boolean }>`
   height: 280px;
   border-radius: 32px;
   background: ${props => props.$unlocked
-    ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.25) 0%, rgba(0, 168, 204, 0.15) 100%)'
-    : 'linear-gradient(135deg, rgba(55, 65, 81, 0.6) 0%, rgba(31, 41, 55, 0.8) 100%)'};
-  border: 3px solid ${props => props.$unlocked ? 'rgba(0, 212, 255, 0.6)' : 'rgba(75, 85, 99, 0.6)'};
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}40 0%, ${props.theme.colors.secondary}26 100%)`
+    : `linear-gradient(135deg, ${props.theme.colors.dark[600]}99 0%, ${props.theme.colors.dark[700]}cc 100%)`};
+  border: 3px solid ${props => props.$unlocked ? `${props.theme.colors.primary}99` : `${props.theme.colors.dark[600]}99`};
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10rem;
-  filter: ${props => props.unlocked
-    ? 'drop-shadow(0 0 40px rgba(0, 212, 255, 0.5))'
+  filter: ${props => props.$unlocked
+    ? `drop-shadow(0 0 40px ${props.theme.colors.primary}80)`
     : 'grayscale(0.6) brightness(0.7)'};
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: ${props => props.unlocked
-    ? '0 20px 60px rgba(0, 212, 255, 0.3)'
+  box-shadow: ${props => props.$unlocked
+    ? `0 20px 60px ${props.theme.colors.primary}4d`
     : '0 10px 30px rgba(0, 0, 0, 0.3)'};
   cursor: pointer;
   position: relative;
@@ -106,7 +106,7 @@ export const ModalIcon = styled.div<{ $unlocked: boolean }>`
     right: 0;
     bottom: 0;
     background: ${props => props.$unlocked
-    ? 'radial-gradient(circle at center, rgba(0, 212, 255, 0.15) 0%, transparent 70%)'
+    ? `radial-gradient(circle at center, ${props.theme.colors.primary}26 0%, transparent 70%)`
     : 'transparent'};
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -129,19 +129,19 @@ export const ModalImage = styled.div<{ $unlocked: boolean }>`
   width: 280px;
   height: 280px;
   border-radius: 32px;
-  border: 3px solid ${props => props.$unlocked ? 'rgba(0, 212, 255, 0.6)' : 'rgba(75, 85, 99, 0.6)'};
+  border: 3px solid ${props => props.$unlocked ? `${props.theme.colors.primary}99` : `${props.theme.colors.dark[600]}99`};
   filter: ${props => props.$unlocked
-    ? 'drop-shadow(0 0 40px rgba(0, 212, 255, 0.5))'
+    ? `drop-shadow(0 0 40px ${props.theme.colors.primary}80)`
     : 'grayscale(0.6) brightness(0.7)'};
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: ${props => props.$unlocked
-    ? '0 20px 60px rgba(0, 212, 255, 0.3)'
+    ? `0 20px 60px ${props.theme.colors.primary}4d`
     : '0 10px 30px rgba(0, 0, 0, 0.3)'};
   cursor: pointer;
   position: relative;
   background: ${props => props.$unlocked
-    ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 168, 204, 0.05) 100%)'
-    : 'linear-gradient(135deg, rgba(55, 65, 81, 0.3) 0%, rgba(31, 41, 55, 0.5) 100%)'};
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}1a 0%, ${props.theme.colors.secondary}0d 100%)`
+    : `linear-gradient(135deg, ${props.theme.colors.dark[600]}4d 0%, ${props.theme.colors.dark[700]}80 100%)`};
   overflow: hidden;
 
   &::after {
@@ -152,7 +152,7 @@ export const ModalImage = styled.div<{ $unlocked: boolean }>`
     right: 0;
     bottom: 0;
     background: ${props => props.$unlocked
-    ? 'radial-gradient(circle at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%)'
+    ? `radial-gradient(circle at center, ${props.theme.colors.primary}1a 0%, transparent 70%)`
     : 'transparent'};
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -182,7 +182,7 @@ export const ModalContent = styled.div`
 
 export const ModalTitle = styled.h2`
   font-size: 2rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
 
   @media (max-width: 768px) {
@@ -192,7 +192,7 @@ export const ModalTitle = styled.h2`
 
 export const ModalDescription = styled.p`
   font-size: 1.125rem;
-  color: #d1d5db;
+  color: ${(props) => props.theme.colors.light[200]};
   line-height: 1.6;
   margin: 0;
 

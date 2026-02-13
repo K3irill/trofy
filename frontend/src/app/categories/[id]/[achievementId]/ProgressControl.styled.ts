@@ -58,9 +58,9 @@ export const ProgressButton = styled.button`
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  border: 1px solid ${(props) => props.theme.colors.dark[400]};
-  background: ${(props) => props.theme.colors.dark[500]};
-  color: ${(props) => props.theme.colors.light[100]};
+  border: 1px solid ${(props) => props.theme.colors.dark[600]}80;
+  background: ${(props) => props.theme.colors.dark[700]}cc;
+  color: ${(props) => props.theme.colors.primary};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,11 +68,19 @@ export const ProgressButton = styled.button`
   font-size: 1.25rem;
   transition: all 0.2s ease;
 
+  svg {
+    color: ${(props) => props.theme.colors.primary};
+    transition: color 0.2s ease;
+  }
+
   &:hover:not(:disabled) {
     background: ${(props) => props.theme.colors.primary};
     border-color: ${(props) => props.theme.colors.primary};
-    color: ${(props) => props.theme.colors.light[100]};
     transform: scale(1.05);
+
+    svg {
+      color: ${(props) => props.theme.colors.light[100]};
+    }
   }
 
   &:active:not(:disabled) {
@@ -82,5 +90,9 @@ export const ProgressButton = styled.button`
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+
+    svg {
+      color: ${(props) => props.theme.colors.light[300]};
+    }
   }
 `

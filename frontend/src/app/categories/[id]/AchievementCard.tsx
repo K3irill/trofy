@@ -71,9 +71,10 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
     setTransform({ rotateX: 0, rotateY: 0, scale: 1 })
   }
 
-  const isCompleted = !!achievement.completion_date
-  const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
-  const status = isCompleted ? 'completed' : isInProgress ? 'in_progress' : achievement.unlocked ? 'unlocked' : 'locked'
+  const isAchieved = !!achievement.completion_date
+  const progress = achievement.progress || 0
+  const isInProgress = !isAchieved && progress > 0 && progress <= 100
+  const status = isAchieved ? 'achieved' : isInProgress ? 'in_progress' : 'not_achieved'
 
   return (
     <AchievementCardContainer
@@ -91,8 +92,8 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
     >
       <AchievementIcon $status={status}>
         {renderIcon(achievement.icon, 'trophy')}
-        {isCompleted && (
-          <StatusBadge $status="completed">
+        {isAchieved && (
+          <StatusBadge $status="achieved">
             <IoCheckmarkCircle />
           </StatusBadge>
         )}
@@ -105,7 +106,7 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
       <AchievementInfo>
         {achievement.name && <AchievementName>{achievement.name}</AchievementName>}
         <AchievementStatus $status={status}>
-          {isCompleted ? 'Завершено' : isInProgress ? `В работе ${achievement.progress}%` : achievement.unlocked ? 'Открыто' : 'Не открыто'}
+          {isAchieved ? 'Достигнуто' : isInProgress ? `В работе ${achievement.progress}%` : 'Не достигнуто'}
         </AchievementStatus>
       </AchievementInfo>
     </AchievementCardContainer>

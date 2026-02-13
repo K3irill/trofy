@@ -24,8 +24,11 @@ export const Header = styled.div`
 
 export const Title = styled.h2`
   font-size: 1.5rem;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 export const Stats = styled.div`

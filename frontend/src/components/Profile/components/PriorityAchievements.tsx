@@ -1,8 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { IoAddCircleOutline } from 'react-icons/io5'
-import { IoClose } from 'react-icons/io5'
+import { IoAddCircleOutline, IoClose, IoStatsChart } from 'react-icons/io5'
 import {
   CurrentGoalsSection,
   SectionTitle,
@@ -14,7 +13,7 @@ import {
   GoalProgress,
   GoalBar,
   GoalProgressBar,
-  AddTrophyButton,
+  AddGoalButton,
   AddTrophyIcon,
   AddTrophyText,
   RemoveButton,
@@ -57,7 +56,10 @@ export function PriorityAchievements({
 
   return (
     <CurrentGoalsSection>
-      <SectionTitle>📈 Сейчас в приоритете</SectionTitle>
+      <SectionTitle>
+        <IoStatsChart style={{ fontSize: '1.25rem' }} />
+        Сейчас в приоритете
+      </SectionTitle>
       <CurrentGoals>
         {isAuthenticated ? (
           priorityAchievements.map((achievement, index) => (
@@ -103,20 +105,19 @@ export function PriorityAchievements({
                   </GoalHeader>
                 </GoalItem>
               ) : (
-                <AddTrophyButton
+                <AddGoalButton
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onAdd(index)}
                   transition={{ delay: 1.2 + index * 0.1 }}
-                  style={{ minHeight: '80px' }}
                 >
                   <AddTrophyIcon>
                     <IoAddCircleOutline />
                   </AddTrophyIcon>
                   <AddTrophyText>Добавить в приоритет</AddTrophyText>
-                </AddTrophyButton>
+                </AddGoalButton>
               )}
             </div>
           ))

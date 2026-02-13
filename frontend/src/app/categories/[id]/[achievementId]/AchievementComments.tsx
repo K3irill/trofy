@@ -28,6 +28,8 @@ import {
   CommentText,
   CommentActions,
   CommentDeleteButton,
+  CommentCancelButton,
+  CommentReplyButton,
 } from './AchievementComments.styled'
 
 interface AchievementCommentsProps {
@@ -63,24 +65,27 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
   const { showToast, ToastComponent } = useToast()
   const { confirm, ConfirmComponent } = useConfirm()
 
+  // Комментарии доступны, если есть UserAchievement (progress > 0 или completion_date)
+  const hasUserAchievement = !!userAchievementId
+
   const { data: comments = [], isLoading } = useGetCommentsQuery(
     { userAchievementId: userAchievementId || '' },
-    { skip: !userAchievementId || !achievement.unlocked }
+    { skip: !userAchievementId || !hasUserAchievement }
   )
   const [createComment, { isLoading: isSubmitting }] = useCreateCommentMutation()
   const [deleteComment] = useDeleteCommentMutation()
 
-  if (!achievement.unlocked) {
+  if (!hasUserAchievement) {
     return null
   }
 
   if (achievement.canComment === false) {
     return (
       <CommentsContainer>
-      <CommentsDisabled>
-        <IoChatbubbleOutline style={{ marginRight: '0.5rem' }} />
-        Комментарии отключены владельцем
-      </CommentsDisabled>
+        <CommentsDisabled>
+          <IoChatbubbleOutline style={{ marginRight: '0.5rem' }} />
+          Комментарии отключены владельцем
+        </CommentsDisabled>
       </CommentsContainer>
     )
   }
@@ -181,21 +186,9 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
         />
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {replyingTo && (
-            <button
-              type="button"
-              onClick={handleCancelReply}
-              style={{
-                padding: '0.5rem 1rem',
-                background: 'rgba(156, 163, 175, 0.2)',
-                border: '1px solid rgba(156, 163, 175, 0.3)',
-                borderRadius: '8px',
-                color: '#9ca3af',
-                cursor: 'pointer',
-                fontSize: '0.875rem',
-              }}
-            >
+            <CommentCancelButton type="button" onClick={handleCancelReply}>
               Отмена
-            </button>
+            </CommentCancelButton>
           )}
           <CommentSubmitButton type="submit" disabled={(!newComment.trim() && !replyText.trim()) || isSubmitting}>
             {isSubmitting ? 'Отправка...' : replyingTo ? 'Ответить' : 'Отправить'}
@@ -217,20 +210,9 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
               <CommentText>{comment.text}</CommentText>
               <CommentActions>
                 {currentUserId && comment.userId !== currentUserId && (
-                  <button
-                    onClick={() => handleReply(comment.id)}
-                    style={{
-                      padding: '0.25rem 0.75rem',
-                      background: 'transparent',
-                      border: '1px solid rgba(156, 163, 175, 0.3)',
-                      borderRadius: '6px',
-                      color: '#9ca3af',
-                      cursor: 'pointer',
-                      fontSize: '0.75rem',
-                    }}
-                  >
+                  <CommentReplyButton onClick={() => handleReply(comment.id)}>
                     Ответить
-                  </button>
+                  </CommentReplyButton>
                 )}
                 {(isOwner || comment.userId === currentUserId) && (
                   <CommentDeleteButton onClick={() => handleDeleteComment(comment.id)}>

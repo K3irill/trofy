@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { IoTrophy, IoList, IoDiamond, IoDocumentText } from 'react-icons/io5'
 import {
   QuickActionsSection,
   QuickActionButton,
@@ -24,7 +25,9 @@ export function ProfileActions({ isAuthenticated }: ProfileActionsProps) {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        <ButtonIcon>🏆</ButtonIcon>
+        <ButtonIcon>
+          <IoTrophy />
+        </ButtonIcon>
         <ButtonText>Мои достижения</ButtonText>
       </QuickActionButton>
       <QuickActionButton
@@ -34,7 +37,9 @@ export function ProfileActions({ isAuthenticated }: ProfileActionsProps) {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        <ButtonIcon>📋</ButtonIcon>
+        <ButtonIcon>
+          <IoList />
+        </ButtonIcon>
         <ButtonText>Задания</ButtonText>
       </QuickActionButton>
       <QuickActionButton
@@ -44,7 +49,9 @@ export function ProfileActions({ isAuthenticated }: ProfileActionsProps) {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        <ButtonIcon>💎</ButtonIcon>
+        <ButtonIcon>
+          <IoDiamond />
+        </ButtonIcon>
         <ButtonText>Коллекции</ButtonText>
       </QuickActionButton>
       <QuickActionButton
@@ -54,7 +61,9 @@ export function ProfileActions({ isAuthenticated }: ProfileActionsProps) {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        <ButtonIcon>📜</ButtonIcon>
+        <ButtonIcon>
+          <IoDocumentText />
+        </ButtonIcon>
         <ButtonText>История</ButtonText>
       </QuickActionButton>
     </QuickActionsSection>

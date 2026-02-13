@@ -55,9 +55,10 @@ interface ProfileHeaderProps {
   isAuthenticated: boolean
   progress: number
   xpToNextLevel: number
+  currentXP: number
 }
 
-export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel }: ProfileHeaderProps) {
+export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel, currentXP }: ProfileHeaderProps) {
   const {
     status,
     setStatus,
@@ -173,7 +174,7 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel }
           transition={{ duration: 1, delay: 0.3 }}
         />
       </XPBar>
-      <XPText>{user.xp.toLocaleString()} / {xpToNextLevel.toLocaleString()} XP</XPText>
+      <XPText>{currentXP.toLocaleString()} / {xpToNextLevel.toLocaleString()} XP</XPText>
 
       <ProfileThemeModal
         isOpen={isThemeModalOpen}

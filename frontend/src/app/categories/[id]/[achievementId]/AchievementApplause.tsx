@@ -26,7 +26,10 @@ export const AchievementApplause = ({ achievement, isOwner, currentUserId, userA
   const likesCount = achievement.likesCount || 0
   const isLiked = achievement.isLiked || false
 
-  if (!achievement.unlocked) {
+  // Аплодисменты доступны, если есть UserAchievement (progress > 0 или completion_date)
+  const hasUserAchievement = !!userAchievementId
+
+  if (!hasUserAchievement) {
     return null
   }
 

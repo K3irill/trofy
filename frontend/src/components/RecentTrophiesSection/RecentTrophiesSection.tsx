@@ -16,10 +16,10 @@ import {
   TrophyDate,
   TrophyRarity,
 } from './styled'
+import { renderIcon } from '@/lib/utils/iconUtils'
 
 export const RecentTrophiesSection = () => {
   const { data: achievements, isLoading } = useGetRecentAchievementsQuery(6)
-
   return (
     <Container
       initial={{ opacity: 0, y: 20 }}
@@ -40,41 +40,40 @@ export const RecentTrophiesSection = () => {
         <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.6)' }}>
           Загрузка...
         </div>
-      ) : !achievements || achievements.length === 0 ? (
+      ) : !achievements || achievements.length === 0 || achievements
+        .filter((achievement) => achievement.is_achieved).length === 0 ? (
         <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.6)' }}>
           У вас пока нет достижений
         </div>
       ) : (
         <TrophiesGrid>
-          {achievements.map((achievement, index) => (
-            <TrophyItem
-              key={achievement.id}
-              rarity={achievement.rarity}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              whileHover={{ scale: 1.05, y: -5 }}
-            >
-              <TrophyIcon rarity={achievement.rarity}>
-                {achievement.icon_url ? (
-                  <img
-                    src={achievement.icon_url}
-                    alt={achievement.title}
-                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                  />
-                ) : (
-                  '🏆'
-                )}
-              </TrophyIcon>
-              <TrophyContent>
-                <TrophyName>{achievement.title}</TrophyName>
-                <TrophyDate>{formatRelativeDate(achievement.unlocked_at)}</TrophyDate>
-                <TrophyRarity rarity={achievement.rarity}>
-                  {achievement.rarity.toUpperCase()}
-                </TrophyRarity>
-              </TrophyContent>
-            </TrophyItem>
-          ))}
+          {achievements
+            .filter((achievement) => achievement.is_achieved)
+            .map((achievement, index) => (
+              <TrophyItem
+                key={achievement.id}
+                rarity={achievement.rarity}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+              >
+                <TrophyIcon rarity={achievement.rarity}>
+                  {achievement.icon_url && renderIcon(achievement.icon_url, 'trophy')}
+                </TrophyIcon>
+                <TrophyContent>
+                  <TrophyName>{achievement.title}</TrophyName>
+                  <TrophyDate>
+                    {achievement.unlocked_at
+                      ? formatRelativeDate(achievement.unlocked_at)
+                      : 'Дата недоступна'}
+                  </TrophyDate>
+                  <TrophyRarity rarity={achievement.rarity}>
+                    {achievement.rarity.toUpperCase()}
+                  </TrophyRarity>
+                </TrophyContent>
+              </TrophyItem>
+            ))}
         </TrophiesGrid>
       )}
     </Container>

@@ -1,8 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { IoAddCircleOutline } from 'react-icons/io5'
-import { IoClose } from 'react-icons/io5'
+import { IoAddCircleOutline, IoClose, IoTrophy } from 'react-icons/io5'
 import {
   RareTrophiesSection,
   SectionTitle,
@@ -53,7 +52,10 @@ export function PinnedAchievements({
 
   return (
     <RareTrophiesSection>
-      <SectionTitle>🏆 Закрепленные достижения</SectionTitle>
+      <SectionTitle>
+        <IoTrophy style={{ fontSize: '1.25rem' }} />
+        Закрепленные достижения
+      </SectionTitle>
       <RareTrophiesGrid>
         {pinnedAchievements.map((trophy, index) => (
           <div key={index}>

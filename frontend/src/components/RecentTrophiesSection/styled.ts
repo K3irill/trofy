@@ -147,6 +147,11 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
 export const TrophyIcon = styled.div <{ rarity: string }>`
   font-size: 3rem;
   align-self: flex-start;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   filter: drop-shadow(0 0 15px ${(props) => {
     const rarityMap: Record<string, keyof typeof props.theme.colors.rarity> = {
       common: 'base',
@@ -159,8 +164,17 @@ export const TrophyIcon = styled.div <{ rarity: string }>`
     return `${rarityColor}66`
   }});
 
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
   @media (max-width: 768px) {
     font-size: 2.5rem;
+    width: 50px;
+    height: 50px;
   }
 `
 

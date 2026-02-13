@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-type StatusType = 'in_progress' | 'completed' | 'not_started'
+type StatusType = 'in_progress' | 'achieved' | 'not_achieved'
 
 export const StatusBadgeContainer = styled.div<{ $status: StatusType }>`
   display: inline-flex;
@@ -21,14 +21,14 @@ export const StatusBadgeContainer = styled.div<{ $status: StatusType }>`
           border: 1px solid #ffa50040;
           box-shadow: 0 2px 8px rgba(255, 165, 0, 0.2);
         `
-      case 'completed':
+      case 'achieved':
         return `
           background: ${props.theme.colors.success}20;
           color: ${props.theme.colors.success};
           border: 1px solid ${props.theme.colors.success}40;
           box-shadow: 0 2px 8px ${props.theme.colors.success}20;
         `
-      case 'not_started':
+      case 'not_achieved':
         return `
           background: ${props.theme.colors.dark[600]}40;
           color: ${props.theme.colors.light[300]};

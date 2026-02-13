@@ -8,6 +8,7 @@ import { IoAdd, IoRemove } from 'react-icons/io5'
 import {
   ProgressContainer,
   ProgressBar,
+  ProgressBarFill,
   ProgressText,
   ProgressInfo,
   ProgressControls,
@@ -45,7 +46,7 @@ export const AchievementProgress = ({
     if (!isInteractive || !achievementId) return
 
     const clampedProgress = Math.max(0, Math.min(maxProgress, newProgress))
-    
+
     try {
       await updateProgress({
         achievementId,
@@ -99,18 +100,12 @@ export const AchievementProgress = ({
       {isInteractive ? (
         <>
           <ProgressBar>
-            <motion.div
+            <ProgressBarFill
+              as={motion.div}
               initial={{ width: 0 }}
               animate={{ width: `${displayPercentage}%` }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              style={{
-                height: '100%',
-                background: 'linear-gradient(90deg, #00d4ff 0%, #00a8cc 100%)',
-                borderRadius: '8px',
-                boxShadow: '0 0 20px rgba(0, 212, 255, 0.4)',
-                position: 'relative',
-                zIndex: 1,
-              }}
+              $progress={displayPercentage}
             />
             <ProgressSlider
               type="range"
@@ -134,16 +129,12 @@ export const AchievementProgress = ({
         </>
       ) : (
         <ProgressBar>
-          <motion.div
+          <ProgressBarFill
+            as={motion.div}
             initial={{ width: 0 }}
             animate={{ width: `${displayPercentage}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            style={{
-              height: '100%',
-              background: 'linear-gradient(90deg, #00d4ff 0%, #00a8cc 100%)',
-              borderRadius: '8px',
-              boxShadow: '0 0 20px rgba(0, 212, 255, 0.4)',
-            }}
+            $progress={displayPercentage}
           />
         </ProgressBar>
       )}

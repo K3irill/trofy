@@ -54,6 +54,16 @@ export const ProgressBar = styled.div`
   position: relative;
 `
 
+export const ProgressBarFill = styled.div<{ $progress: number }>`
+  height: 100%;
+  width: ${(props) => Math.min(100, Math.max(0, props.$progress))}%;
+  background: linear-gradient(90deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
+  border-radius: 8px;
+  box-shadow: 0 0 20px ${(props) => props.theme.colors.primary}66;
+  position: relative;
+  z-index: 1;
+`
+
 export const ProgressSlider = styled.input`
   position: absolute;
   top: 0;
@@ -75,16 +85,16 @@ export const ProgressSlider = styled.input`
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #ffffff;
+    background: ${(props) => props.theme.colors.light[100]};
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.8), 0 0 20px rgba(0, 212, 255, 0.4);
+    box-shadow: 0 0 10px ${(props) => props.theme.colors.primary}cc, 0 0 20px ${(props) => props.theme.colors.primary}66;
     transition: all 0.2s ease;
-    border: 2px solid #00d4ff;
+    border: 2px solid ${(props) => props.theme.colors.primary};
     margin-top: -4px;
 
     &:hover {
       transform: scale(1.2);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 1), 0 0 25px rgba(0, 212, 255, 0.6);
+      box-shadow: 0 0 15px ${(props) => props.theme.colors.primary}, 0 0 25px ${(props) => props.theme.colors.primary}99;
     }
 
     &:active {
@@ -96,15 +106,15 @@ export const ProgressSlider = styled.input`
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #ffffff;
+    background: ${(props) => props.theme.colors.light[100]};
     cursor: pointer;
-    border: 2px solid #00d4ff;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.8), 0 0 20px rgba(0, 212, 255, 0.4);
+    border: 2px solid ${(props) => props.theme.colors.primary};
+    box-shadow: 0 0 10px ${(props) => props.theme.colors.primary}cc, 0 0 20px ${(props) => props.theme.colors.primary}66;
     transition: all 0.2s ease;
 
     &:hover {
       transform: scale(1.2);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 1), 0 0 25px rgba(0, 212, 255, 0.6);
+      box-shadow: 0 0 15px ${(props) => props.theme.colors.primary}, 0 0 25px ${(props) => props.theme.colors.primary}99;
     }
 
     &:active {
@@ -143,14 +153,15 @@ export const ProgressControls = styled.div`
   gap: 0.75rem;
   align-items: center;
   justify-content: center;
+  margin-top: 1.5rem;
 `
 
 export const ProgressButton = styled.button`
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  border: 1px solid ${(props) => props.theme.colors.dark[400]};
-  background: ${(props) => props.theme.colors.dark[500]};
+  border: 1px solid ${(props) => props.theme.colors.dark[600]}80;
+  background: ${(props) => props.theme.colors.dark[700]}cc;
   color: ${(props) => props.theme.colors.primary};
   display: flex;
   align-items: center;
@@ -183,7 +194,7 @@ export const ProgressButton = styled.button`
     cursor: not-allowed;
 
     svg {
-      color: ${(props) => props.theme.colors.dark[300]};
+      color: ${(props) => props.theme.colors.light[300]};
     }
   }
 `

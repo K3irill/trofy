@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
+import { IoSearchOutline, IoDocumentTextOutline } from 'react-icons/io5'
 import { useAppSelector } from '@/store/hooks'
 import {
   useGetCategoryByIdWithStatsQuery,
@@ -80,7 +81,7 @@ export default function CategoryPage() {
     return (
       <Container>
         <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ fontSize: '4rem' }}>🔍</div>
+          <IoSearchOutline style={{ fontSize: '4rem', color: 'var(--text-secondary, #666)', marginBottom: '1rem' }} />
           <div style={{ fontSize: '1.125rem' }}>Категория не найдена</div>
         </div>
       </Container>
@@ -95,8 +96,8 @@ export default function CategoryPage() {
   const renderAchievements = (achievementsList: ApiAchievement[]) => {
     if (isLoadingAchievements) {
       return (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <div>Загрузка достижений...</div>
+        <div style={{ padding: '2rem' }}>
+          <BlockLoader text="Загрузка достижений..." />
         </div>
       )
     }
@@ -104,7 +105,7 @@ export default function CategoryPage() {
     if (achievementsList.length === 0) {
       return (
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📭</div>
+          <IoDocumentTextOutline style={{ fontSize: '3rem', color: 'var(--text-secondary, #666)', marginBottom: '1rem' }} />
           <div>Достижения не найдены</div>
         </div>
       )
@@ -115,8 +116,9 @@ export default function CategoryPage() {
         <AchievementListContainer>
           {achievementsList.map((achievement) => {
             const isCompleted = !!achievement.completion_date
-            const isInProgress = achievement.unlocked && !isCompleted && (achievement.progress || 0) > 0
-            const status = isCompleted ? 'completed' : isInProgress ? 'in_progress' : achievement.unlocked ? 'unlocked' : 'locked'
+            const progress = achievement.progress || 0
+            const isInProgress = !isCompleted && progress > 0 && progress <= 100
+            const status = isCompleted ? 'achieved' : isInProgress ? 'in_progress' : 'not_achieved'
 
             return (
               <AchievementListItem
@@ -133,13 +135,7 @@ export default function CategoryPage() {
                 <AchievementListContent>
                   <AchievementListName>{achievement.title}</AchievementListName>
                   <AchievementListStatus $status={status}>
-                    {isCompleted
-                      ? 'Завершено'
-                      : isInProgress
-                        ? `В работе ${achievement.progress}%`
-                        : achievement.unlocked
-                          ? 'Разблокировано'
-                          : 'Не открыто'}
+                    {isCompleted ? 'Достигнуто' : isInProgress ? `В работе ${achievement.progress}%` : 'Не достигнуто'}
                   </AchievementListStatus>
                 </AchievementListContent>
               </AchievementListItem>
