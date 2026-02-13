@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { IoAddCircleOutline, IoClose, IoStatsChart } from 'react-icons/io5'
+import { IoAddCircleOutline, IoClose, IoFlag } from 'react-icons/io5'
 import {
   CurrentGoalsSection,
   SectionTitle,
@@ -57,7 +57,7 @@ export function PriorityAchievements({
   return (
     <CurrentGoalsSection>
       <SectionTitle>
-        <IoStatsChart style={{ fontSize: '1.25rem' }} />
+        <IoFlag style={{ fontSize: '1.25rem' }} />
         Сейчас в приоритете
       </SectionTitle>
       <CurrentGoals>

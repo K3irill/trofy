@@ -51,11 +51,13 @@ export const FormInput = styled.input`
   }
 `
 
-export const DateInput = styled(FormInput) <{ $isComplete?: boolean }>`
+export const DateInput = styled(FormInput) <{ $isComplete?: boolean; $hasError?: boolean }>`
   &::-webkit-calendar-picker-indicator {
     filter: invert(1);
     cursor: pointer;
   }
+
+  border-color: ${props => props.$hasError ? props.theme.colors.danger : props.theme.colors.dark[600]}80;
 
   ${(props) =>
     props.$isComplete &&
@@ -73,6 +75,13 @@ export const DateInput = styled(FormInput) <{ $isComplete?: boolean }>`
       box-shadow: 0 0 0 3px ${(props) => props.theme.colors.primary}40, 0 0 25px ${(props) => props.theme.colors.primary}50;
     }
   }
+`
+
+export const ErrorMessage = styled.span`
+  color: ${(props) => props.theme.colors.danger};
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
 `
 
 export const FormTextarea = styled.textarea<{ $isComplete?: boolean }>`

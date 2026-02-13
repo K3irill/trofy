@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useForm } from 'react-hook-form'
 import { AchievementDetail } from './types'
 import { PhotoSwiper } from './PhotoSwiper'
 import { useUpdateAchievementMutation, useDeletePhotoMutation } from '@/store/api/achievementDetailApi'
@@ -24,8 +25,17 @@ import {
   PhotoUploadArea,
   DifficultySelector,
   DifficultyButton,
+  ErrorMessage,
 } from './AchievementDetailView.styled'
-import { IoCalendar, IoStar, IoGift, IoDiamond, IoClose, IoCheckmark } from 'react-icons/io5'
+import { IoCalendar, IoStar, IoGift, IoDiamond, IoClose, IoCheckmark, IoCameraOutline } from 'react-icons/io5'
+import styled from 'styled-components'
+import { useTheme } from 'styled-components'
+
+const EmptyImpressionsText = styled(ImpressionsText)`
+  color: ${(props) => props.theme.colors.light[300]};
+  font-style: italic;
+  opacity: 0.7;
+`
 
 interface AchievementDetailViewProps {
   achievement: AchievementDetail
@@ -36,6 +46,12 @@ interface AchievementDetailViewProps {
   onUpdate?: () => void
 }
 
+interface FormData {
+  date: string
+  difficulty?: 1 | 2 | 3 | 4 | 5
+  impressions: string
+}
+
 export const AchievementDetailView = ({
   achievement,
   isEditing = false,
@@ -44,19 +60,25 @@ export const AchievementDetailView = ({
   achievementId,
   onUpdate,
 }: AchievementDetailViewProps) => {
-  const getInitialDate = () => {
-    if (achievement.completionDate) {
-      const dateObj = new Date(achievement.completionDate)
-      return dateObj.toISOString().split('T')[0] || ''
-    }
-    return ''
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<FormData>({
+    defaultValues: {
+      date: achievement.completionDate ? new Date(achievement.completionDate).toISOString().split('T')[0] : '',
+      difficulty: achievement.difficulty,
+      impressions: achievement.impressions || '',
+    },
+  })
 
-  const [date, setDate] = useState(getInitialDate())
-  const [difficulty, setDifficulty] = useState<1 | 2 | 3 | 4 | 5 | undefined>(achievement.difficulty)
-  const [impressions, setImpressions] = useState(achievement.impressions || '')
+  const watchedDifficulty = watch('difficulty')
   const [photoFiles, setPhotoFiles] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
+  // Фотографии для удаления (помечаются, но не удаляются сразу)
+  const [photosToDelete, setPhotosToDelete] = useState<Set<string>>(new Set())
   const [existingPhotos, setExistingPhotos] = useState<Array<{ id: string; url: string }>>(() => {
     if (achievement.photosWithId && achievement.photosWithId.length > 0) {
       return achievement.photosWithId
@@ -66,9 +88,42 @@ export const AchievementDetailView = ({
     return []
   })
 
+  // Сохраняем исходное состояние фотографий для восстановления при отмене
+  const initialPhotos = useMemo<Array<{ id: string; url: string }>>(() => {
+    if (achievement.photosWithId && achievement.photosWithId.length > 0) {
+      return achievement.photosWithId
+    } else if (achievement.photos && achievement.photos.length > 0) {
+      return achievement.photos.map((url, index) => ({ id: `temp-${index}`, url }))
+    }
+    return []
+  }, [achievement.photosWithId, achievement.photos])
+
   const [updateAchievement, { isLoading: isSubmitting }] = useUpdateAchievementMutation()
-  const [deletePhoto, { isLoading: isDeletingPhoto }] = useDeletePhotoMutation()
+  const [deletePhoto] = useDeletePhotoMutation()
   const { showToast, ToastComponent } = useToast()
+
+  // Обновляем форму при изменении achievement
+  useEffect(() => {
+    if (achievement.completionDate) {
+      const dateObj = new Date(achievement.completionDate)
+      setValue('date', dateObj.toISOString().split('T')[0])
+    }
+    setValue('difficulty', achievement.difficulty)
+    setValue('impressions', achievement.impressions || '')
+  }, [achievement, setValue])
+
+  // Восстанавливаем исходное состояние при отмене редактирования
+  useEffect(() => {
+    if (!isEditing) {
+      // Восстанавливаем исходные фотографии
+      setExistingPhotos([...initialPhotos])
+      // Очищаем помеченные для удаления
+      setPhotosToDelete(new Set())
+      // Очищаем новые фотографии
+      setPhotoFiles([])
+      setPhotoPreviews([])
+    }
+  }, [isEditing, initialPhotos])
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -90,47 +145,69 @@ export const AchievementDetailView = ({
     setPhotoPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleDeleteExistingPhoto = async (photoId: string, index: number) => {
+  // Помечаем фотографию для удаления, но не удаляем сразу
+  const handleMarkPhotoForDeletion = (photoId: string, index: number) => {
     if (photoId.startsWith('temp-')) {
+      // Временные фотографии просто удаляем из состояния
       setExistingPhotos((prev) => prev.filter((_, i) => i !== index))
       return
     }
 
-    if (!userAchievementId || !achievementId) return
-
-    try {
-      await deletePhoto({ userAchievementId, photoId, achievementId }).unwrap()
-      setExistingPhotos((prev) => prev.filter((_, i) => i !== index))
-      showToast('Фотография удалена', 'success')
-    } catch {
-      showToast('Ошибка при удалении фотографии', 'error')
-    }
+    // Помечаем для удаления
+    setPhotosToDelete((prev) => new Set(prev).add(photoId))
+    // Визуально скрываем фотографию
+    setExistingPhotos((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleSave = async () => {
+  const onSubmit = async (data: FormData) => {
     if (!userAchievementId || !achievementId) return
-    if (!date) {
-      showToast('Пожалуйста, укажите дату выполнения', 'warning')
-      return
-    }
 
     try {
+      // Сначала удаляем помеченные фотографии
+      if (photosToDelete.size > 0 && userAchievementId && achievementId) {
+        await Promise.all(
+          Array.from(photosToDelete).map((photoId) =>
+            deletePhoto({ userAchievementId, photoId, achievementId }).unwrap()
+          )
+        )
+      }
+
+      // Затем обновляем достижение
       await updateAchievement({
         userAchievementId,
         achievementId,
         data: {
-          completion_date: date,
-          difficulty,
-          impressions: impressions || undefined,
+          completion_date: data.date,
+          difficulty: data.difficulty,
+          impressions: data.impressions || undefined,
           photos: photoFiles.length > 0 ? photoFiles : undefined,
         },
       }).unwrap()
+
       onUpdate?.()
       showToast('Достижение обновлено', 'success')
-    } catch {
-      showToast('Ошибка при обновлении достижения', 'error')
+      setPhotosToDelete(new Set())
+    } catch (error: unknown) {
+      console.error('Update achievement error:', error)
+      const errorData = error as { data?: string | { error?: string; message?: string }; error?: string; message?: string } | undefined
+      let errorMessage = 'Ошибка при обновлении достижения'
+
+      if (errorData) {
+        if (typeof errorData.data === 'string') {
+          errorMessage = errorData.data
+        } else if (errorData.data && typeof errorData.data === 'object') {
+          errorMessage = errorData.data.error || errorData.data.message || errorMessage
+        } else if (errorData.error) {
+          errorMessage = errorData.error
+        } else if (errorData.message) {
+          errorMessage = errorData.message
+        }
+      }
+
+      showToast(errorMessage, 'error')
     }
   }
+
   const renderDifficulty = (difficulty?: number) => {
     if (!difficulty) return null
     return (
@@ -144,18 +221,25 @@ export const AchievementDetailView = ({
     )
   }
 
+  const theme = useTheme()
+
   const getRarityIcon = (rarity: string) => {
-    switch (rarity) {
-      case 'legendary':
-        return <IoDiamond style={{ color: '#FFD700' }} />
-      case 'epic':
-        return <IoDiamond style={{ color: '#9B59B6' }} />
-      case 'rare':
-        return <IoDiamond style={{ color: '#3498DB' }} />
-      default:
-        return <IoDiamond style={{ color: '#95A5A6' }} />
+    // Используем цвета темы для редкости
+    // Если в теме нет специальных цветов для редкости, используем стандартные
+    const rarityColors: Record<string, string> = {
+      legendary: theme.colors.gold || '#FFD700',
+      epic: '#9B59B6', // Фиолетовый для epic
+      rare: theme.colors.primary || '#3498DB', // Синий для rare
+      common: theme.colors.light[300] || '#95A5A6', // Серый для common
     }
+
+    const color = rarityColors[rarity] || rarityColors.common
+
+    return <IoDiamond style={{ color }} />
   }
+
+  // Фильтруем фотографии, исключая помеченные для удаления
+  const visiblePhotos = existingPhotos.filter((photo) => !photosToDelete.has(photo.id))
 
   return (
     <DetailContainer>
@@ -166,12 +250,14 @@ export const AchievementDetailView = ({
             <IoCalendar /> Дата выполнения:
           </InfoLabel>
           {isEditing ? (
-            <EditInput
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+              <EditInput
+                type="date"
+                {...register('date', { required: 'Пожалуйста, укажите дату выполнения' })}
+                $hasError={!!errors.date}
+              />
+              {errors.date && <ErrorMessage>{errors.date.message}</ErrorMessage>}
+            </div>
           ) : (
             <InfoValue>{achievement.completionDate ? new Date(achievement.completionDate).toLocaleDateString('ru-RU') : 'Не указана'}</InfoValue>
           )}
@@ -186,8 +272,8 @@ export const AchievementDetailView = ({
                 <DifficultyButton
                   key={level}
                   type="button"
-                  $active={difficulty === level}
-                  onClick={() => setDifficulty(level as 1 | 2 | 3 | 4 | 5)}
+                  $active={watchedDifficulty === level}
+                  onClick={() => setValue('difficulty', level as 1 | 2 | 3 | 4 | 5)}
                 >
                   {level}
                 </DifficultyButton>
@@ -218,8 +304,7 @@ export const AchievementDetailView = ({
         <SectionTitle>Впечатления</SectionTitle>
         {isEditing ? (
           <EditTextarea
-            value={impressions}
-            onChange={(e) => setImpressions(e.target.value)}
+            {...register('impressions')}
             placeholder="Опишите свои впечатления от выполнения этого достижения..."
             rows={5}
           />
@@ -227,23 +312,22 @@ export const AchievementDetailView = ({
           achievement.impressions ? (
             <ImpressionsText>{achievement.impressions}</ImpressionsText>
           ) : (
-            <ImpressionsText style={{ color: '#6b7280', fontStyle: 'italic' }}>Впечатления не указаны</ImpressionsText>
+            <EmptyImpressionsText>Впечатления не указаны</EmptyImpressionsText>
           )
         )}
       </DetailSection>
 
       <DetailSection>
-        <SectionTitle>Фотографии ({isEditing ? existingPhotos.length + photoFiles.length : (achievement.photos?.length || 0)})</SectionTitle>
+        <SectionTitle>Фотографии ({isEditing ? visiblePhotos.length + photoFiles.length : (achievement.photos?.length || 0)})</SectionTitle>
         {isEditing ? (
           <>
-            {existingPhotos.length > 0 && (
+            {visiblePhotos.length > 0 && (
               <PhotoPreview>
-                {existingPhotos.map((photo, index) => (
+                {visiblePhotos.map((photo, index) => (
                   <div key={photo.id || index} style={{ position: 'relative' }}>
                     <img src={photo.url.startsWith('http') ? photo.url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${photo.url}`} alt={`Photo ${index + 1}`} />
                     <PhotoRemoveButton
-                      onClick={() => handleDeleteExistingPhoto(photo.id, index)}
-                      disabled={isDeletingPhoto}
+                      onClick={() => handleMarkPhotoForDeletion(photo.id, index)}
                       title="Удалить фотографию"
                     >
                       ×
@@ -262,8 +346,8 @@ export const AchievementDetailView = ({
                 id="photo-upload-edit"
               />
               <label htmlFor="photo-upload-edit" style={{ cursor: 'pointer', textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📷</div>
-                <div style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
+                <IoCameraOutline style={{ fontSize: '2rem', marginBottom: '0.5rem' }} />
+                <div style={{ fontSize: '0.875rem' }}>
                   Нажмите для загрузки фотографий
                 </div>
               </label>
@@ -292,7 +376,7 @@ export const AchievementDetailView = ({
             <IoClose />
             Отмена
           </EditButton>
-          <EditButton onClick={handleSave} variant="save" disabled={!date || isSubmitting}>
+          <EditButton onClick={handleSubmit(onSubmit)} variant="save" disabled={isSubmitting}>
             <IoCheckmark />
             {isSubmitting ? 'Сохранение...' : 'Сохранить'}
           </EditButton>

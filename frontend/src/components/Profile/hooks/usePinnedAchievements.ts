@@ -18,6 +18,7 @@ export function usePinnedAchievements(user: User) {
   const [updateMe] = useUpdateMeMutation()
 
   // Получаем актуальные данные пользователя для автоматического обновления
+  // Используем данные из кэша RTK Query, которые обновляются автоматически после мутации
   const { data: currentUser } = useGetMeQuery(undefined, {
     skip: !user.id,
   })
@@ -43,10 +44,14 @@ export function usePinnedAchievements(user: User) {
     const achievementData = [achievement1.data, achievement2.data, achievement3.data]
 
     for (let i = 0; i < 3; i++) {
+      const achievementId = pinnedIds[i]
       const achievement = achievementData[i]
-      // Показываем только завершенные достижения (с completion_date) и не скрытые
+
+      // Проверяем, что ID есть, данные загружены и ID совпадает
       if (
+        achievementId &&
         achievement &&
+        achievement.id === achievementId &&
         achievement.userAchievement?.completion_date &&
         !achievement.userAchievement?.is_hidden
       ) {
@@ -63,7 +68,7 @@ export function usePinnedAchievements(user: User) {
     }
 
     return achievements
-  }, [achievement1.data, achievement2.data, achievement3.data, pinnedIds])
+  }, [pinnedIds, achievement1.data, achievement2.data, achievement3.data])
 
   const handleAddAchievement = (slotIndex: number) => {
     setSelectedSlotIndex(slotIndex)
@@ -103,11 +108,8 @@ export function usePinnedAchievements(user: User) {
 
     try {
       await updateMe({ pinned_achievements: newPinned }).unwrap()
-      // После успешного обновления RTK Query автоматически обновит кэш через invalidatesTags
-      // Принудительно обновляем запросы к достижениям, чтобы они сразу перестали загружаться
-      if (slotIndex === 0) achievement1.refetch()
-      if (slotIndex === 1) achievement2.refetch()
-      if (slotIndex === 2) achievement3.refetch()
+      // RTK Query автоматически обновит кэш через invalidatesTags: ['User']
+      // Это обновит currentUser, который обновит pinnedIds, что обновит запросы к достижениям
     } catch (error) {
       console.error('Failed to remove pinned achievement:', error)
     }

@@ -66,6 +66,7 @@ export type ProfileThemeType =
   | 'gold'
   | 'platinum'
   | 'dragonScale'
+  | 'frostedGlass'
 
 export type MainInfoProps = {
   profileTheme?: ProfileThemeType
@@ -178,6 +179,14 @@ const getThemeStyles = (theme: MainInfoProps['profileTheme'] = 'midnight') => {
       border: '1px solid rgba(125, 211, 252, 0.25)',
       overlay: 'rgba(6, 78, 59, 0.7)',
       name: 'Чешуя дракона'
+    },
+    frostedGlass: {
+      gradient: 'linear-gradient(145deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 100%)',
+      shadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+      accent: 'rgba(255, 255, 255, 0.1)',
+      border: '1px solid rgba(255, 255, 255, 0.18)',
+      overlay: 'rgba(0, 0, 0, 0.4)',
+      name: 'Матовое стекло'
     }
   }
   return themes[theme] || themes.midnight
@@ -191,6 +200,11 @@ export const MainInfo = styled.div<MainInfoProps>`
   background: ${props => getThemeStyles(props.profileTheme).gradient};
   box-shadow: ${props => getThemeStyles(props.profileTheme).shadow};
   border: ${props => getThemeStyles(props.profileTheme).border};
+  ${props => props.profileTheme === 'frostedGlass' && `
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: ${getThemeStyles(props.profileTheme).gradient};
+  `}
 
 
 

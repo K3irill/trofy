@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { IoCameraOutline, IoCheckmarkCircle, IoClose } from 'react-icons/io5'
 import { AchievementDetail } from './types'
 import { useCompleteAchievementMutation } from '@/store/api/achievementDetailApi'
@@ -18,6 +19,7 @@ import {
   DifficultySelector,
   DifficultyButton,
   DateInput,
+  ErrorMessage,
 } from './AchievementCompletionForm.styled'
 
 interface AchievementCompletionFormProps {
@@ -27,10 +29,28 @@ interface AchievementCompletionFormProps {
   isComplete?: boolean
 }
 
+interface FormData {
+  date: string
+  difficulty?: 1 | 2 | 3 | 4 | 5
+  impressions: string
+}
+
 export const AchievementCompletionForm = ({ achievement, achievementId, onComplete, isComplete = false }: AchievementCompletionFormProps) => {
-  const [date, setDate] = useState('')
-  const [difficulty, setDifficulty] = useState<1 | 2 | 3 | 4 | 5 | undefined>(undefined)
-  const [impressions, setImpressions] = useState('')
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<FormData>({
+    defaultValues: {
+      date: '',
+      difficulty: undefined,
+      impressions: '',
+    },
+  })
+
+  const watchedDifficulty = watch('difficulty')
   const [photoFiles, setPhotoFiles] = useState<File[]>([])
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
   const { showToast, ToastComponent } = useToast()
@@ -57,40 +77,44 @@ export const AchievementCompletionForm = ({ achievement, achievementId, onComple
     setPhotoPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!date || isSubmitting) return
-
+  const onSubmit = async (data: FormData) => {
     try {
       await completeAchievement({
         id: achievementId,
         data: {
-          completion_date: date,
-          difficulty,
-          impressions: impressions || undefined,
+          completion_date: data.date,
+          difficulty: data.difficulty,
+          impressions: data.impressions || undefined,
           photos: photoFiles.length > 0 ? photoFiles : undefined,
         },
       }).unwrap()
       onComplete?.()
       showToast('Достижение отмечено как выполненное!', 'success')
-    } catch (error) {
-      showToast('Ошибка при завершении достижения', 'error')
+    } catch (error: any) {
+      const errorMessage = 
+        (typeof error?.data === 'string' ? error.data : null) ||
+        (error?.data?.error) ||
+        (error?.data?.message) ||
+        (error?.error) ||
+        (error?.message) ||
+        'Ошибка при завершении достижения'
+      showToast(errorMessage, 'error')
     }
   }
 
   return (
     <FormContainer $isComplete={isComplete}>
       <FormTitle>Выполнили?</FormTitle>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <FormGroup>
           <FormLabel>Дата выполнения *</FormLabel>
           <DateInput
             type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
+            {...register('date', { required: 'Пожалуйста, укажите дату выполнения' })}
             $isComplete={isComplete}
+            $hasError={!!errors.date}
           />
+          {errors.date && <ErrorMessage>{errors.date.message}</ErrorMessage>}
         </FormGroup>
 
         <FormGroup>
@@ -100,9 +124,9 @@ export const AchievementCompletionForm = ({ achievement, achievementId, onComple
               <DifficultyButton
                 key={level}
                 type="button"
-                $active={difficulty === level}
-                $isComplete={isComplete && difficulty !== level}
-                onClick={() => setDifficulty(level as 1 | 2 | 3 | 4 | 5)}
+                $active={watchedDifficulty === level}
+                $isComplete={isComplete && watchedDifficulty !== level}
+                onClick={() => setValue('difficulty', level as 1 | 2 | 3 | 4 | 5)}
               >
                 {level}
               </DifficultyButton>
@@ -113,8 +137,7 @@ export const AchievementCompletionForm = ({ achievement, achievementId, onComple
         <FormGroup>
           <FormLabel>Впечатления и описание</FormLabel>
           <FormTextarea
-            value={impressions}
-            onChange={(e) => setImpressions(e.target.value)}
+            {...register('impressions')}
             placeholder="Опишите свои впечатления от выполнения этого достижения..."
             rows={5}
             $isComplete={isComplete}
@@ -153,10 +176,10 @@ export const AchievementCompletionForm = ({ achievement, achievementId, onComple
           )}
         </FormGroup>
 
-        <FormButton type="submit" disabled={!date || isSubmitting}>
+        <FormButton type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Отправка...' : (
             <>
-              Отметить как достигнуто <IoCheckmarkCircle style={{ marginLeft: '0.5rem' }} />
+              Отметить как достигнутое <IoCheckmarkCircle style={{ marginLeft: '0.5rem' }} />
             </>
           )}
         </FormButton>

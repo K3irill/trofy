@@ -131,21 +131,21 @@ export const PhotoItem = styled.div`
   }
 `
 
-export const EditInput = styled.input`
+export const EditInput = styled.input<{ $hasError?: boolean }>`
   width: 100%;
   max-width: 300px;
   padding: 0.75rem;
-  background: rgba(17, 24, 39, 0.8);
-  border: 2px solid rgba(55, 65, 81, 0.5);
+  background: ${(props) => props.theme.colors.dark[800]}cc;
+  border: 2px solid ${props => props.$hasError ? props.theme.colors.danger : props.theme.colors.dark[600]}80;
   border-radius: 8px;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1rem;
   transition: all 0.3s ease;
 
   &:focus {
     outline: none;
-    border-color: #00d4ff;
-    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+    border-color: ${props => props.$hasError ? props.theme.colors.danger : props.theme.colors.primary};
+    box-shadow: 0 0 0 3px ${props => props.$hasError ? props.theme.colors.danger + '1a' : props.theme.colors.primary + '1a'};
   }
 
   &::-webkit-calendar-picker-indicator {
@@ -154,13 +154,13 @@ export const EditInput = styled.input`
   }
 `
 
-export const EditTextarea = styled.textarea`
+export const EditTextarea = styled.textarea<{ $hasError?: boolean }>`
   width: 100%;
   padding: 0.75rem;
-  background: rgba(17, 24, 39, 0.8);
-  border: 2px solid rgba(55, 65, 81, 0.5);
+  background: ${(props) => props.theme.colors.dark[800]}cc;
+  border: 2px solid ${props => props.$hasError ? props.theme.colors.danger : props.theme.colors.dark[600]}80;
   border-radius: 8px;
-  color: #f3f4f6;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1rem;
   font-family: inherit;
   resize: vertical;
@@ -169,13 +169,20 @@ export const EditTextarea = styled.textarea`
 
   &:focus {
     outline: none;
-    border-color: #00d4ff;
-    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+    border-color: ${props => props.$hasError ? props.theme.colors.danger : props.theme.colors.primary};
+    box-shadow: 0 0 0 3px ${props => props.$hasError ? props.theme.colors.danger + '1a' : props.theme.colors.primary + '1a'};
   }
 
   &::placeholder {
-    color: #6b7280;
+    color: ${(props) => props.theme.colors.light[300]};
   }
+`
+
+export const ErrorMessage = styled.span`
+  color: ${(props) => props.theme.colors.danger};
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
 `
 
 export const DifficultySelector = styled.div`
@@ -188,20 +195,20 @@ export const DifficultyButton = styled.button<{ $active: boolean }>`
   max-width: 60px;
   padding: 0.75rem;
   background: ${props => props.$active
-    ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.3) 0%, rgba(0, 168, 204, 0.2) 100%)'
-    : 'rgba(17, 24, 39, 0.8)'};
-  border: 2px solid ${props => props.$active ? '#00d4ff' : 'rgba(55, 65, 81, 0.5)'};
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}4d 0%, ${props.theme.colors.secondary}33 100%)`
+    : `${props.theme.colors.dark[800]}cc`};
+  border: 2px solid ${props => props.$active ? props.theme.colors.primary : `${props.theme.colors.dark[600]}80`};
   border-radius: 8px;
-  color: ${props => props.$active ? '#00d4ff' : '#9ca3af'};
+  color: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.light[300]};
   font-size: 1.125rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: #00d4ff;
-    color: #00d4ff;
-    background: rgba(0, 212, 255, 0.1);
+    border-color: ${(props) => props.theme.colors.primary};
+    color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => props.theme.colors.primary}1a;
   }
 `
 
@@ -216,7 +223,7 @@ export const PhotoPreview = styled.div`
     aspect-ratio: 1;
     border-radius: 8px;
     overflow: hidden;
-    border: 2px solid rgba(55, 65, 81, 0.5);
+    border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
 
     img {
       width: 100%;
@@ -232,10 +239,10 @@ export const PhotoRemoveButton = styled.button`
   right: 4px;
   width: 24px;
   height: 24px;
-  background: rgba(239, 68, 68, 0.9);
+  background: ${(props) => props.theme.colors.danger}e6;
   border: none;
   border-radius: 50%;
-  color: white;
+  color: ${(props) => props.theme.colors.light[100]};
   font-size: 1.25rem;
   font-weight: 700;
   cursor: pointer;
@@ -246,7 +253,7 @@ export const PhotoRemoveButton = styled.button`
   z-index: 10;
 
   &:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 1);
+    background: ${(props) => props.theme.colors.danger};
     transform: scale(1.1);
   }
 
@@ -257,7 +264,7 @@ export const PhotoRemoveButton = styled.button`
 `
 
 export const PhotoUploadArea = styled.div`
-  border: 2px dashed rgba(55, 65, 81, 0.5);
+  border: 2px dashed ${(props) => props.theme.colors.dark[600]}80;
   border-radius: 12px;
   padding: 2rem;
   text-align: center;
@@ -266,8 +273,8 @@ export const PhotoUploadArea = styled.div`
   margin-top: 1rem;
 
   &:hover {
-    border-color: #00d4ff;
-    background: rgba(0, 212, 255, 0.05);
+    border-color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => props.theme.colors.primary}0d;
   }
 
   label {
@@ -275,6 +282,7 @@ export const PhotoUploadArea = styled.div`
     width: 100%;
     height: 100%;
     cursor: pointer;
+    color: ${(props) => props.theme.colors.light[300]};
   }
 `
 
@@ -317,14 +325,14 @@ export const EditButton = styled.button<{ variant?: 'save' | 'cancel' }>`
       `
     } else {
       return `
-        background: rgba(17, 24, 39, 0.8);
-        border-color: rgba(55, 65, 81, 0.5);
+        background: ${props.theme.colors.dark[800]}cc;
+        border-color: ${props.theme.colors.dark[600]}80;
         color: ${props.theme.colors.light[300]};
 
         &:hover {
           border-color: ${props.theme.colors.light[500]};
           color: ${props.theme.colors.light[100]};
-          background: rgba(55, 65, 81, 0.5);
+          background: ${props.theme.colors.dark[600]}80;
         }
       `
     }

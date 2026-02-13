@@ -12,8 +12,11 @@ export function errorHandler(
   // Обработка Multer ошибок
   if (err instanceof MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
+      // Определяем лимит в зависимости от роута
+      const isAchievementRoute = req.path?.includes('/achievements') && !req.path?.includes('/avatar')
+      const maxSize = isAchievementRoute ? '5MB' : '10MB'
       return res.status(400).json({
-        error: 'Размер файла превышает максимально допустимый (10MB)',
+        error: `Размер файла превышает максимально допустимый (${maxSize})`,
         status: 400,
       })
     }

@@ -10,6 +10,7 @@ import type { ProfileThemeType } from '../styled'
 
 // Доступные иконки для фона
 export const availableIcons = [
+  '🔮', // Хрустальный шар (для матового стекла)
   '🦅', // Орел
   '🦆', // Утка
   '🦢', // Лебедь
@@ -351,6 +352,11 @@ const themes: Array<{ value: ProfileThemeType; gradient: string; name: string }>
     gradient: 'linear-gradient(145deg, #064e3b 0%, #0891b2 50%, #7dd3fc 100%)',
     name: 'Чешуя дракона',
   },
+  {
+    value: 'frostedGlass',
+    gradient: 'linear-gradient(145deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%)',
+    name: 'Матовое стекло',
+  },
 ]
 
 interface ProfileThemeModalProps {
@@ -360,7 +366,7 @@ interface ProfileThemeModalProps {
   currentIcons?: string[]
 }
 
-const PreviewBlock = styled.div<{ $gradient: string; $shadow: string; $border: string }>`
+const PreviewBlock = styled.div<{ $gradient: string; $shadow: string; $border: string; $isFrosted?: boolean }>`
   width: 100%;
   height: 120px;
   border-radius: 16px;
@@ -376,6 +382,10 @@ const PreviewBlock = styled.div<{ $gradient: string; $shadow: string; $border: s
   color: ${(props) => props.theme.colors.light[100]};
   font-size: 0.875rem;
   font-weight: 600;
+  ${props => props.$isFrosted && `
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  `}
   
   &::before {
     content: '';
@@ -385,7 +395,7 @@ const PreviewBlock = styled.div<{ $gradient: string; $shadow: string; $border: s
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.3);
-    opacity: 0.3;
+    opacity: ${props => props.$isFrosted ? 0.2 : 0.3};
   }
 `
 
@@ -496,6 +506,7 @@ export function ProfileThemeModal({
       gold: { gradient: 'linear-gradient(145deg, #78350f 0%, #d97706 50%, #fbbf24 100%)', shadow: '0 8px 40px rgba(120, 53, 15, 0.5), 0 0 30px rgba(251, 191, 36, 0.3)', border: '1px solid rgba(251, 191, 36, 0.3)' },
       platinum: { gradient: 'linear-gradient(145deg, #374151 0%, #9ca3af 50%, #d1d5db 100%)', shadow: '0 8px 40px rgba(55, 65, 81, 0.5), 0 0 30px rgba(209, 213, 219, 0.2)', border: '1px solid rgba(209, 213, 219, 0.3)' },
       dragonScale: { gradient: 'linear-gradient(145deg, #064e3b 0%, #0891b2 50%, #7dd3fc 100%)', shadow: '0 8px 40px rgba(6, 78, 59, 0.5), 0 0 30px rgba(125, 211, 252, 0.3)', border: '1px solid rgba(125, 211, 252, 0.25)' },
+      frostedGlass: { gradient: 'linear-gradient(145deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 100%)', shadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.18)' },
     }
 
     return themeStyles[previewTheme] || themeStyles.midnight
@@ -577,8 +588,12 @@ export function ProfileThemeModal({
                 $gradient={getPreviewTheme().gradient}
                 $shadow={getPreviewTheme().shadow}
                 $border={getPreviewTheme().border}
+                $isFrosted={previewTheme === 'frostedGlass'}
               >
-                {themes.find(t => t.value === previewTheme)?.name || 'Полночь'}
+                <span style={{ zIndex: 1, position: 'relative' }}>
+                  {previewTheme === 'frostedGlass' && '🔮 '}
+                  {themes.find(t => t.value === previewTheme)?.name || 'Полночь'}
+                </span>
               </PreviewBlock>
             </div>
 

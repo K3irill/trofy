@@ -100,6 +100,7 @@ export class UserService {
         'gold',
         'platinum',
         'dragonScale',
+        'frostedGlass',
       ]
       if (dto.main_info_theme && !validThemes.includes(dto.main_info_theme)) {
         throw ApiError.badRequest('Invalid main_info_theme')
