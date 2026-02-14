@@ -252,6 +252,83 @@ export class AchievementsService {
   }
 
   /**
+   * Получение глобальных достижений с информацией о владельце
+   * Для showcase - лучшие и последние достижения всех пользователей
+   */
+  async getGlobalShowcaseAchievements(
+    type: 'best' | 'recent',
+    limit: number = 10,
+    currentUserId?: string
+  ) {
+    const where: any = {
+      completion_date: { not: null }, // Только завершенные
+      is_hidden: false, // Не скрытые
+      is_public: true, // Публичные
+    }
+
+    const userAchievements = await prisma.userAchievement.findMany({
+      where,
+      include: {
+        achievement: {
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                icon_url: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+      // Для "recent" сортируем по дате завершения, для "best" получим все и отсортируем в коде
+      orderBy: type === 'recent' ? { completion_date: 'desc' } : { completion_date: 'desc' },
+      take: type === 'best' ? limit * 3 : limit, // Для best берем больше, чтобы потом отсортировать по XP
+    })
+
+    // Для "best" сортируем по XP и берем топ
+    if (type === 'best') {
+      userAchievements.sort((a, b) => {
+        const xpA = a.achievement.xp_reward
+        const xpB = b.achievement.xp_reward
+        return xpB - xpA
+      })
+      userAchievements.splice(limit) // Оставляем только топ limit
+    }
+
+    return userAchievements.map((ua) => {
+      const isCurrentUser = currentUserId && ua.user_id === currentUserId
+      return {
+        id: ua.achievement.id,
+        title: ua.achievement.title,
+        description: ua.achievement.description,
+        icon_url: ua.achievement.icon_url,
+        rarity: ua.achievement.rarity.toLowerCase() as 'common' | 'rare' | 'epic' | 'legendary',
+        category: {
+          id: ua.achievement.category.id,
+          name: ua.achievement.category.name,
+          icon_url: ua.achievement.category.icon_url,
+        },
+        xp_reward: ua.achievement.xp_reward,
+        unlocked: isCurrentUser,
+        unlocked_at: ua.unlocked_at.toISOString(),
+        completion_date: ua.completion_date?.toISOString(),
+        owner: {
+          id: ua.user.id,
+          username: ua.user.username,
+        },
+        is_current_user: isCurrentUser,
+      }
+    })
+  }
+
+  /**
    * Получение всех достижений с фильтрами
    */
   async getAchievements(userId?: string, dto?: GetAchievementsDto) {

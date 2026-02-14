@@ -37,6 +37,7 @@ router.get(
   optionalAuthenticate,
   achievementsController.getAchievementsByCategory.bind(achievementsController)
 )
+router.get('/showcase/:type', optionalAuthenticate, achievementsController.getShowcaseAchievements.bind(achievementsController))
 router.get('/', optionalAuthenticate, achievementsController.getAchievements.bind(achievementsController))
 router.get('/:id', optionalAuthenticate, achievementsController.getAchievementById.bind(achievementsController))
 

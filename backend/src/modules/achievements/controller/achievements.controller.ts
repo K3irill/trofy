@@ -146,6 +146,31 @@ export class AchievementsController {
   }
 
   /**
+   * GET /api/achievements/showcase/:type - Получение глобальных достижений для showcase
+   * type: 'best' | 'recent'
+   */
+  async getShowcaseAchievements(req: Request | AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { type } = req.params
+      const userId = (req as AuthRequest).user?.userId
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10
+
+      if (type !== 'best' && type !== 'recent') {
+        return next(ApiError.badRequest('Invalid type. Must be "best" or "recent"'))
+      }
+
+      const achievements = await achievementsService.getGlobalShowcaseAchievements(
+        type,
+        limit,
+        userId
+      )
+      res.json(achievements)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
    * GET /api/achievements/categories/:categoryId/achievements - Получение достижений в категории
    */
   async getAchievementsByCategory(
