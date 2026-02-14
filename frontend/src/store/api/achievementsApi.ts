@@ -132,8 +132,11 @@ export const achievementsApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Achievement'],
     }),
-    getAchievementById: builder.query<Achievement, string>({
-      query: (id) => `/achievements/${id}`,
+    getAchievementById: builder.query<Achievement, { id: string; forUserId?: string }>({
+      query: ({ id, forUserId }) => ({
+        url: `/achievements/${id}`,
+        params: forUserId ? { forUserId } : undefined,
+      }),
       providesTags: ['Achievement'],
     }),
     getShowcaseAchievements: builder.query<ShowcaseAchievement[], { type: 'best' | 'recent'; limit?: number }>({

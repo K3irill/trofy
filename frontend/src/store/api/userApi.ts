@@ -56,6 +56,25 @@ export interface RecentAchievement {
   }
 }
 
+export interface UserAchievement {
+  id: string
+  title: string
+  description: string
+  icon_url: string | null
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  category: {
+    id: string
+    name: string
+    icon_url: string | null
+  }
+  xp_reward: number
+  unlocked_at: string
+  completion_date: string | null
+  is_achieved: boolean
+  is_public: boolean
+  is_hidden: boolean
+}
+
 export const userApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (builder) => ({
@@ -89,6 +108,41 @@ export const userApi = baseApi.injectEndpoints({
       }),
       providesTags: ['User', 'Achievement'],
     }),
+    getUserByUsername: builder.query<User, string>({
+      query: (username) => `/users/${username}`,
+      providesTags: (result, error, username) => [{ type: 'User', id: username }],
+    }),
+    getUserStatsByUsername: builder.query<UserStats, string>({
+      query: (username) => `/users/${username}/stats`,
+      providesTags: (result, error, username) => [{ type: 'User', id: username }],
+    }),
+    getUserAchievementsByUsername: builder.query<
+      UserAchievement[],
+      { username: string; status?: 'all' | 'achieved' | 'in_progress'; limit?: number; offset?: number }
+    >({
+      query: ({ username, status, limit, offset }) => ({
+        url: `/users/${username}/achievements`,
+        params: {
+          ...(status && { status }),
+          ...(limit && { limit }),
+          ...(offset && { offset }),
+        },
+      }),
+      providesTags: (result, error, { username }) => [
+        { type: 'User', id: username },
+        'Achievement',
+      ],
+    }),
+    getRecentAchievementsByUsername: builder.query<RecentAchievement[], { username: string; limit?: number }>({
+      query: ({ username, limit = 6 }) => ({
+        url: `/users/${username}/achievements/recent`,
+        params: { limit },
+      }),
+      providesTags: (result, error, { username }) => [
+        { type: 'User', id: username },
+        'Achievement',
+      ],
+    }),
   }),
 })
 
@@ -98,4 +152,8 @@ export const {
   useUpdateActivityMutation,
   useGetStatsQuery,
   useGetRecentAchievementsQuery,
+  useGetUserByUsernameQuery,
+  useGetUserStatsByUsernameQuery,
+  useGetUserAchievementsByUsernameQuery,
+  useGetRecentAchievementsByUsernameQuery,
 } = userApi

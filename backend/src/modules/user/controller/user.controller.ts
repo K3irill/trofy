@@ -142,6 +142,76 @@ export class UserController {
       next(error)
     }
   }
+
+  /**
+   * GET /api/users/:username - Получение профиля пользователя по username
+   */
+  async getUserByUsername(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { username } = req.params
+      const viewerId = (req as any).user?.userId // Может быть undefined, если не авторизован
+
+      const user = await userService.getUserByUsername(username, viewerId)
+      res.json(user)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/users/:username/stats - Получение статистики пользователя
+   */
+  async getUserStatsByUsername(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { username } = req.params
+      const viewerId = (req as any).user?.userId // Может быть undefined, если не авторизован
+
+      const stats = await userService.getUserStatsByUsername(username, viewerId)
+      res.json(stats)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/users/:username/achievements - Получение достижений пользователя
+   */
+  async getUserAchievementsByUsername(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { username } = req.params
+      const viewerId = (req as any).user?.userId // Может быть undefined, если не авторизован
+
+      const status = req.query.status as 'all' | 'achieved' | 'in_progress' | undefined
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined
+      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : undefined
+
+      const achievements = await userService.getUserAchievementsByUsername(username, viewerId, {
+        status,
+        limit,
+        offset,
+      })
+      res.json(achievements)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/users/:username/achievements/recent - Получение последних достижений пользователя
+   */
+  async getRecentAchievementsByUsername(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { username } = req.params
+      const viewerId = (req as any).user?.userId // Может быть undefined, если не авторизован
+
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 6
+
+      const achievements = await userService.getRecentAchievementsByUsername(username, viewerId, limit)
+      res.json(achievements)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 export const userController = new UserController()

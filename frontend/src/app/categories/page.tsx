@@ -98,33 +98,41 @@ export default function CategoriesPage() {
 
   // Преобразование категорий для компонента
   const categories = useMemo(() => {
-    if (isAuthenticated && categoriesWithStatsData) {
-      return categoriesWithStatsData.map((cat) => ({
-        id: cat.id,
-        name: cat.name,
-        icon: cat.icon_url || '📁',
-        total: cat.total,
-        unlocked: cat.unlocked,
-        achievements: cat.achievements_preview.map((ach) => ({
-          id: ach.id,
-          icon: ach.icon_url || '',
-          unlocked: ach.unlocked,
-          progress: ach.progress,
-          completion_date: ach.completion_date,
-        })),
-      }))
-    } else if (!isAuthenticated && categoriesData) {
-      return categoriesData.map((cat) => ({
-        id: cat.id,
-        name: cat.name,
-        icon: cat.icon_url || '📁',
-        total: cat.achievements_count,
-        unlocked: 0,
-        achievements: [],
-      }))
+    if (mode !== 'categories') return []
+
+    if (isAuthenticated) {
+      if (categoriesWithStatsData) {
+        return categoriesWithStatsData.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          icon: cat.icon_url || '📁',
+          total: cat.total,
+          unlocked: cat.unlocked,
+          achievements: cat.achievements_preview.map((ach) => ({
+            id: ach.id,
+            icon: ach.icon_url || '',
+            unlocked: ach.unlocked,
+            progress: ach.progress,
+            completion_date: ach.completion_date,
+          })),
+        }))
+      }
+      return []
+    } else {
+      // Для неавторизованных пользователей
+      if (categoriesData && Array.isArray(categoriesData)) {
+        return categoriesData.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          icon: cat.icon_url || '📁',
+          total: cat.achievements_count,
+          unlocked: 0,
+          achievements: [],
+        }))
+      }
+      return []
     }
-    return []
-  }, [categoriesData, categoriesWithStatsData, isAuthenticated])
+  }, [categoriesData, categoriesWithStatsData, isAuthenticated, mode])
 
   // Параметры для запроса достижений
   const achievementsParams = useMemo(() => {
@@ -134,7 +142,7 @@ export default function CategoriesPage() {
       categoryId?: string
       rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
       unlocked?: boolean
-      sortBy?: 'default' | 'achieved-first' | 'not-achieved-first' | 'in-progress-first' | 'unlocked-asc' | 'unlocked-desc' | 'date-asc' | 'date-desc' | 'xp-asc' | 'xp-desc'
+      sortBy?: 'unlocked-asc' | 'unlocked-desc' | 'date-asc' | 'date-desc' | 'xp-asc' | 'xp-desc'
     } = {
       limit: 1000,
     }
@@ -160,7 +168,7 @@ export default function CategoriesPage() {
     }
 
     return params
-  }, [debouncedSearchQuery, selectedCategory, rarityFilter, statusFilter, sortBy, isAuthenticated])
+  }, [debouncedSearchQuery, selectedCategory, rarityFilter, sortBy])
 
   // Запрос достижений
   const {
@@ -177,13 +185,13 @@ export default function CategoriesPage() {
 
     let filtered = achievementsData.achievements.map(transformAchievement)
 
-    // Фильтрация по статусу на фронтенде
+    // Фильтрация по статусу на фронтенде (только для авторизованных)
     if (isAuthenticated && statusFilter) {
       filtered = filtered.filter((achievement) => {
         const isAchieved = !!achievement.completion_date
-        const progress = achievement.progress || 0
-        const isInProgress = !isAchieved && progress > 0 && progress <= 100
-        const isNotAchieved = !isAchieved && progress === 0
+        const progress = achievement.progress ?? undefined
+        const isInProgress = !isAchieved && progress !== undefined && progress > 0 && progress <= 100
+        const isNotAchieved = !isAchieved && (progress === undefined || progress === 0)
 
         switch (statusFilter) {
           case 'achieved':
@@ -202,14 +210,14 @@ export default function CategoriesPage() {
     if (sortBy && sortBy !== 'default') {
       filtered.sort((a, b) => {
         const aIsAchieved = !!a.completion_date
-        const aProgress = a.progress || 0
-        const aIsInProgress = !aIsAchieved && aProgress > 0 && aProgress <= 100
-        const aIsNotAchieved = !aIsAchieved && aProgress === 0
+        const aProgress = a.progress ?? undefined
+        const aIsInProgress = !aIsAchieved && aProgress !== undefined && aProgress > 0 && aProgress <= 100
+        const aIsNotAchieved = !aIsAchieved && (aProgress === undefined || aProgress === 0)
 
         const bIsAchieved = !!b.completion_date
-        const bProgress = b.progress || 0
-        const bIsInProgress = !bIsAchieved && bProgress > 0 && bProgress <= 100
-        const bIsNotAchieved = !bIsAchieved && bProgress === 0
+        const bProgress = b.progress ?? undefined
+        const bIsInProgress = !bIsAchieved && bProgress !== undefined && bProgress > 0 && bProgress <= 100
+        const bIsNotAchieved = !bIsAchieved && (bProgress === undefined || bProgress === 0)
 
         switch (sortBy) {
           case 'achieved-first':
@@ -239,14 +247,27 @@ export default function CategoriesPage() {
     return filtered
   }, [achievementsData, statusFilter, sortBy, isAuthenticated])
 
-  const isLoading = mode === 'categories'
-    ? (isAuthenticated ? categoriesWithStatsLoading : categoriesLoading)
-    : achievementsLoading
-
   const hasError = mode === 'categories'
     ? (isAuthenticated ? categoriesWithStatsError : categoriesError)
     : achievementsError
 
+  // Показываем лоадер только если действительно загружаем и данных еще нет
+  // Если categories уже заполнен, не показываем лоадер даже если isLoading === true
+  const showLoader = mode === 'categories'
+    ? ((isAuthenticated ? categoriesWithStatsLoading : categoriesLoading) &&
+      categories.length === 0)
+    : (achievementsLoading && achievements.length === 0 && !achievementsData)
+  console.log({
+    categories,
+    categoriesData,
+    categoriesWithStatsData,
+    achievementsData,
+    isAuthenticated,
+    mode,
+    categoriesLoading,
+
+    skip: mode === 'achievements' || isAuthenticated
+  })
   return (
     <>
       <Container>
@@ -283,7 +304,7 @@ export default function CategoriesPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              {isLoading ? (
+              {showLoader ? (
                 <BlockLoader text="Загрузка категорий..." />
               ) : hasError ? (
                 <div
@@ -341,7 +362,7 @@ export default function CategoriesPage() {
                 onSortChange={setSortBy}
                 isAuthenticated={isAuthenticated}
               />
-              {isLoading ? (
+              {showLoader ? (
                 <BlockLoader text="Загрузка достижений..." />
               ) : hasError ? (
                 <div
@@ -373,9 +394,10 @@ export default function CategoriesPage() {
               ) : viewMode === 'list' ? (
                 <ListContainer>
                   {achievements.map((achievement) => {
+                    // Для неавторизованных пользователей progress будет undefined
                     const isAchieved = !!achievement.completion_date
-                    const progress = achievement.progress || 0
-                    const isInProgress = !isAchieved && progress > 0 && progress <= 100
+                    const progress = achievement.progress ?? undefined
+                    const isInProgress = !isAchieved && progress !== undefined && progress > 0 && progress <= 100
                     const status: 'not_achieved' | 'in_progress' | 'achieved' = isAchieved
                       ? 'achieved'
                       : isInProgress
@@ -404,8 +426,8 @@ export default function CategoriesPage() {
                               <StatValue $status={status}>
                                 {isAchieved
                                   ? 'Достигнуто'
-                                  : isInProgress
-                                    ? `В работе ${achievement.progress}%`
+                                  : isInProgress && progress !== undefined
+                                    ? `В работе ${progress}%`
                                     : 'Не достигнуто'}
                               </StatValue>
                             </StatItem>
@@ -440,7 +462,7 @@ export default function CategoriesPage() {
                             </StatItem>
                           </ListItemStats>
                         </ListItemContent>
-                        <ProgressRing progress={isAchieved ? 100 : isInProgress ? (achievement.progress || 0) : 0} />
+                        <ProgressRing progress={isAchieved ? 100 : isInProgress && progress !== undefined ? progress : 0} />
                       </ListItem>
                     )
                   })}

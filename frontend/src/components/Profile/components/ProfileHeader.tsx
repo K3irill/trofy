@@ -55,12 +55,13 @@ const ThemeButton = styled.button`
 interface ProfileHeaderProps {
   user: User
   isAuthenticated: boolean
+  isOwnProfile?: boolean
   progress: number
   xpToNextLevel: number
   currentXP: number
 }
 
-export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel, currentXP }: ProfileHeaderProps) {
+export function ProfileHeader({ user, isAuthenticated, isOwnProfile = false, progress, xpToNextLevel, currentXP }: ProfileHeaderProps) {
   const {
     status,
     setStatus,
@@ -71,7 +72,7 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel, 
     handleKeyDown,
     handleFocus,
     handleClick,
-  } = useProfileBio(user, isAuthenticated)
+  } = useProfileBio(user, isOwnProfile)
 
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
@@ -142,55 +143,57 @@ export function ProfileHeader({ user, isAuthenticated, progress, xpToNextLevel, 
         ))}
       </BadgesContainer>
 
-      <StatusContainer>
-        <AnimatePresence mode="wait">
-          {isEditingStatus ? (
-            <motion.div
-              key="input"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              style={{ width: '100%', height: '100%' }}
-            >
-              <StatusInput
-                ref={statusInputRef}
-                value={status}
-                onChange={(e) => {
-                  setStatus(e.target.value)
-                  if (statusInputRef.current) {
-                    statusInputRef.current.style.height = 'auto'
-                    statusInputRef.current.style.height = `${statusInputRef.current.scrollHeight}px`
-                  }
+      {(displayStatus || isOwnProfile) && (
+        <StatusContainer>
+          <AnimatePresence mode="wait">
+            {isEditingStatus ? (
+              <motion.div
+                key="input"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                style={{ width: '100%', height: '100%' }}
+              >
+                <StatusInput
+                  ref={statusInputRef}
+                  value={status}
+                  onChange={(e) => {
+                    setStatus(e.target.value)
+                    if (statusInputRef.current) {
+                      statusInputRef.current.style.height = 'auto'
+                      statusInputRef.current.style.height = `${statusInputRef.current.scrollHeight}px`
+                    }
+                  }}
+                  onBlur={handleBlur}
+                  onKeyDown={handleKeyDown}
+                  onFocus={handleFocus}
+                  maxLength={500}
+                  autoFocus
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="status"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={isOwnProfile ? handleClick : undefined}
+                style={{
+                  color: displayStatus ? '#f3f4f6' : 'rgba(156, 163, 175, 0.5)',
+                  fontSize: '0.875rem',
+                  cursor: isOwnProfile ? 'pointer' : 'default',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '12px',
+                  background: 'rgba(0, 0, 0, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
                 }}
-                onBlur={handleBlur}
-                onKeyDown={handleKeyDown}
-                onFocus={handleFocus}
-                maxLength={500}
-                autoFocus
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="status"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={handleClick}
-              style={{
-                color: displayStatus ? '#f3f4f6' : 'rgba(156, 163, 175, 0.5)',
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-                padding: '0.5rem 1rem',
-                borderRadius: '12px',
-                background: 'rgba(0, 0, 0, 0.2)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-              }}
-            >
-              {displayStatus || 'Напишите свой статус...'}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </StatusContainer>
+              >
+                {displayStatus || (isOwnProfile ? 'Напишите свой статус...' : '')}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </StatusContainer>
+      )}
 
       <Level>Level {user.level}</Level>
 

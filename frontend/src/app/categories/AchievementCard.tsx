@@ -261,9 +261,10 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
   const [iconTransform, setIconTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
 
   // Определяем статус достижения
+  // Для неавторизованных пользователей progress будет undefined
   const isAchieved = !!achievement.completion_date
-  const progress = achievement.progress || 0
-  const isInProgress = !isAchieved && progress > 0 && progress <= 100
+  const progress = achievement.progress ?? undefined
+  const isInProgress = !isAchieved && progress !== undefined && progress > 0 && progress <= 100
   const status: AchievementStatus = isAchieved
     ? 'achieved'
     : isInProgress
@@ -356,8 +357,8 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
           <AchievementStatus $status={status}>
             {isAchieved
               ? 'Достигнуто'
-              : isInProgress
-                ? `В работе ${achievement.progress}%`
+              : isInProgress && progress !== undefined
+                ? `В работе ${progress}%`
                 : 'Не достигнуто'}
           </AchievementStatus>
           <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}>

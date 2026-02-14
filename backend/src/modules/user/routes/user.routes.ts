@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import multer from 'multer'
 import { userController } from '../controller/user.controller'
-import { authenticate } from '../../auth/middleware/auth.middleware'
+import { authenticate, optionalAuthenticate } from '../../auth/middleware/auth.middleware'
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -12,12 +12,18 @@ const upload = multer({
 
 const router = Router()
 
-// Все роуты требуют авторизации
+// Роуты для текущего пользователя (требуют авторизации)
 router.get('/me', authenticate, userController.getMe.bind(userController))
 router.patch('/me', authenticate, userController.updateMe.bind(userController))
 router.post('/me/activity', authenticate, userController.updateActivity.bind(userController))
 router.get('/me/stats', authenticate, userController.getStats.bind(userController))
 router.get('/me/achievements/recent', authenticate, userController.getRecentAchievements.bind(userController))
 router.post('/me/avatar', authenticate, upload.single('avatar'), userController.uploadAvatar.bind(userController))
+
+// Публичные роуты для получения данных пользователя по username (опциональная авторизация)
+router.get('/:username', optionalAuthenticate, userController.getUserByUsername.bind(userController))
+router.get('/:username/stats', optionalAuthenticate, userController.getUserStatsByUsername.bind(userController))
+router.get('/:username/achievements', optionalAuthenticate, userController.getUserAchievementsByUsername.bind(userController))
+router.get('/:username/achievements/recent', optionalAuthenticate, userController.getRecentAchievementsByUsername.bind(userController))
 
 export default router

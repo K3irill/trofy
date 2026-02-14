@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useGetAchievementDetailQuery } from '@/store/api/achievementDetailApi'
+import { useGetAchievementByIdQuery } from '@/store/api/achievementsApi'
 import { useUpdateMeMutation, useGetMeQuery } from '@/store/api/userApi'
 import type { User } from '@/types'
 import { Rarity } from '@/types'
@@ -12,32 +13,60 @@ interface TrophyData {
   categoryId: string
 }
 
-export function usePinnedAchievements(user: User) {
+export function usePinnedAchievements(user: User, isOwnProfile: boolean = false) {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null)
   const [updateMe] = useUpdateMeMutation()
 
-  // Получаем актуальные данные пользователя для автоматического обновления
+  // Получаем актуальные данные пользователя для автоматического обновления только для своего профиля
   // Используем данные из кэша RTK Query, которые обновляются автоматически после мутации
   const { data: currentUser } = useGetMeQuery(undefined, {
-    skip: !user.id,
+    skip: !isOwnProfile,
   })
 
-  // Используем актуальные данные из кэша или fallback на пропс
-  const activeUser = currentUser || user
+  // Используем актуальные данные из кэша только для своего профиля, иначе используем пропс
+  const activeUser = isOwnProfile && currentUser ? currentUser : user
   const pinnedIds = activeUser.pinned_achievements || []
-  const achievement1 = useGetAchievementDetailQuery(pinnedIds[0] || '', {
-    skip: !pinnedIds[0],
+  
+  // Для своего профиля используем Detail query (с userAchievement), для чужих - базовый query с forUserId
+  const achievement1Detail = useGetAchievementDetailQuery(pinnedIds[0] || '', {
+    skip: !pinnedIds[0] || !isOwnProfile,
     refetchOnMountOrArgChange: true,
   })
-  const achievement2 = useGetAchievementDetailQuery(pinnedIds[1] || '', {
-    skip: !pinnedIds[1],
+  const achievement1Basic = useGetAchievementByIdQuery(
+    { id: pinnedIds[0] || '', forUserId: !isOwnProfile ? user.id : undefined },
+    {
+      skip: !pinnedIds[0] || isOwnProfile,
+      refetchOnMountOrArgChange: true,
+    }
+  )
+  const achievement1 = isOwnProfile ? achievement1Detail : achievement1Basic
+
+  const achievement2Detail = useGetAchievementDetailQuery(pinnedIds[1] || '', {
+    skip: !pinnedIds[1] || !isOwnProfile,
     refetchOnMountOrArgChange: true,
   })
-  const achievement3 = useGetAchievementDetailQuery(pinnedIds[2] || '', {
-    skip: !pinnedIds[2],
+  const achievement2Basic = useGetAchievementByIdQuery(
+    { id: pinnedIds[1] || '', forUserId: !isOwnProfile ? user.id : undefined },
+    {
+      skip: !pinnedIds[1] || isOwnProfile,
+      refetchOnMountOrArgChange: true,
+    }
+  )
+  const achievement2 = isOwnProfile ? achievement2Detail : achievement2Basic
+
+  const achievement3Detail = useGetAchievementDetailQuery(pinnedIds[2] || '', {
+    skip: !pinnedIds[2] || !isOwnProfile,
     refetchOnMountOrArgChange: true,
   })
+  const achievement3Basic = useGetAchievementByIdQuery(
+    { id: pinnedIds[2] || '', forUserId: !isOwnProfile ? user.id : undefined },
+    {
+      skip: !pinnedIds[2] || isOwnProfile,
+      refetchOnMountOrArgChange: true,
+    }
+  )
+  const achievement3 = isOwnProfile ? achievement3Detail : achievement3Basic
 
   const pinnedAchievements = useMemo(() => {
     const achievements: (TrophyData | null)[] = []
@@ -48,27 +77,42 @@ export function usePinnedAchievements(user: User) {
       const achievement = achievementData[i]
 
       // Проверяем, что ID есть, данные загружены и ID совпадает
-      if (
-        achievementId &&
-        achievement &&
-        achievement.id === achievementId &&
-        achievement.userAchievement?.completion_date &&
-        !achievement.userAchievement?.is_hidden
-      ) {
-        achievements.push({
-          id: achievement.id,
-          title: achievement.title,
-          icon: achievement.icon_url || '🏆',
-          rarity: achievement.rarity.toUpperCase() as Rarity,
-          categoryId: achievement.category.id,
-        })
+      if (achievementId && achievement && achievement.id === achievementId) {
+        // Для своего профиля проверяем completion_date и is_hidden
+        if (isOwnProfile) {
+          const detailAchievement = achievement as any
+          if (
+            detailAchievement.userAchievement?.completion_date &&
+            !detailAchievement.userAchievement?.is_hidden
+          ) {
+            achievements.push({
+              id: achievement.id,
+              title: achievement.title,
+              icon: achievement.icon_url || null,
+              rarity: achievement.rarity.toUpperCase() as Rarity,
+              categoryId: achievement.category.id,
+            })
+          } else {
+            achievements.push(null)
+          }
+        } else {
+          // Для чужих профилей просто показываем достижение, если оно есть
+          // Данные уже отфильтрованы на бэкенде при получении профиля
+          achievements.push({
+            id: achievement.id,
+            title: achievement.title,
+            icon: achievement.icon_url || null,
+            rarity: achievement.rarity.toUpperCase() as Rarity,
+            categoryId: achievement.category.id,
+          })
+        }
       } else {
         achievements.push(null)
       }
     }
 
     return achievements
-  }, [pinnedIds, achievement1.data, achievement2.data, achievement3.data])
+  }, [pinnedIds, achievement1.data, achievement2.data, achievement3.data, isOwnProfile])
 
   const handleAddAchievement = (slotIndex: number) => {
     setSelectedSlotIndex(slotIndex)
@@ -76,7 +120,7 @@ export function usePinnedAchievements(user: User) {
   }
 
   const handleSelectAchievement = async (achievementId: string) => {
-    if (selectedSlotIndex === null) return
+    if (selectedSlotIndex === null || !isOwnProfile) return
 
     const currentPinned = [...(activeUser.pinned_achievements || [])]
     const newPinned: string[] = []
@@ -103,6 +147,8 @@ export function usePinnedAchievements(user: User) {
   }
 
   const handleRemoveAchievement = async (slotIndex: number) => {
+    if (!isOwnProfile) return
+
     const currentPinned = [...(activeUser.pinned_achievements || [])]
     const newPinned = currentPinned.filter((_, index) => index !== slotIndex)
 

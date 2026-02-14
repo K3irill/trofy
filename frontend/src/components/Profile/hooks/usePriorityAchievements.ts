@@ -14,35 +14,51 @@ interface TrophyData {
   progress?: number
 }
 
-export function usePriorityAchievements(user: User) {
+export function usePriorityAchievements(user: User, isOwnProfile: boolean = false) {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null)
   const [updateMe] = useUpdateMeMutation()
 
-  // Получаем актуальные данные пользователя для автоматического обновления
+  // Получаем актуальные данные пользователя для автоматического обновления только для своего профиля
   // Используем данные из кэша RTK Query, которые обновляются автоматически после мутации
   const { data: currentUser, refetch: refetchUser } = useGetMeQuery(undefined, {
-    // Пропускаем запрос только если пользователь не авторизован
-    skip: !user.id,
+    skip: !isOwnProfile,
   })
 
-  // Используем актуальные данные из кэша или fallback на пропс
-  const activeUser = currentUser || user
+  // Используем актуальные данные из кэша только для своего профиля, иначе используем пропс
+  const activeUser = isOwnProfile && currentUser ? currentUser : user
   const priorityIds = activeUser.priority_achievements || []
 
-  // Запросы к детальной информации о достижениях для получения прогресса
+  // Для своего профиля используем Detail query (с userAchievement и прогрессом), для чужих - базовый query с forUserId
   const priorityAchievementDetail1 = useGetAchievementDetailQuery(priorityIds[0] || '', {
-    skip: !priorityIds[0],
+    skip: !priorityIds[0] || !isOwnProfile,
     refetchOnMountOrArgChange: true,
   })
+  const priorityAchievementBasic1 = useGetAchievementByIdQuery(
+    { id: priorityIds[0] || '', forUserId: !isOwnProfile ? user.id : undefined },
+    {
+      skip: !priorityIds[0] || isOwnProfile,
+      refetchOnMountOrArgChange: true,
+    }
+  )
+  const priorityAchievement1 = isOwnProfile ? priorityAchievementDetail1 : priorityAchievementBasic1
+
   const priorityAchievementDetail2 = useGetAchievementDetailQuery(priorityIds[1] || '', {
-    skip: !priorityIds[1],
+    skip: !priorityIds[1] || !isOwnProfile,
     refetchOnMountOrArgChange: true,
   })
+  const priorityAchievementBasic2 = useGetAchievementByIdQuery(
+    { id: priorityIds[1] || '', forUserId: !isOwnProfile ? user.id : undefined },
+    {
+      skip: !priorityIds[1] || isOwnProfile,
+      refetchOnMountOrArgChange: true,
+    }
+  )
+  const priorityAchievement2 = isOwnProfile ? priorityAchievementDetail2 : priorityAchievementBasic2
 
   const priorityAchievements = useMemo(() => {
     const achievements: (TrophyData | null)[] = []
-    const achievementData = [priorityAchievementDetail1.data, priorityAchievementDetail2.data]
+    const achievementData = [priorityAchievement1.data, priorityAchievement2.data]
 
     // Создаем массив из 2 элементов, заполняя null для пустых слотов
     for (let i = 0; i < 2; i++) {
@@ -51,24 +67,40 @@ export function usePriorityAchievements(user: User) {
 
       // Проверяем, что ID есть, данные загружены и ID совпадает
       if (achievementId && achievement && achievement.id === achievementId) {
-        const isCompleted = achievement.userAchievement?.completion_date !== undefined
-        const isInProgress = achievement.unlocked && !isCompleted && (achievement.userAchievement?.progress || 0) > 0
-        const isNotStarted = !achievement.unlocked
-        const isHidden = achievement.userAchievement?.is_hidden || false
+        if (isOwnProfile) {
+          // Для своего профиля проверяем completion_date, is_hidden и прогресс
+          const detailAchievement = achievement as any
+          const isCompleted = detailAchievement.userAchievement?.completion_date !== undefined
+          const isInProgress = achievement.unlocked && !isCompleted && (detailAchievement.userAchievement?.progress || 0) > 0
+          const isNotStarted = !achievement.unlocked
+          const isHidden = detailAchievement.userAchievement?.is_hidden || false
 
-        // Показываем только "в работе" или недостигнутые (не завершенные) и не скрытые
-        if (!isCompleted && !isHidden && (isInProgress || isNotStarted)) {
+          // Показываем только "в работе" или недостигнутые (не завершенные) и не скрытые
+          if (!isCompleted && !isHidden && (isInProgress || isNotStarted)) {
+            achievements.push({
+              id: achievement.id,
+              title: achievement.title,
+              icon: achievement.icon_url || null,
+              rarity: achievement.rarity.toUpperCase() as Rarity,
+              categoryId: achievement.category.id,
+              progress: detailAchievement.userAchievement?.progress || 0,
+            })
+          } else {
+            // Если достижение завершено или скрыто, не показываем его
+            achievements.push(null)
+          }
+        } else {
+          // Для чужих профилей показываем достижение, если оно есть
+          // Данные уже отфильтрованы на бэкенде при получении профиля
+          // Прогресс получаем через forUserId параметр
           achievements.push({
             id: achievement.id,
             title: achievement.title,
-            icon: achievement.icon_url || '🏆',
+            icon: achievement.icon_url || null,
             rarity: achievement.rarity.toUpperCase() as Rarity,
             categoryId: achievement.category.id,
-            progress: achievement.userAchievement?.progress || 0,
+            progress: achievement.progress || 0,
           })
-        } else {
-          // Если достижение завершено или скрыто, не показываем его
-          achievements.push(null)
         }
       } else {
         achievements.push(null)
@@ -76,11 +108,13 @@ export function usePriorityAchievements(user: User) {
     }
 
     return achievements
-  }, [priorityIds, priorityAchievementDetail1.data, priorityAchievementDetail2.data])
+  }, [priorityIds, priorityAchievement1.data, priorityAchievement2.data, isOwnProfile])
 
-  // Автоматически удаляем завершенные достижения из приоритета
+  // Автоматически удаляем завершенные достижения из приоритета только для своего профиля
   useEffect(() => {
-    const achievementData = [priorityAchievementDetail1.data, priorityAchievementDetail2.data]
+    if (!isOwnProfile) return
+
+    const achievementData = [priorityAchievement1.data, priorityAchievement2.data]
     const completedIds: number[] = []
 
     for (let i = 0; i < 2; i++) {
@@ -101,7 +135,7 @@ export function usePriorityAchievements(user: User) {
         updateMe({ priority_achievements: newPriority }).catch(console.error)
       }
     }
-  }, [priorityIds, priorityAchievementDetail1.data, priorityAchievementDetail2.data, activeUser.priority_achievements, updateMe])
+  }, [priorityIds, priorityAchievement1.data, priorityAchievement2.data, activeUser.priority_achievements, updateMe, isOwnProfile])
 
   const handleAddAchievement = (slotIndex: number) => {
     setSelectedSlotIndex(slotIndex)
@@ -109,7 +143,7 @@ export function usePriorityAchievements(user: User) {
   }
 
   const handleSelectAchievement = async (achievementId: string) => {
-    if (selectedSlotIndex === null) return
+    if (selectedSlotIndex === null || !isOwnProfile) return
 
     const currentPriority = [...(activeUser.priority_achievements || [])]
     const newPriority: string[] = []
@@ -136,6 +170,8 @@ export function usePriorityAchievements(user: User) {
   }
 
   const handleRemoveAchievement = async (slotIndex: number) => {
+    if (!isOwnProfile) return
+
     const currentPriority = [...(activeUser.priority_achievements || [])]
     const newPriority = currentPriority.filter((_, index) => index !== slotIndex)
 

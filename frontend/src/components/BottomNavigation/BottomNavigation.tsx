@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
+import { useAppSelector } from '@/store/hooks'
 import {
   BottomNavContainer,
   BottomNavItem,
@@ -10,23 +11,27 @@ import {
 import { HiHome, HiUserGroup, HiNewspaper, HiSparkles } from 'react-icons/hi'
 import { GiAchievement } from "react-icons/gi"
 
-const navItems = [
-  { name: 'Главная', href: '/', icon: HiHome },
-  { name: 'Достижения', href: '/categories', icon: GiAchievement },
-  { name: 'Сообщества', href: '/communities', icon: HiUserGroup },
-  { name: 'Лента', href: '/feed', icon: HiNewspaper },
-  { name: 'Новости', href: '/news', icon: HiSparkles },
-]
-
 export const BottomNavigation = () => {
   const pathname = usePathname()
   const router = useRouter()
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
+
+  const profileHref = isAuthenticated && user ? `/user/${user.username}` : '/auth/login'
+
+  const navItems = [
+    { name: 'Лента', href: '/feed', icon: HiNewspaper },
+    { name: 'Достижения', href: '/categories', icon: GiAchievement },
+    { name: 'Сообщества', href: '/communities', icon: HiUserGroup },
+    { name: 'Профиль', href: profileHref, icon: HiSparkles },
+  ]
 
   return (
     <BottomNavContainer>
       {navItems.map((item) => {
         const Icon = item.icon
-        const isActive = pathname === item.href
+        const isActive = item.href === '/feed' 
+          ? (pathname === '/feed' || pathname === '/')
+          : pathname === item.href || (item.href.startsWith('/user/') && pathname?.startsWith(item.href))
 
         return (
           <BottomNavItem

@@ -227,7 +227,11 @@ export class AchievementsController {
   async getAchievementById(req: Request | AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params
-      const userId = (req as AuthRequest).user?.userId
+      const currentUserId = (req as AuthRequest).user?.userId
+      // Позволяем получить прогресс для другого пользователя через query параметр
+      // Это нужно для отображения прогресса на чужих профилях
+      const forUserId = req.query.forUserId as string | undefined
+      const userId = forUserId || currentUserId
 
       const achievement = await achievementsService.getAchievementById(id, userId)
       res.json(achievement)

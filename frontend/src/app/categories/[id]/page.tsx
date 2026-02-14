@@ -56,7 +56,12 @@ export default function CategoryPage() {
   })
 
   // Получаем достижения в категории
-  const { data: achievementsData, isLoading: isLoadingAchievements } = useGetAchievementsByCategoryQuery(
+  const { 
+    data: achievementsData, 
+    isLoading: isLoadingAchievements,
+    error: achievementsError,
+    isFetching: isFetchingAchievements,
+  } = useGetAchievementsByCategoryQuery(
     {
       categoryId,
       params: {
@@ -68,8 +73,10 @@ export default function CategoryPage() {
 
   const activeCategory = categoryWithStats || category
   const isLoading = isLoadingCategoryWithStats || isLoadingCategory
+  const hasCategoryData = !!activeCategory
 
-  if (isLoading) {
+  // Показываем лоадер только если действительно загружаем и данных еще нет
+  if (isLoading && !hasCategoryData) {
     return (
       <Container>
         <BlockLoader text="Загрузка категории..." />
@@ -94,10 +101,19 @@ export default function CategoryPage() {
   const progress = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0
 
   const renderAchievements = (achievementsList: ApiAchievement[]) => {
-    if (isLoadingAchievements) {
+    // Показываем лоадер только если действительно загружаем и данных еще нет
+    if ((isLoadingAchievements || isFetchingAchievements) && !achievementsData) {
       return (
         <div style={{ padding: '2rem' }}>
           <BlockLoader text="Загрузка достижений..." />
+        </div>
+      )
+    }
+
+    if (achievementsError) {
+      return (
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.5)' }}>
+          <div>Ошибка загрузки достижений</div>
         </div>
       )
     }

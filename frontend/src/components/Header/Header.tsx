@@ -35,12 +35,7 @@ import {
   MobileMenuActionButton,
 } from './Header.styled'
 
-const links = [
-  { name: 'Профиль', href: '/' },
-  { name: 'Достижения', href: '/categories' },
-  { name: 'Лента', href: '/feed' },
-  { name: 'Сообщества', href: '/communities' },
-]
+// Ссылки будут формироваться динамически в компоненте
 
 export const Header = () => {
   const pathname = usePathname()
@@ -52,12 +47,12 @@ export const Header = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [settingsInitialView, setSettingsInitialView] = useState<'categories' | 'theme'>('categories')
-  
+
   const { data: unreadData } = useGetUnreadCountQuery(undefined, {
     skip: !isAuthenticated,
     pollingInterval: 30000, // Обновление каждые 30 секунд
   })
-  
+
   const unreadCount = unreadData?.count || 0
 
   return (
@@ -74,15 +69,30 @@ export const Header = () => {
               trofy.art
             </Logo>
             <NavLinks>
-              {links.map((link) => (
-                <NavLink
-                  key={link.href}
-                  href={link.href}
-                  $active={pathname === link.href}
-                >
-                  {link.name}
-                </NavLink>
-              ))}
+              <NavLink
+                href={isAuthenticated && user ? `/user/${user.username}` : '/auth/login'}
+                $active={isAuthenticated && user ? (pathname === `/user/${user.username}` || pathname?.startsWith(`/user/${user.username}/`)) : false}
+              >
+                Профиль
+              </NavLink>
+              <NavLink
+                href="/categories"
+                $active={pathname === '/categories' || pathname?.startsWith('/categories/')}
+              >
+                Галерея достижений
+              </NavLink>
+              <NavLink
+                href="/feed"
+                $active={pathname === '/feed' || pathname === '/'}
+              >
+                Лента
+              </NavLink>
+              <NavLink
+                href="/communities"
+                $active={pathname === '/communities'}
+              >
+                Сообщества
+              </NavLink>
             </NavLinks>
           </HeaderLeft>
           <HeaderRight>
@@ -118,7 +128,7 @@ export const Header = () => {
                   )}
                 </NotificationIconWrapper>
                 <UserSection onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                  <Avatar>{user?.avatar ? <img src={user.avatar} alt={user.username} /> : '👤'}</Avatar>
+                  <Avatar>{user?.avatar_url ? <img src={user.avatar_url} alt={user.username} /> : '👤'}</Avatar>
                   <LevelBadge>Lvl {user?.level || 1}</LevelBadge>
                   <UserName>{user?.username || 'Гость'}</UserName>
                 </UserSection>
@@ -128,7 +138,14 @@ export const Header = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <div onClick={() => { router.push('/'); setShowProfileMenu(false) }}>
+                    <div onClick={() => {
+                      if (user?.username) {
+                        router.push(`/user/${user.username}`)
+                      } else {
+                        router.push('/')
+                      }
+                      setShowProfileMenu(false)
+                    }}>
                       Профиль
                     </div>
                     <div onClick={() => {
@@ -174,7 +191,7 @@ export const Header = () => {
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem' }}>
-                    {user.avatar ? <img src={user.avatar} alt={user.username} /> : '👤'}
+                    {user.avatar_url ? <img src={user.avatar_url} alt={user.username} /> : '👤'}
                   </Avatar>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <LevelBadge>Lvl {user.level}</LevelBadge>
@@ -214,16 +231,34 @@ export const Header = () => {
               </div>
             )}
           </MobileMenuHeader>
-          {links.map((link) => (
-            <NavLink
-              key={link.href}
-              href={link.href}
-              $active={pathname === link.href}
-              style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
-            >
-              {link.name}
-            </NavLink>
-          ))}
+          <NavLink
+            href={isAuthenticated && user ? `/user/${user.username}` : '/feed'}
+            $active={isAuthenticated && user ? (pathname === `/user/${user.username}` || pathname?.startsWith(`/user/${user.username}/`)) : false}
+            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
+          >
+            Профиль
+          </NavLink>
+          <NavLink
+            href="/categories"
+            $active={pathname === '/categories' || pathname?.startsWith('/categories/')}
+            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
+          >
+            Достижения
+          </NavLink>
+          <NavLink
+            href="/feed"
+            $active={pathname === '/feed' || pathname === '/'}
+            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
+          >
+            Лента
+          </NavLink>
+          <NavLink
+            href="/communities"
+            $active={pathname === '/communities'}
+            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
+          >
+            Сообщества
+          </NavLink>
           {isAuthenticated && (
             <div style={{ borderTop: '2px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.5rem' }}>
               <CreateButton style={{ width: '100%', justifyContent: 'center' }} onClick={() => console.log('create')}>

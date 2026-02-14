@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { SectionMarker } from '@/components/SectionMarker'
-import { useGetRecentAchievementsQuery } from '@/store/api/userApi'
+import { useGetRecentAchievementsQuery, useGetRecentAchievementsByUsernameQuery } from '@/store/api/userApi'
 import { formatRelativeDate } from '@/lib/utils/dateUtils'
 import {
   Container,
@@ -19,9 +19,23 @@ import {
 } from './styled'
 import { renderIcon } from '@/lib/utils/iconUtils'
 
-export const RecentTrophiesSection = () => {
+interface RecentTrophiesSectionProps {
+  username?: string
+  isOwnProfile?: boolean
+}
+
+export const RecentTrophiesSection = ({ username, isOwnProfile = false }: RecentTrophiesSectionProps) => {
   const router = useRouter()
-  const { data: achievements, isLoading } = useGetRecentAchievementsQuery(6)
+  const { data: ownAchievements, isLoading: isLoadingOwn } = useGetRecentAchievementsQuery(6, {
+    skip: !!username,
+  })
+  const { data: userAchievements, isLoading: isLoadingUser } = useGetRecentAchievementsByUsernameQuery(
+    { username: username || '', limit: 6 },
+    { skip: !username }
+  )
+
+  const achievements = username ? userAchievements : ownAchievements
+  const isLoading = username ? isLoadingUser : isLoadingOwn
 
   const handleAchievementClick = (categoryId: string, achievementId: string) => {
     router.push(`/categories/${categoryId}/${achievementId}`)
@@ -44,11 +58,28 @@ export const RecentTrophiesSection = () => {
       <SectionHeader>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <SectionMarker />
-          <SectionTitle>Мои последние <b>достижения</b></SectionTitle>
+          <SectionTitle>
+            {isOwnProfile ? (
+              <>Мои последние <b>достижения</b></>
+            ) : (
+              <>Последние <b>достижения пользователя</b></>
+            )}
+          </SectionTitle>
         </div>
-        <ShowAllButton whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
-          Показать все →
-        </ShowAllButton>
+        {username && (
+          <ShowAllButton
+            whileHover={{ x: 5 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.push(`/user/${username}/achievements`)}
+          >
+            Показать все →
+          </ShowAllButton>
+        )}
+        {!username && (
+          <ShowAllButton whileHover={{ x: 5 }} whileTap={{ scale: 0.95 }}>
+            Показать все →
+          </ShowAllButton>
+        )}
       </SectionHeader>
 
       {isLoading ? (
@@ -57,7 +88,7 @@ export const RecentTrophiesSection = () => {
         </div>
       ) : visibleAchievements.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-          У вас пока нет достижений
+          {isOwnProfile ? 'У вас пока нет достижений' : 'У пользователя пока нет достижений'}
         </div>
       ) : (
         <TrophiesGrid>

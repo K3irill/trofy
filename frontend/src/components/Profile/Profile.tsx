@@ -21,10 +21,19 @@ import {
 } from './styled'
 import { Button } from '@/components/ui/Button'
 
-export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileProps) => {
-  const { data: stats } = useGetStatsQuery(undefined, {
-    skip: !isAuthenticated,
+export const Profile = ({
+  user,
+  isAuthenticated = true,
+  isOwnProfile = false,
+  stats: externalStats,
+  onLoginClick
+}: ProfileProps) => {
+  // Используем переданные stats или получаем для текущего пользователя
+  const { data: ownStats } = useGetStatsQuery(undefined, {
+    skip: !isOwnProfile || !!externalStats,
   })
+
+  const stats = externalStats || ownStats
 
   // Расчет опыта для текущего уровня
   // XP для уровня N = (N-1)^2 * 100
@@ -33,79 +42,86 @@ export const Profile = ({ user, isAuthenticated = true, onLoginClick }: ProfileP
   const nextLevelXP = Math.pow(user.level, 2) * 100
   const xpToNextLevel = nextLevelXP - currentLevelXP
   const currentXP = Math.max(0, user.xp - currentLevelXP)
-  
+
   // Прогресс в процентах (0-100)
-  const progress = xpToNextLevel > 0 
+  const progress = xpToNextLevel > 0
     ? Math.max(0, Math.min(100, (currentXP / xpToNextLevel) * 100))
     : 100
 
-  const pinnedAchievementsHook = usePinnedAchievements(user)
-  const priorityAchievementsHook = usePriorityAchievements(user)
+  const pinnedAchievementsHook = usePinnedAchievements(user, isOwnProfile)
+  const priorityAchievementsHook = usePriorityAchievements(user, isOwnProfile)
 
   return (
     <ProfileContainer
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      $isBlurred={!isAuthenticated}
+      $isBlurred={!isAuthenticated && isOwnProfile}
     >
 
 
       <ProfileTitleWrap>
         <SectionMarker />
-        <h2 style={{ color: '#f3f4f6', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Профиль</h2>
+        <h2 style={{ color: '#f3f4f6', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
+          {isOwnProfile ? 'Мой профиль' : 'Профиль пользователя'}
+        </h2>
       </ProfileTitleWrap>
 
       <MainInfoWrap>
         <ProfileHeader
           user={user}
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={isOwnProfile}
+          isOwnProfile={isOwnProfile}
           progress={progress}
           xpToNextLevel={xpToNextLevel}
           currentXP={currentXP}
         />
         <div>
           <PriorityAchievements
-            isAuthenticated={isAuthenticated}
+            isAuthenticated={true}
             priorityAchievements={priorityAchievementsHook.priorityAchievements}
-            onAdd={priorityAchievementsHook.handleAddAchievement}
-            onRemove={priorityAchievementsHook.handleRemoveAchievement}
+            onAdd={isOwnProfile ? priorityAchievementsHook.handleAddAchievement : undefined}
+            onRemove={isOwnProfile ? priorityAchievementsHook.handleRemoveAchievement : undefined}
           />
-          <ProfileStreak isAuthenticated={isAuthenticated} user={user} stats={stats} />
-          <ProfileActions isAuthenticated={isAuthenticated} />
+          <ProfileStreak isAuthenticated={true} user={user} stats={stats} />
+          <ProfileActions isAuthenticated={isAuthenticated} username={user.username} isOwnProfile={isOwnProfile} />
         </div>
       </MainInfoWrap>
 
       <PinnedAchievements
-        isAuthenticated={isAuthenticated}
+        isAuthenticated={true}
         pinnedAchievements={pinnedAchievementsHook.pinnedAchievements}
-        onAdd={pinnedAchievementsHook.handleAddAchievement}
-        onRemove={pinnedAchievementsHook.handleRemoveAchievement}
+        onAdd={isOwnProfile ? pinnedAchievementsHook.handleAddAchievement : undefined}
+        onRemove={isOwnProfile ? pinnedAchievementsHook.handleRemoveAchievement : undefined}
       />
 
-      <PinnedAchievementsModal
-        isOpen={pinnedAchievementsHook.modalOpen}
-        onClose={() => {
-          pinnedAchievementsHook.setModalOpen(false)
-          pinnedAchievementsHook.setSelectedSlotIndex(null)
-        }}
-        onSelect={pinnedAchievementsHook.handleSelectAchievement}
-        currentPinned={user.pinned_achievements || []}
-      />
+      {isOwnProfile && (
+        <>
+          <PinnedAchievementsModal
+            isOpen={pinnedAchievementsHook.modalOpen}
+            onClose={() => {
+              pinnedAchievementsHook.setModalOpen(false)
+              pinnedAchievementsHook.setSelectedSlotIndex(null)
+            }}
+            onSelect={pinnedAchievementsHook.handleSelectAchievement}
+            currentPinned={user.pinned_achievements || []}
+          />
 
-      <PriorityAchievementsModal
-        isOpen={priorityAchievementsHook.modalOpen}
-        onClose={() => {
-          priorityAchievementsHook.setModalOpen(false)
-          priorityAchievementsHook.setSelectedSlotIndex(null)
-        }}
-        onSelect={priorityAchievementsHook.handleSelectAchievement}
-        currentPriority={user.priority_achievements || []}
-      />
+          <PriorityAchievementsModal
+            isOpen={priorityAchievementsHook.modalOpen}
+            onClose={() => {
+              priorityAchievementsHook.setModalOpen(false)
+              priorityAchievementsHook.setSelectedSlotIndex(null)
+            }}
+            onSelect={priorityAchievementsHook.handleSelectAchievement}
+            currentPriority={user.priority_achievements || []}
+          />
+        </>
+      )}
 
-      <ProfileStats isAuthenticated={isAuthenticated} stats={stats} />
-      <ProfileShare isAuthenticated={isAuthenticated} user={user} />
-      {!isAuthenticated && (
+      <ProfileStats isAuthenticated={true} stats={stats} />
+      {isOwnProfile && <ProfileShare isAuthenticated={isAuthenticated} user={user} />}
+      {!isAuthenticated && isOwnProfile && (
         <ProfileOverlay>
           <OverlayTitle>Авторизуйтесь, чтобы увидеть статистику</OverlayTitle>
           {onLoginClick && (

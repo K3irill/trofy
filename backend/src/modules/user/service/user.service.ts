@@ -402,6 +402,316 @@ export class UserService {
       is_hidden: ua.is_hidden, // Добавляем поле is_hidden
     }))
   }
+
+  /**
+   * Получение последних достигнутых достижений пользователя по username
+   */
+  async getRecentAchievementsByUsername(
+    username: string,
+    viewerId?: string,
+    limit: number = 6
+  ) {
+    const user = await prisma.user.findUnique({
+      where: { username },
+    })
+
+    if (!user) {
+      throw ApiError.notFound('User not found')
+    }
+
+    const isOwnProfile = viewerId === user.id
+    const privacy = user.privacy_settings as any
+
+    // Если профиль скрыт и это не владелец
+    if (!privacy.show_profile && !isOwnProfile) {
+      throw ApiError.forbidden('Profile is private')
+    }
+
+    // Если достижения скрыты и это не владелец
+    if (!privacy.show_achievements && !isOwnProfile) {
+      return []
+    }
+
+    const userAchievements = await prisma.userAchievement.findMany({
+      where: {
+        user_id: user.id,
+        completion_date: { not: null }, // Только достигнутые достижения
+        // Для чужих профилей скрываем скрытые достижения
+        ...(isOwnProfile ? {} : { is_hidden: false, is_public: true }),
+      },
+      include: {
+        achievement: {
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                icon_url: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { completion_date: 'desc' }, // Сортируем по дате завершения
+      take: limit,
+    })
+
+    return userAchievements.map((ua) => ({
+      id: ua.achievement.id,
+      title: ua.achievement.title,
+      description: ua.achievement.description,
+      icon_url: ua.achievement.icon_url,
+      rarity: ua.achievement.rarity.toLowerCase() as 'common' | 'rare' | 'epic' | 'legendary',
+      category: {
+        id: ua.achievement.category.id,
+        name: ua.achievement.category.name,
+        icon_url: ua.achievement.category.icon_url,
+      },
+      xp_reward: ua.achievement.xp_reward,
+      unlocked_at: ua.completion_date?.toISOString() || null,
+      start_at: ua.unlocked_at.toISOString(),
+      is_achieved: !!ua.completion_date,
+      is_public: ua.is_public,
+      is_hidden: ua.is_hidden,
+    }))
+  }
+
+  /**
+   * Получение пользователя по username (публичный профиль)
+   */
+  async getUserByUsername(username: string, viewerId?: string) {
+    const user = await prisma.user.findUnique({
+      where: { username },
+      include: {
+        profile_theme: true,
+        platformAccounts: true,
+      },
+    })
+
+    if (!user) {
+      throw ApiError.notFound('User not found')
+    }
+
+    // Проверяем и исправляем уровень, если он не соответствует XP
+    const correctLevel = calculateLevel(user.xp)
+    if (user.level !== correctLevel) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { level: correctLevel },
+      })
+      user.level = correctLevel
+    }
+
+    // Определяем, является ли просматривающий владельцем профиля
+    const isOwnProfile = viewerId === user.id
+
+    return formatUser(user, isOwnProfile, viewerId)
+  }
+
+  /**
+   * Получение статистики пользователя (с учетом privacy_settings)
+   */
+  async getUserStatsByUsername(username: string, viewerId?: string) {
+    const user = await prisma.user.findUnique({
+      where: { username },
+      include: {
+        userAchievements: {
+          include: {
+            achievement: true,
+          },
+        },
+      },
+    })
+
+    if (!user) {
+      throw ApiError.notFound('User not found')
+    }
+
+    const isOwnProfile = viewerId === user.id
+    const privacy = user.privacy_settings as any
+
+    // Если профиль скрыт и это не владелец
+    if (!privacy.show_profile && !isOwnProfile) {
+      throw ApiError.forbidden('Profile is private')
+    }
+
+    // Если статистика скрыта и это не владелец
+    if (!privacy.show_level && !isOwnProfile) {
+      return {
+        total_achievements: 0,
+        achievements_by_rarity: {
+          common: 0,
+          rare: 0,
+          epic: 0,
+          legendary: 0,
+        },
+        uniqueness_score: 0,
+        growth_rate: 0,
+        fastest_achievement: null,
+        streak: 0,
+        xp: 0,
+        level: 0,
+      }
+    }
+
+    // Фильтруем достижения: для владельца показываем все, для других - только не скрытые
+    const achievementsToCount = isOwnProfile
+      ? user.userAchievements
+      : user.userAchievements.filter((ua) => !ua.is_hidden && ua.is_public)
+
+    // Считаем только завершенные достижения (с completion_date)
+    const completedAchievements = achievementsToCount.filter((ua) => ua.completion_date !== null)
+
+    const totalAchievements = completedAchievements.length
+    const achievementsByRarity = {
+      common: 0,
+      rare: 0,
+      epic: 0,
+      legendary: 0,
+    }
+
+    completedAchievements.forEach((ua) => {
+      const rarity = ua.achievement.rarity.toLowerCase() as keyof typeof achievementsByRarity
+      if (rarity in achievementsByRarity) {
+        achievementsByRarity[rarity]++
+      }
+    })
+
+    // Вычисляем уникальность (процент редких достижений)
+    const rareCount = achievementsByRarity.rare + achievementsByRarity.epic + achievementsByRarity.legendary
+    const uniquenessScore = totalAchievements > 0
+      ? Math.round((rareCount / totalAchievements) * 100)
+      : 0
+
+    // Вычисляем growth_rate (среднее количество достижений в месяц)
+    const accountAgeMonths = Math.max(
+      1,
+      (new Date().getTime() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24 * 30)
+    )
+    const growthRate = Math.round(totalAchievements / accountAgeMonths)
+
+    // Находим самое быстрое достижение
+    let fastestAchievement: { title: string; days: number } | null = null
+    completedAchievements.forEach((ua) => {
+      if (ua.unlocked_at && ua.completion_date) {
+        const days = Math.floor(
+          (new Date(ua.completion_date).getTime() - new Date(ua.unlocked_at).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+        if (!fastestAchievement || days < fastestAchievement.days) {
+          fastestAchievement = {
+            title: ua.achievement.title,
+            days,
+          }
+        }
+      }
+    })
+
+    return {
+      total_achievements: totalAchievements,
+      achievements_by_rarity: achievementsByRarity,
+      uniqueness_score: uniquenessScore,
+      growth_rate: growthRate,
+      fastest_achievement: fastestAchievement,
+      streak: isOwnProfile || privacy.show_level ? user.streak || 0 : 0,
+      xp: isOwnProfile || privacy.show_level ? user.xp : 0,
+      level: isOwnProfile || privacy.show_level ? user.level : 0,
+    }
+  }
+
+  /**
+   * Получение достижений пользователя (с учетом privacy_settings и is_hidden)
+   */
+  async getUserAchievementsByUsername(
+    username: string,
+    viewerId?: string,
+    filters?: {
+      status?: 'all' | 'achieved' | 'in_progress'
+      limit?: number
+      offset?: number
+    }
+  ) {
+    const user = await prisma.user.findUnique({
+      where: { username },
+    })
+
+    if (!user) {
+      throw ApiError.notFound('User not found')
+    }
+
+    const isOwnProfile = viewerId === user.id
+    const privacy = user.privacy_settings as any
+
+    // Если профиль скрыт и это не владелец
+    if (!privacy.show_profile && !isOwnProfile) {
+      throw ApiError.forbidden('Profile is private')
+    }
+
+    // Если достижения скрыты и это не владелец
+    if (!privacy.show_achievements && !isOwnProfile) {
+      return []
+    }
+
+    // Формируем условия для фильтрации
+    const where: any = {
+      user_id: user.id,
+    }
+
+    // Для чужих профилей скрываем скрытые достижения
+    if (!isOwnProfile) {
+      where.is_hidden = false
+      where.is_public = true
+    }
+
+    // Фильтр по статусу
+    if (filters?.status === 'achieved') {
+      where.completion_date = { not: null }
+    } else if (filters?.status === 'in_progress') {
+      where.completion_date = null
+    }
+
+    const userAchievements = await prisma.userAchievement.findMany({
+      where,
+      include: {
+        achievement: {
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                icon_url: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        { completion_date: 'desc' },
+        { unlocked_at: 'desc' },
+      ],
+      take: filters?.limit || 50,
+      skip: filters?.offset || 0,
+    })
+
+    return userAchievements.map((ua) => ({
+      id: ua.achievement.id,
+      title: ua.achievement.title,
+      description: ua.achievement.description,
+      icon_url: ua.achievement.icon_url,
+      rarity: ua.achievement.rarity.toLowerCase() as 'common' | 'rare' | 'epic' | 'legendary',
+      category: {
+        id: ua.achievement.category.id,
+        name: ua.achievement.category.name,
+        icon_url: ua.achievement.category.icon_url,
+      },
+      xp_reward: ua.achievement.xp_reward,
+      unlocked_at: ua.unlocked_at.toISOString(),
+      completion_date: ua.completion_date?.toISOString() || null,
+      is_achieved: !!ua.completion_date,
+      is_public: ua.is_public,
+      is_hidden: ua.is_hidden,
+    }))
+  }
 }
 
 export const userService = new UserService()

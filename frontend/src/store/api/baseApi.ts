@@ -18,7 +18,10 @@ const baseQuery = fetchBaseQuery({
     if (token) {
       headers.set('authorization', `Bearer ${token}`)
     }
-    headers.set('content-type', 'application/json')
+    // Добавляем content-type только если есть body
+    if (!headers.has('content-type')) {
+      headers.set('content-type', 'application/json')
+    }
     return headers
   },
 })
@@ -30,6 +33,9 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions)
+
+  // Логируем результат для отладки
+  console.log('baseQueryWithReauth full result:', result)
 
   // Обрабатываем ошибки от бэкенда
   if (result.error) {
