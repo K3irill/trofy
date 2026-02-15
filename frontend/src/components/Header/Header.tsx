@@ -79,7 +79,7 @@ export const Header = () => {
                 href="/categories"
                 $active={pathname === '/categories' || pathname?.startsWith('/categories/')}
               >
-                Галерея достижений
+                Каталог достижений
               </NavLink>
               <NavLink
                 href="/feed"
