@@ -68,7 +68,7 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate, use
   }
 
   const handleToggleMain = useCallback(async () => {
-    if (!userAchievementId || !achievementId) return
+    if (!userAchievementId || !achievementId || !isOwner) return
     try {
       await updateSettings({
         userAchievementId,
@@ -84,6 +84,7 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate, use
 
   const handleToggleFavorite = useCallback(async () => {
     if (!userAchievementId || !achievementId) return
+    // Избранное можно добавлять для любых достижений
     try {
       await toggleFavorite({ userAchievementId, achievementId }).unwrap()
       onUpdateRef.current?.({ isFavorite: !isFavorite })
@@ -94,7 +95,7 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate, use
   }, [userAchievementId, achievementId, isFavorite, toggleFavorite])
 
   const handleToggleHidden = useCallback(async () => {
-    if (!userAchievementId || !achievementId) return
+    if (!userAchievementId || !achievementId || !isOwner) return
     try {
       await updateSettings({
         userAchievementId,
@@ -109,7 +110,7 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate, use
   }, [userAchievementId, achievementId, isHidden, updateSettings, showToast])
 
   const handleToggleLikes = useCallback(async () => {
-    if (!userAchievementId || !achievementId) return
+    if (!userAchievementId || !achievementId || !isOwner) return
     try {
       await updateSettings({
         userAchievementId,
@@ -124,7 +125,7 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate, use
   }, [userAchievementId, achievementId, canLike, updateSettings, showToast])
 
   const handleToggleComments = useCallback(async () => {
-    if (!userAchievementId || !achievementId) return
+    if (!userAchievementId || !achievementId || !isOwner) return
     try {
       await updateSettings({
         userAchievementId,
@@ -139,7 +140,7 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate, use
   }, [userAchievementId, achievementId, canComment, updateSettings])
 
   const handleReset = useCallback(async () => {
-    if (!userAchievementId || !achievementId) return
+    if (!userAchievementId || !achievementId || !isOwner) return
 
     const confirmed = await confirm({
       title: 'Сбросить выполнение достижения?',

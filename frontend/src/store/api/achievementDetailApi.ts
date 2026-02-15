@@ -77,9 +77,19 @@ export interface UpdateProgressRequest {
 
 export const achievementDetailApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAchievementDetail: builder.query<AchievementDetail, string>({
-      query: (id) => `/achievements/${id}/detail`,
-      providesTags: (result, error, id) => [{ type: 'AchievementDetail', id }, { type: 'Like', id }],
+    getAchievementDetail: builder.query<AchievementDetail, { id: string; username?: string } | string>({
+      query: (params) => {
+        const id = typeof params === 'string' ? params : params.id
+        const username = typeof params === 'string' ? undefined : params.username
+        return {
+          url: `/achievements/${id}/detail`,
+          params: username ? { username } : undefined,
+        }
+      },
+      providesTags: (result, error, params) => {
+        const id = typeof params === 'string' ? params : params.id
+        return [{ type: 'AchievementDetail', id }, { type: 'Like', id }]
+      },
     }),
     completeAchievement: builder.mutation<AchievementDetail, { id: string; data: CompleteAchievementRequest }>({
       query: ({ id, data }) => {

@@ -621,7 +621,7 @@ export class AchievementsService {
   /**
    * Получение детальной информации о достижении
    */
-  async getAchievementDetail(achievementId: string, userId?: string) {
+  async getAchievementDetail(achievementId: string, userId?: string, currentUserId?: string) {
     const achievementData = await this.getAchievementById(achievementId, userId)
 
     // Если пользователь авторизован, получаем его UserAchievement
@@ -660,23 +660,26 @@ export class AchievementsService {
           },
         })
 
-        isLiked = !!(await (prisma as any).achievementLike.findUnique({
-          where: {
-            user_achievement_id_user_id: {
-              user_achievement_id: userAchievement.id,
-              user_id: userId,
+        // Проверяем лайк и избранное для текущего пользователя (если он авторизован)
+        if (currentUserId) {
+          isLiked = !!(await (prisma as any).achievementLike.findUnique({
+            where: {
+              user_achievement_id_user_id: {
+                user_achievement_id: userAchievement.id,
+                user_id: currentUserId,
+              },
             },
-          },
-        }))
+          }))
 
-        isFavorite = !!(await (prisma as any).achievementFavorite.findUnique({
-          where: {
-            user_id_user_achievement_id: {
-              user_id: userId,
-              user_achievement_id: userAchievement.id,
+          isFavorite = !!(await (prisma as any).achievementFavorite.findUnique({
+            where: {
+              user_id_user_achievement_id: {
+                user_id: currentUserId,
+                user_achievement_id: userAchievement.id,
+              },
             },
-          },
-        }))
+          }))
+        }
 
         photos = (userAchievement.photos as any[]).map((photo: any) => ({
           id: photo.id,
@@ -847,7 +850,7 @@ export class AchievementsService {
       },
     })
 
-    return this.getAchievementDetail(achievementId, userId)
+    return this.getAchievementDetail(achievementId, userId, userId)
   }
 
   /**
@@ -935,7 +938,7 @@ export class AchievementsService {
       await Promise.all(photoPromises)
     }
 
-    return this.getAchievementDetail(userAchievement.achievement_id, userId)
+    return this.getAchievementDetail(userAchievement.achievement_id, userId, userId)
   }
 
   /**

@@ -6,6 +6,8 @@ import { achievementsService } from '../service/achievements.service'
 import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto, UpdateProgressDto } from '../dto/achievements.dto'
 import { ApiError } from '../../../core/errors/ApiError'
 import { AuthRequest } from '../../auth/middleware/auth.middleware'
+import { userService } from '../../user/service/user.service'
+import { prisma } from '../../../shared/database'
 
 // Настройка multer для загрузки файлов
 const upload = multer({
@@ -330,8 +332,22 @@ export class AchievementsController {
   async getAchievementDetail(req: Request | AuthRequest, res: Response, next: NextFunction) {
     try {
       const { id } = req.params
-      const userId = (req as AuthRequest).user?.userId
-      const detail = await achievementsService.getAchievementDetail(id, userId)
+      const { username } = req.query
+      const currentUserId = (req as AuthRequest).user?.userId
+
+      // Если передан username, находим пользователя по username
+      let userId = currentUserId
+      if (username && typeof username === 'string') {
+        const user = await prisma.user.findUnique({
+          where: { username },
+          select: { id: true },
+        })
+        if (user) {
+          userId = user.id
+        }
+      }
+
+      const detail = await achievementsService.getAchievementDetail(id, userId, currentUserId)
       res.json(detail)
     } catch (error) {
       next(error)

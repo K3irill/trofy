@@ -386,7 +386,7 @@ export const SectionIcon = styled.span`
   font-size: 1.25rem;
 `
 
-export const AchievementGrid = styled.div<{ mode?: 'grid6' | 'grid2' | 'list' }>`
+export const AchievementGrid = styled.div<{ mode?: 'grid6' | 'grid3' | 'grid2' | 'list' }>`
   display: grid;
   gap: 1.5rem;
   
@@ -405,6 +405,17 @@ export const AchievementGrid = styled.div<{ mode?: 'grid6' | 'grid2' | 'list' }>
         }
         @media (max-width: 600px) {
           grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+      `
+    } else if (props.mode === 'grid3') {
+      return `
+        grid-template-columns: repeat(3, 1fr);
+        @media (max-width: 1200px) {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr;
           gap: 1rem;
         }
       `

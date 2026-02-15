@@ -1,183 +1,32 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useAppSelector } from '@/store/hooks'
 import { useGetUserAchievementsByUsernameQuery } from '@/store/api/userApi'
 import Container from '@/components/Container/Container'
-import { SectionMarker } from '@/components/SectionMarker'
 import { useRouter } from 'next/navigation'
-import { renderIcon } from '@/lib/utils/iconUtils'
-import styled from 'styled-components'
+import { AnimatePresence, motion } from 'framer-motion'
+import { IoFolder, IoTrophy, IoCloseCircle } from 'react-icons/io5'
+import {
+  Header as PageHeader,
+  Title,
+  TitleIcon,
+  Grid,
+  PageHeaderWrap,
+} from '@/app/categories/page.styled'
+import { CategoryCardComponent, type Category } from '@/app/categories/CategoryCard'
+import { Tumbler } from '@/app/categories/Tumbler'
+import { SearchAndFilters } from '@/app/categories/SearchAndFilters'
+import { AchievementCard } from '@/app/categories/AchievementCard'
+import { AchievementGrid } from '@/app/categories/AchievementGrid.styled'
+import { type Achievement } from '@/app/categories/api'
+import { BlockLoader } from '@/components/Loader/BlockLoader'
 
-const PageContainer = styled.div`
-  padding: 2rem 0;
-`
 
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-`
-
-const Title = styled.h2`
-  color: ${(props) => props.theme.colors.light[100]};
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-`
-
-const Filters = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-`
-
-const FilterButton = styled.button<{ $active: boolean }>`
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  border: 1px solid
-    ${(props) =>
-    props.$active ? props.theme.colors.primary : 'rgba(255, 255, 255, 0.1)'};
-  background: ${(props) =>
-    props.$active
-      ? props.theme.colors.primary
-      : 'rgba(255, 255, 255, 0.05)'};
-  color: ${(props) =>
-    props.$active
-      ? props.theme.colors.dark[900]
-      : props.theme.colors.light[100]};
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.875rem;
-  font-weight: ${(props) => (props.$active ? 600 : 400)};
-
-  &:hover {
-    background: ${(props) =>
-    props.$active
-      ? props.theme.colors.primary
-      : 'rgba(255, 255, 255, 0.1)'};
-    border-color: ${(props) =>
-    props.$active ? props.theme.colors.primary : props.theme.colors.primary};
-  }
-`
-
-const AchievementsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-`
-
-const AchievementCard = styled.div`
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1.5rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: ${(props) => props.theme.colors.primary};
-    transform: translateY(-4px);
-  }
-`
-
-const AchievementIcon = styled.div`
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
-
-const AchievementTitle = styled.h3`
-  color: ${(props) => props.theme.colors.light[100]};
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-`
-
-const AchievementDescription = styled.p`
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-  margin: 0 0 1rem 0;
-  line-height: 1.5;
-`
-
-const AchievementMeta = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-`
-
-const RarityBadge = styled.span<{ $rarity: string }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: ${(props) => {
-    switch (props.$rarity) {
-      case 'legendary':
-        return 'rgba(255, 215, 0, 0.2)'
-      case 'epic':
-        return 'rgba(138, 43, 226, 0.2)'
-      case 'rare':
-        return 'rgba(30, 144, 255, 0.2)'
-      default:
-        return 'rgba(255, 255, 255, 0.1)'
-    }
-  }};
-  color: ${(props) => {
-    switch (props.$rarity) {
-      case 'legendary':
-        return '#FFD700'
-      case 'epic':
-        return '#8A2BE2'
-      case 'rare':
-        return '#1E90FF'
-      default:
-        return props.theme.colors.light[100]
-    }
-  }};
-`
-
-const XPBadge = styled.span`
-  color: ${(props) => props.theme.colors.primary};
-  font-size: 0.875rem;
-  font-weight: 600;
-`
-
-const StatusBadge = styled.span<{ $achieved: boolean }>`
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: ${(props) =>
-    props.$achieved
-      ? 'rgba(34, 197, 94, 0.2)'
-      : 'rgba(251, 191, 36, 0.2)'};
-  color: ${(props) => (props.$achieved ? '#22C55E' : '#FBBF24')};
-`
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: rgba(255, 255, 255, 0.6);
-`
-
-const LoadingState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: ${(props) => props.theme.colors.light[100]};
-`
+type ViewMode = 'categories' | 'achievements'
+type RarityFilter = 'all' | 'common' | 'rare' | 'epic' | 'legendary'
+type SortBy = 'default' | 'completion-asc' | 'completion-desc'
 
 export default function UserAchievementsPage() {
   const params = useParams()
@@ -186,143 +35,357 @@ export default function UserAchievementsPage() {
   const { user: currentUser, isAuthenticated } = useAppSelector(
     (state) => state.auth
   )
-  const [statusFilter, setStatusFilter] = useState<
-    'all' | 'achieved' | 'in_progress'
-  >('all')
+  const [viewMode, setViewMode] = useState<ViewMode>('achievements')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [rarityFilter, setRarityFilter] = useState('')
+  const [sortBy, setSortBy] = useState('default')
+
+  // Debounce для поискового запроса
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const { data: achievements, isLoading, error } =
     useGetUserAchievementsByUsernameQuery(
       {
         username,
-        status: statusFilter === 'all' ? undefined : statusFilter,
       },
       {
         skip: !username,
       }
     )
 
-  const handleAchievementClick = (categoryId: string, achievementId: string) => {
-    router.push(`/categories/${categoryId}/${achievementId}`)
+  // Преобразование категорий в формат CategoryCardComponent
+  const categories: Category[] = useMemo(() => {
+    if (!achievements) return []
+    
+    const categoryMap = new Map<string, {
+      id: string
+      name: string
+      icon: string
+      total: number
+      unlocked: number
+      achievements: Array<{
+        id: string
+        icon: string
+        unlocked: boolean
+        progress?: number
+        completion_date?: string
+      }>
+    }>()
+
+    achievements.forEach((achievement) => {
+      const categoryId = achievement.category.id
+      if (!categoryMap.has(categoryId)) {
+        categoryMap.set(categoryId, {
+          id: categoryId,
+          name: achievement.category.name,
+          icon: achievement.category.icon_url || '📁',
+          total: 0,
+          unlocked: 0,
+          achievements: [],
+        })
+      }
+      const category = categoryMap.get(categoryId)!
+      category.total++
+      category.achievements.push({
+        id: achievement.id,
+        icon: achievement.icon_url || '',
+        unlocked: achievement.is_achieved,
+        progress: achievement.is_achieved ? 100 : undefined,
+        completion_date: achievement.completion_date || undefined,
+      })
+      if (achievement.is_achieved) {
+        category.unlocked++
+      }
+    })
+
+    return Array.from(categoryMap.values())
+  }, [achievements])
+
+  // Преобразование и фильтрация достижений в формат AchievementCard
+  const transformedAchievements: Achievement[] = useMemo(() => {
+    if (!achievements) return []
+
+    let filtered = achievements.filter((achievement) => {
+      // Поиск
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase()
+        const matchesSearch =
+          achievement.title.toLowerCase().includes(query) ||
+          achievement.description.toLowerCase().includes(query) ||
+          achievement.category.name.toLowerCase().includes(query)
+        if (!matchesSearch) return false
+      }
+
+      // Фильтр по категории
+      if (selectedCategory && achievement.category.id !== selectedCategory) {
+        return false
+      }
+
+      // Фильтр по редкости
+      if (rarityFilter && achievement.rarity !== rarityFilter) {
+        return false
+      }
+
+      // Фильтр по статусу
+      if (statusFilter) {
+        const isAchieved = !!achievement.completion_date
+        const progress = achievement.is_achieved ? 100 : undefined
+        const isInProgress = !isAchieved && progress !== undefined && progress > 0 && progress <= 100
+        const isNotAchieved = !isAchieved && (progress === undefined || progress === 0)
+
+        switch (statusFilter) {
+          case 'achieved':
+            if (!isAchieved) return false
+            break
+          case 'in_progress':
+            if (!isInProgress) return false
+            break
+          case 'not_achieved':
+            if (!isNotAchieved) return false
+            break
+        }
+      }
+
+      return true
+    })
+
+    // Сортировка
+    if (sortBy && sortBy !== 'default') {
+      filtered.sort((a, b) => {
+        const aIsAchieved = !!a.completion_date
+        const aProgress = a.is_achieved ? 100 : undefined
+        const aIsInProgress = !aIsAchieved && aProgress !== undefined && aProgress > 0 && aProgress <= 100
+        const aIsNotAchieved = !aIsAchieved && (aProgress === undefined || aProgress === 0)
+
+        const bIsAchieved = !!b.completion_date
+        const bProgress = b.is_achieved ? 100 : undefined
+        const bIsInProgress = !bIsAchieved && bProgress !== undefined && bProgress > 0 && bProgress <= 100
+        const bIsNotAchieved = !bIsAchieved && (bProgress === undefined || bProgress === 0)
+
+        switch (sortBy) {
+          case 'achieved-first':
+            if (aIsAchieved && !bIsAchieved) return -1
+            if (!aIsAchieved && bIsAchieved) return 1
+            return 0
+          case 'not-achieved-first':
+            if (aIsNotAchieved && !bIsNotAchieved) return -1
+            if (!aIsNotAchieved && bIsNotAchieved) return 1
+            return 0
+          case 'in-progress-first':
+            if (aIsInProgress && !bIsInProgress) return -1
+            if (!aIsInProgress && bIsInProgress) return 1
+            return 0
+          case 'date-asc':
+            if (!a.completion_date || !b.completion_date) return 0
+            return new Date(a.completion_date).getTime() - new Date(b.completion_date).getTime()
+          case 'date-desc':
+            if (!a.completion_date || !b.completion_date) return 0
+            return new Date(b.completion_date).getTime() - new Date(a.completion_date).getTime()
+          default:
+            return 0
+        }
+      })
+    }
+
+    // Преобразование в формат Achievement
+    return filtered.map((achievement) => ({
+      id: achievement.id,
+      name: achievement.title,
+      description: achievement.description,
+      icon: achievement.icon_url || '',
+      categoryId: achievement.category.id,
+      categoryName: achievement.category.name,
+      unlocked: achievement.is_achieved,
+      rarity: achievement.rarity,
+      completionDate: achievement.completion_date || undefined,
+      progress: achievement.is_achieved ? 100 : undefined,
+      completion_date: achievement.completion_date || undefined,
+    }))
+  }, [achievements, debouncedSearchQuery, selectedCategory, statusFilter, rarityFilter, sortBy])
+
+  // Фильтрация категорий
+  const filteredCategories = useMemo(() => {
+    if (!debouncedSearchQuery) return categories
+
+    const query = debouncedSearchQuery.toLowerCase()
+    return categories.filter(
+      (category) =>
+        category.name.toLowerCase().includes(query) ||
+        category.achievements.some(
+          (achievement) =>
+            achievements?.some(
+              (a) =>
+                a.id === achievement.id &&
+                (a.title.toLowerCase().includes(query) ||
+                  a.description.toLowerCase().includes(query))
+            )
+        )
+    )
+  }, [categories, debouncedSearchQuery, achievements])
+
+  const handleAchievementClick = (achievement: Achievement) => {
+    router.push(`/user/${username}/achievements/${achievement.categoryId}/${achievement.id}`)
   }
 
-  if (isLoading) {
-    return (
-      <Container>
-        <LoadingState>Загрузка достижений...</LoadingState>
-      </Container>
-    )
+  const handleCategoryClick = (category: Category) => {
+    router.push(`/user/${username}/achievements/${category.id}`)
   }
 
-  if (error) {
-    return (
-      <Container>
-        <EmptyState>
-          {('status' in error && error.status === 403) ||
-            ('status' in error && error.status === 404)
-            ? 'Достижения недоступны'
-            : 'Ошибка при загрузке достижений'}
-        </EmptyState>
-      </Container>
-    )
-  }
-
-  if (!achievements || achievements.length === 0) {
-    return (
-      <Container>
-        <PageContainer>
-          <Header>
-            <SectionMarker />
-            <Title>Достижения</Title>
-          </Header>
-          <Filters>
-            <FilterButton
-              $active={statusFilter === 'all'}
-              onClick={() => setStatusFilter('all')}
-            >
-              Все
-            </FilterButton>
-            <FilterButton
-              $active={statusFilter === 'achieved'}
-              onClick={() => setStatusFilter('achieved')}
-            >
-              Достигнутые
-            </FilterButton>
-            <FilterButton
-              $active={statusFilter === 'in_progress'}
-              onClick={() => setStatusFilter('in_progress')}
-            >
-              В процессе
-            </FilterButton>
-          </Filters>
-          <EmptyState>Достижения не найдены</EmptyState>
-        </PageContainer>
-      </Container>
-    )
-  }
+  const hasError = error !== undefined
+  const showLoader = isLoading && (!achievements || achievements.length === 0)
+  const hasData = viewMode === 'categories' 
+    ? filteredCategories.length > 0 
+    : transformedAchievements.length > 0
 
   return (
     <Container>
-      <PageContainer>
-        <Header>
-          <SectionMarker />
-          <Title>Достижения</Title>
-        </Header>
-        <Filters>
-          <FilterButton
-            $active={statusFilter === 'all'}
-            onClick={() => setStatusFilter('all')}
+      <PageHeader>
+        <PageHeaderWrap>
+          <Title>
+            {viewMode === 'categories' ? (
+              <>
+                <TitleIcon as={IoFolder} />
+                Категории достижений
+              </>
+            ) : (
+              <>
+                <TitleIcon as={IoTrophy} />
+                Достижения пользователя
+              </>
+            )}
+          </Title>
+          <Tumbler mode={viewMode} onChange={setViewMode} />
+        </PageHeaderWrap>
+      </PageHeader>
+
+      <AnimatePresence mode="wait">
+        {viewMode === 'categories' ? (
+          <motion.div
+            key="categories"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
           >
-            Все
-          </FilterButton>
-          <FilterButton
-            $active={statusFilter === 'achieved'}
-            onClick={() => setStatusFilter('achieved')}
-          >
-            Достигнутые
-          </FilterButton>
-          <FilterButton
-            $active={statusFilter === 'in_progress'}
-            onClick={() => setStatusFilter('in_progress')}
-          >
-            В процессе
-          </FilterButton>
-        </Filters>
-        <AchievementsGrid>
-          {achievements.map((achievement) => (
-            <AchievementCard
-              key={achievement.id}
-              onClick={() =>
-                handleAchievementClick(achievement.category.id, achievement.id)
-              }
-            >
-              <AchievementIcon>
-                {renderIcon(achievement.icon_url, '🏆')}
-              </AchievementIcon>
-              <AchievementTitle>{achievement.title}</AchievementTitle>
-              <AchievementDescription>
-                {achievement.description}
-              </AchievementDescription>
-              <AchievementMeta>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                  <RarityBadge $rarity={achievement.rarity}>
-                    {achievement.rarity === 'legendary'
-                      ? 'Легендарное'
-                      : achievement.rarity === 'epic'
-                        ? 'Эпическое'
-                        : achievement.rarity === 'rare'
-                          ? 'Редкое'
-                          : 'Обычное'}
-                  </RarityBadge>
-                  <StatusBadge $achieved={achievement.is_achieved}>
-                    {achievement.is_achieved ? 'Достигнуто' : 'В процессе'}
-                  </StatusBadge>
+            {showLoader ? (
+              <BlockLoader text="Загрузка категорий..." />
+            ) : hasError ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '4rem 2rem',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}
+              >
+                <IoCloseCircle style={{ fontSize: '3rem', marginBottom: '1rem', color: '#ef4444' }} />
+                <div style={{ fontSize: '1.25rem' }}>
+                  {('status' in (error || {}) && (error as any)?.status === 403) ||
+                  ('status' in (error || {}) && (error as any)?.status === 404)
+                    ? 'Достижения недоступны'
+                    : 'Ошибка загрузки категорий'}
                 </div>
-                <XPBadge>+{achievement.xp_reward} XP</XPBadge>
-              </AchievementMeta>
-            </AchievementCard>
-          ))}
-        </AchievementsGrid>
-      </PageContainer>
+              </div>
+            ) : filteredCategories.length === 0 ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '4rem 2rem',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}
+              >
+                <IoFolder style={{ fontSize: '3rem', marginBottom: '1rem' }} />
+                <div style={{ fontSize: '1.25rem' }}>Категории не найдены</div>
+              </div>
+            ) : (
+              <Grid>
+                {filteredCategories.map((category) => (
+                  <CategoryCardComponent
+                    key={category.id}
+                    category={category}
+                    onClick={() => handleCategoryClick(category)}
+                    isAuthenticated={isAuthenticated}
+                  />
+                ))}
+              </Grid>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="achievements"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <SearchAndFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              rarityFilter={rarityFilter}
+              onRarityFilterChange={setRarityFilter}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              isAuthenticated={isAuthenticated}
+            />
+            {showLoader ? (
+              <BlockLoader text="Загрузка достижений..." />
+            ) : hasError ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '4rem 2rem',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}
+              >
+                <IoCloseCircle style={{ fontSize: '3rem', marginBottom: '1rem', color: '#ef4444' }} />
+                <div style={{ fontSize: '1.25rem' }}>
+                  {('status' in (error || {}) && (error as any)?.status === 403) ||
+                  ('status' in (error || {}) && (error as any)?.status === 404)
+                    ? 'Достижения недоступны'
+                    : 'Ошибка загрузки достижений'}
+                </div>
+              </div>
+            ) : transformedAchievements.length === 0 ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '4rem 2rem',
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}
+              >
+                <IoTrophy style={{ fontSize: '3rem', marginBottom: '1rem' }} />
+                <div style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+                  Достижения не найдены
+                </div>
+                <div style={{ fontSize: '0.875rem' }}>
+                  Попробуйте изменить параметры поиска или фильтры
+                </div>
+              </div>
+            ) : (
+              <AchievementGrid mode="grid3">
+                {transformedAchievements.map((achievement) => (
+                  <AchievementCard
+                    key={achievement.id}
+                    achievement={achievement}
+                    onClick={() => handleAchievementClick(achievement)}
+                  />
+                ))}
+              </AchievementGrid>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Container>
   )
 }
