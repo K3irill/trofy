@@ -146,6 +146,7 @@ export const UserSection = styled.div`
 export const Avatar = styled.div`
   width: 36px;
   height: 36px;
+  min-width: 36px;
   border-radius: 50%;
   background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
   display: flex;
@@ -170,6 +171,7 @@ export const Avatar = styled.div`
     width: 32px;
     height: 32px;
     font-size: 1rem;
+    min-width: 32px;
   }
 `
 
@@ -210,7 +212,7 @@ export const NotificationIconWrapper = styled.div`
   justify-content: center;
 `
 
-export const NotificationIcon = styled(motion.button)<{ $hasUnread: boolean }>`
+export const NotificationIcon = styled(motion.button) <{ $hasUnread: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;

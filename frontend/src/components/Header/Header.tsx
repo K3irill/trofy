@@ -128,7 +128,20 @@ export const Header = () => {
                   )}
                 </NotificationIconWrapper>
                 <UserSection onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                  <Avatar>{user?.avatar_url ? <img src={user.avatar_url} alt={user.username} /> : '👤'}</Avatar>
+                  <Avatar>
+                    {user?.avatar_url ? (
+                      <img
+                        src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
+                        alt={user.username}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                          e.currentTarget.parentElement!.textContent = '👤'
+                        }}
+                      />
+                    ) : (
+                      '👤'
+                    )}
+                  </Avatar>
                   <LevelBadge>Lvl {user?.level || 1}</LevelBadge>
                   <UserName>{user?.username || 'Гость'}</UserName>
                 </UserSection>
@@ -191,7 +204,18 @@ export const Header = () => {
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem' }}>
-                    {user.avatar_url ? <img src={user.avatar_url} alt={user.username} /> : '👤'}
+                    {user.avatar_url ? (
+                      <img
+                        src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || '/api'}${user.avatar_url}`}
+                        alt={user.username}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none'
+                          e.currentTarget.parentElement!.textContent = '👤'
+                        }}
+                      />
+                    ) : (
+                      '👤'
+                    )}
                   </Avatar>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <LevelBadge>Lvl {user.level}</LevelBadge>
