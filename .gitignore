@@ -17,6 +17,8 @@ dist/
 .DS_Store
 *.pem
 *.log
+.cursor
+deploy
 
 # Environment variables
 .env
