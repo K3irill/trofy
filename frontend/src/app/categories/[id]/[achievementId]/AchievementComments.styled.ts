@@ -114,6 +114,14 @@ export const CommentAvatar = styled.div`
   font-weight: 700;
   font-size: 0.875rem;
   flex-shrink: 0;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
 `
 
 export const CommentInfo = styled.div`

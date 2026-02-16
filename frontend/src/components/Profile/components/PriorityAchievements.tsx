@@ -31,22 +31,22 @@ interface TrophyData {
 }
 
 interface PriorityAchievementsProps {
-  isAuthenticated: boolean
   priorityAchievements: (TrophyData | null)[]
+  username: string
   onAdd?: (index: number) => void
   onRemove?: (index: number) => void
 }
 
 export function PriorityAchievements({
-  isAuthenticated,
   priorityAchievements,
+  username,
   onAdd,
   onRemove,
 }: PriorityAchievementsProps) {
   const router = useRouter()
 
   const handleAchievementClick = (achievement: TrophyData) => {
-    router.push(`/categories/${achievement.categoryId}/${achievement.id}`)
+    router.push(`/user/${username}/achievements/${achievement.categoryId}/${achievement.id}`)
   }
 
   const handleRemoveClick = (e: React.MouseEvent, index: number) => {

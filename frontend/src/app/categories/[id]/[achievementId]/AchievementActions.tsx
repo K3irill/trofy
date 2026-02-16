@@ -83,8 +83,8 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate, use
   }, [userAchievementId, achievementId, isMain, updateSettings])
 
   const handleToggleFavorite = useCallback(async () => {
-    if (!userAchievementId || !achievementId) return
-    // Избранное можно добавлять для любых достижений
+    if (!userAchievementId || !achievementId || !isOwner) return
+    // Избранное можно добавлять только для своих достижений
     try {
       await toggleFavorite({ userAchievementId, achievementId }).unwrap()
       onUpdateRef.current?.({ isFavorite: !isFavorite })
@@ -92,7 +92,7 @@ export const AchievementActions = ({ achievement, isOwner = false, onUpdate, use
     } catch (error) {
       showToast('Ошибка при обновлении избранного', 'error')
     }
-  }, [userAchievementId, achievementId, isFavorite, toggleFavorite])
+  }, [userAchievementId, achievementId, isFavorite, isOwner, toggleFavorite])
 
   const handleToggleHidden = useCallback(async () => {
     if (!userAchievementId || !achievementId || !isOwner) return

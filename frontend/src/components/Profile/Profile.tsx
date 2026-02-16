@@ -78,8 +78,8 @@ export const Profile = ({
         />
         <div>
           <PriorityAchievements
-            isAuthenticated={true}
             priorityAchievements={priorityAchievementsHook.priorityAchievements}
+            username={user.username}
             onAdd={isOwnProfile ? priorityAchievementsHook.handleAddAchievement : undefined}
             onRemove={isOwnProfile ? priorityAchievementsHook.handleRemoveAchievement : undefined}
           />
@@ -91,6 +91,7 @@ export const Profile = ({
       <PinnedAchievements
         isAuthenticated={true}
         pinnedAchievements={pinnedAchievementsHook.pinnedAchievements}
+        username={user.username}
         onAdd={isOwnProfile ? pinnedAchievementsHook.handleAddAchievement : undefined}
         onRemove={isOwnProfile ? pinnedAchievementsHook.handleRemoveAchievement : undefined}
       />

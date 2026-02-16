@@ -1060,7 +1060,10 @@ export class AchievementsService {
       throw ApiError.notFound('User achievement not found')
     }
 
-    // Разрешаем добавлять в избранное любые достижения, включая свои
+    // Можно добавлять в избранное только свои достижения
+    if (userAchievement.user_id !== userId) {
+      throw ApiError.forbidden('You can only favorite your own achievements')
+    }
 
     // Проверяем, публичное ли
     if (!userAchievement.is_public) {
@@ -1107,6 +1110,7 @@ export class AchievementsService {
           select: {
             id: true,
             username: true,
+            avatar_url: true,
           },
         },
         replies: {
@@ -1116,6 +1120,7 @@ export class AchievementsService {
               select: {
                 id: true,
                 username: true,
+                avatar_url: true,
               },
             },
           },
@@ -1131,12 +1136,14 @@ export class AchievementsService {
       id: comment.id,
       userId: comment.user_id,
       username: comment.user.username,
+      avatarUrl: comment.user.avatar_url,
       text: comment.text,
       createdAt: comment.created_at.toISOString(),
       replies: comment.replies.map((reply: any) => ({
         id: reply.id,
         userId: reply.user_id,
         username: reply.user.username,
+        avatarUrl: reply.user.avatar_url,
         text: reply.text,
         createdAt: reply.created_at.toISOString(),
         parentCommentId: reply.parent_comment_id,
@@ -1185,15 +1192,45 @@ export class AchievementsService {
           select: {
             id: true,
             username: true,
+            avatar_url: true,
+          },
+        },
+        userAchievement: {
+          select: {
+            user_id: true,
+            achievement: {
+              select: {
+                title: true,
+              },
+            },
           },
         },
       },
     })
 
+    // Создаем уведомление владельцу достижения, если это не он сам
+    if (userAchievement.user_id !== userId) {
+      const commenter = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { username: true },
+      })
+
+      const achievementTitle = (comment.userAchievement as any)?.achievement?.title || 'достижению'
+      await prisma.notification.create({
+        data: {
+          user_id: userAchievement.user_id,
+          title: 'Новый комментарий',
+          message: `${commenter?.username || 'Пользователь'} оставил комментарий к вашему достижению "${achievementTitle}"`,
+          type: 'info',
+        },
+      })
+    }
+
     return {
       id: comment.id,
       userId: comment.user_id,
       username: comment.user.username,
+      avatarUrl: comment.user.avatar_url,
       text: comment.text,
       createdAt: comment.created_at.toISOString(),
       parentCommentId: comment.parent_comment_id,
@@ -1268,6 +1305,29 @@ export class AchievementsService {
           user_id: userId,
         },
       })
+
+      // Создаем уведомление владельцу достижения, если это не он сам
+      if (userAchievement.user_id !== userId) {
+        const liker = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { username: true },
+        })
+
+        const achievement = await prisma.achievement.findUnique({
+          where: { id: userAchievement.achievement_id },
+          select: { title: true },
+        })
+
+        await prisma.notification.create({
+          data: {
+            user_id: userAchievement.user_id,
+            title: 'Новый аплодисмент',
+            message: `${liker?.username || 'Пользователь'} поставил аплодисмент вашему достижению "${achievement?.title || ''}"`,
+            type: 'info',
+          },
+        })
+      }
+
       return { isLiked: true }
     }
   }

@@ -201,7 +201,20 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
           <div key={comment.id}>
             <CommentItem>
               <CommentHeader>
-                <CommentAvatar>{comment.username[0].toUpperCase()}</CommentAvatar>
+                <CommentAvatar>
+                  {comment.avatarUrl ? (
+                    <img
+                      src={comment.avatarUrl.startsWith('http') ? comment.avatarUrl : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${comment.avatarUrl}`}
+                      alt={comment.username}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                        e.currentTarget.parentElement!.textContent = comment.username[0].toUpperCase()
+                      }}
+                    />
+                  ) : (
+                    comment.username[0].toUpperCase()
+                  )}
+                </CommentAvatar>
                 <CommentInfo>
                   <CommentAuthor>{comment.username}</CommentAuthor>
                   <CommentDate>{formatDate(comment.createdAt)}</CommentDate>
@@ -226,7 +239,20 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
                 {comment.replies.map((reply) => (
                   <CommentItem key={reply.id} style={{ marginBottom: '0.75rem' }}>
                     <CommentHeader>
-                      <CommentAvatar>{reply.username[0].toUpperCase()}</CommentAvatar>
+                      <CommentAvatar>
+                        {reply.avatarUrl ? (
+                          <img
+                            src={reply.avatarUrl.startsWith('http') ? reply.avatarUrl : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${reply.avatarUrl}`}
+                            alt={reply.username}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                              e.currentTarget.parentElement!.textContent = reply.username[0].toUpperCase()
+                            }}
+                          />
+                        ) : (
+                          reply.username[0].toUpperCase()
+                        )}
+                      </CommentAvatar>
                       <CommentInfo>
                         <CommentAuthor>{reply.username}</CommentAuthor>
                         <CommentDate>{formatDate(reply.createdAt)}</CommentDate>

@@ -27,20 +27,21 @@ interface TrophyData {
 interface PinnedAchievementsProps {
   isAuthenticated: boolean
   pinnedAchievements: (TrophyData | null)[]
+  username: string
   onAdd?: (index: number) => void
   onRemove?: (index: number) => void
 }
 
 export function PinnedAchievements({
-  isAuthenticated,
   pinnedAchievements,
+  username,
   onAdd,
   onRemove,
 }: PinnedAchievementsProps) {
   const router = useRouter()
 
   const handleAchievementClick = (trophy: TrophyData) => {
-    router.push(`/categories/${trophy.categoryId}/${trophy.id}`)
+    router.push(`/user/${username}/achievements/${trophy.categoryId}/${trophy.id}`)
   }
 
   const handleRemoveClick = (e: React.MouseEvent, index: number) => {

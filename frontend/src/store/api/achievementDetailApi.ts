@@ -45,6 +45,7 @@ export interface Comment {
   id: string
   userId: string
   username: string
+  avatarUrl?: string | null
   text: string
   createdAt: string
   parentCommentId?: string

@@ -148,15 +148,6 @@ export const AchievementSettingsMenu = ({
                   </>
                 )}
 
-                {!isOwner && achievement.unlocked && (
-                  <>
-                    <MenuDivider />
-                    <MenuItem onClick={onToggleFavorite} $active={achievement.isFavorite}>
-                      <IoHeart />
-                      <span>{achievement.isFavorite ? 'Убрать из избранного' : 'В избранное'}</span>
-                    </MenuItem>
-                  </>
-                )}
               </SettingsMenu>
             )}
           </AnimatePresence>,
