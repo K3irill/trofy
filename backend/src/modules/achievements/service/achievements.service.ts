@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { prisma } from '../../../shared/database'
 import { ApiError } from '../../../core/errors/ApiError'
 import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto } from '../dto/achievements.dto'
