@@ -14,8 +14,7 @@
 		"forceConsistentCasingInFileNames": false,
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
-		"noEmitOnError": false,
-		"suppressImplicitAnyIndexErrors": true
+		"noEmitOnError": false
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"]
