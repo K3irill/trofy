@@ -20,7 +20,9 @@ router.get('/me/stats', authenticate, userController.getStats.bind(userControlle
 router.get('/me/achievements/recent', authenticate, userController.getRecentAchievements.bind(userController))
 router.post('/me/avatar', authenticate, upload.single('avatar'), userController.uploadAvatar.bind(userController))
 
-// Публичные роуты для получения данных пользователя по username (опциональная авторизация)
+// Публичные роуты для поиска и получения данных пользователя (опциональная авторизация)
+router.get('/search', optionalAuthenticate, userController.searchUsers.bind(userController))
+router.get('/top', optionalAuthenticate, userController.getTopUsers.bind(userController))
 router.get('/:username', optionalAuthenticate, userController.getUserByUsername.bind(userController))
 router.get('/:username/stats', optionalAuthenticate, userController.getUserStatsByUsername.bind(userController))
 router.get('/:username/achievements', optionalAuthenticate, userController.getUserAchievementsByUsername.bind(userController))

@@ -143,6 +143,18 @@ export const userApi = baseApi.injectEndpoints({
         'Achievement',
       ],
     }),
+    searchUsers: builder.query<User[], { query: string; limit?: number; offset?: number }>({
+      query: ({ query, limit = 20, offset = 0 }) => ({
+        url: '/users/search',
+        params: { q: query, limit, offset },
+      }),
+    }),
+    getTopUsers: builder.query<User[], { limit?: number }>({
+      query: ({ limit = 10 } = {}) => ({
+        url: '/users/top',
+        params: { limit },
+      }),
+    }),
   }),
 })
 
@@ -156,4 +168,6 @@ export const {
   useGetUserStatsByUsernameQuery,
   useGetUserAchievementsByUsernameQuery,
   useGetRecentAchievementsByUsernameQuery,
+  useSearchUsersQuery,
+  useGetTopUsersQuery,
 } = userApi

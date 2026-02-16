@@ -198,64 +198,6 @@ export class UserService {
   }
 
   /**
-   * Обновление streak при активности пользователя
-   */
-  async updateStreak(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { streak: true, last_activity_date: true },
-    })
-
-    if (!user) {
-      throw ApiError.notFound('User not found')
-    }
-
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    const lastActivity = user.last_activity_date
-      ? new Date(user.last_activity_date)
-      : null
-    if (lastActivity) {
-      lastActivity.setHours(0, 0, 0, 0)
-    }
-
-    let newStreak = user.streak || 0
-
-    if (!lastActivity) {
-      // Первая активность
-      newStreak = 1
-    } else {
-      const daysDiff = Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24))
-
-      if (daysDiff === 0) {
-        // Активность уже была сегодня
-        // Не обновляем streak
-      } else if (daysDiff === 1) {
-        // Активность вчера, продолжаем серию
-        newStreak = (user.streak || 0) + 1
-      } else {
-        // Пропущены дни, сбрасываем серию
-        newStreak = 1
-      }
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        streak: newStreak,
-        last_activity_date: today,
-      },
-      include: {
-        profile_theme: true,
-        platformAccounts: true,
-      },
-    })
-
-    return formatUser(updatedUser, true)
-  }
-
-  /**
    * Получение статистики пользователя
    */
   async getUserStats(userId: string) {
@@ -596,7 +538,7 @@ export class UserService {
       if (ua.unlocked_at && ua.completion_date) {
         const days = Math.floor(
           (new Date(ua.completion_date).getTime() - new Date(ua.unlocked_at).getTime()) /
-            (1000 * 60 * 60 * 24)
+          (1000 * 60 * 60 * 24)
         )
         if (!fastestAchievement || days < fastestAchievement.days) {
           fastestAchievement = {
@@ -711,6 +653,55 @@ export class UserService {
       is_public: ua.is_public,
       is_hidden: ua.is_hidden,
     }))
+  }
+
+  /**
+   * Поиск пользователей
+   */
+  async searchUsers(query: string, limit: number = 20, offset: number = 0, viewerId?: string) {
+    const users = await prisma.user.findMany({
+      where: {
+        username: {
+          contains: query,
+          mode: 'insensitive',
+        },
+      },
+      take: limit,
+      skip: offset,
+      orderBy: [
+        { level: 'desc' },
+        { xp: 'desc' },
+      ],
+      include: {
+        profile_theme: true,
+      },
+    })
+
+    return users.map((user) => {
+      const isOwnProfile = viewerId === user.id
+      return formatUser(user, isOwnProfile, viewerId)
+    })
+  }
+
+  /**
+   * Получение топ пользователей
+   */
+  async getTopUsers(limit: number = 10, viewerId?: string) {
+    const users = await prisma.user.findMany({
+      take: limit,
+      orderBy: [
+        { level: 'desc' },
+        { xp: 'desc' },
+      ],
+      include: {
+        profile_theme: true,
+      },
+    })
+
+    return users.map((user) => {
+      const isOwnProfile = viewerId === user.id
+      return formatUser(user, isOwnProfile, viewerId)
+    })
   }
 }
 

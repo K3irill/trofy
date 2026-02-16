@@ -212,6 +212,42 @@ export class UserController {
       next(error)
     }
   }
+
+  /**
+   * GET /api/users/search?q=query&limit=20&offset=0 - Поиск пользователей
+   */
+  async searchUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = (req.query.q as string) || ''
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20
+      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0
+      const viewerId = (req as any).user?.userId
+
+      if (!query || query.trim().length === 0) {
+        return res.json([])
+      }
+
+      const users = await userService.searchUsers(query.trim(), limit, offset, viewerId)
+      res.json(users)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/users/top?limit=10 - Получение топ пользователей
+   */
+  async getTopUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10
+      const viewerId = (req as any).user?.userId
+
+      const users = await userService.getTopUsers(limit, viewerId)
+      res.json(users)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 export const userController = new UserController()

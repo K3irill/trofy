@@ -82,6 +82,12 @@ export const Header = () => {
                 Каталог достижений
               </NavLink>
               <NavLink
+                href="/users"
+                $active={pathname === '/users' || pathname?.startsWith('/users/')}
+              >
+                Люди
+              </NavLink>
+              <NavLink
                 href="/feed"
                 $active={pathname === '/feed' || pathname === '/'}
               >
@@ -268,6 +274,13 @@ export const Header = () => {
             style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
           >
             Достижения
+          </NavLink>
+          <NavLink
+            href="/users"
+            $active={pathname === '/users' || pathname?.startsWith('/users/')}
+            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
+          >
+            Люди
           </NavLink>
           <NavLink
             href="/feed"
