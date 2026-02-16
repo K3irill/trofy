@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { IoTrophy, IoList, IoDiamond, IoDocumentText } from 'react-icons/io5'
+import { IoTrophy, IoList, IoDiamond, IoDocumentText, } from 'react-icons/io5'
 import {
   QuickActionsSection,
   QuickActionButton,
@@ -25,9 +25,9 @@ export function ProfileActions({ isAuthenticated, username, isOwnProfile = false
     router.push(`/user/${username}/achievements`)
   }
 
-  const handleTasksClick = () => {
+  const handleNotesClick = () => {
     // TODO: Добавить страницу заданий
-    console.log('Tasks clicked')
+    router.push(`/journal`)
   }
 
   const handleCollectionsClick = () => {
@@ -62,13 +62,13 @@ export function ProfileActions({ isAuthenticated, username, isOwnProfile = false
         transition={{ delay: 0.85 }}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        onClick={handleTasksClick}
+        onClick={handleNotesClick}
         style={{ cursor: 'pointer' }}
       >
         <ButtonIcon>
-          <IoList />
+          <IoDocumentText />
         </ButtonIcon>
-        <ButtonText>Задания</ButtonText>
+        <ButtonText>Заметки</ButtonText>
       </QuickActionButton>
       <QuickActionButton
         initial={{ opacity: 0, y: 10 }}
@@ -94,7 +94,7 @@ export function ProfileActions({ isAuthenticated, username, isOwnProfile = false
         style={{ cursor: 'pointer' }}
       >
         <ButtonIcon>
-          <IoDocumentText />
+          <IoList />
         </ButtonIcon>
         <ButtonText>История</ButtonText>
       </QuickActionButton>

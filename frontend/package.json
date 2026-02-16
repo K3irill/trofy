@@ -31,6 +31,12 @@
     "react-select": "^5.10.2",
     "styled-components": "^6.3.9",
     "swiper": "^12.1.0",
+    "tiptap": "^1.32.2",
+    "@tiptap/react": "^2.1.13",
+    "@tiptap/starter-kit": "^2.1.13",
+    "@tiptap/extension-placeholder": "^2.1.13",
+    "@tiptap/extension-task-list": "^2.1.13",
+    "@tiptap/extension-task-item": "^2.1.13",
     "yup": "^1.7.1"
   },
   "devDependencies": {

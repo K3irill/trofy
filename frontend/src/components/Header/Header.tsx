@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { logout } from '@/store/slices/authSlice'
 import { SettingsModal } from '@/components/SettingsModal'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { NotificationModal } from '@/components/NotificationModal'
+import { QuickNoteModal } from '@/components/Journal/QuickNoteModal'
 import { Button } from '@/components/ui/Button'
 import { useGetUnreadCountQuery } from '@/store/api/notificationsApi'
 import { HiBell } from 'react-icons/hi'
@@ -46,6 +47,7 @@ export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const [isQuickNoteOpen, setIsQuickNoteOpen] = useState(false)
   const [settingsInitialView, setSettingsInitialView] = useState<'categories' | 'theme'>('categories')
 
   const { data: unreadData } = useGetUnreadCountQuery(undefined, {
@@ -54,6 +56,21 @@ export const Header = () => {
   })
 
   const unreadCount = unreadData?.count || 0
+
+  // Горячая клавиша для быстрого доступа к дневнику
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        if (isAuthenticated) {
+          setIsQuickNoteOpen(true)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isAuthenticated])
 
   return (
     <>
@@ -85,20 +102,28 @@ export const Header = () => {
                 href="/users"
                 $active={pathname === '/users' || pathname?.startsWith('/users/')}
               >
-                Люди
+                Сообщества
               </NavLink>
+              {isAuthenticated && (
+                <NavLink
+                  href="/journal"
+                  $active={pathname === '/journal' || pathname?.startsWith('/journal/')}
+                >
+                  Дневник
+                </NavLink>
+              )}
               <NavLink
                 href="/feed"
                 $active={pathname === '/feed' || pathname === '/'}
               >
                 Лента
               </NavLink>
-              <NavLink
+              {/* <NavLink
                 href="/communities"
                 $active={pathname === '/communities'}
               >
                 Сообщества
-              </NavLink>
+              </NavLink> */}
             </NavLinks>
           </HeaderLeft>
           <HeaderRight>
@@ -108,9 +133,12 @@ export const Header = () => {
             }} />
             {isAuthenticated && (
               <>
-                <CreateButton onClick={() => console.log('create')}>
-                  <span>+</span> Свое Достижение
+                <CreateButton onClick={() => setIsQuickNoteOpen(true)} title="Быстрая запись в дневник (Ctrl+K)">
+                  + Создать Заметку
                 </CreateButton>
+                {/* <CreateButton onClick={() => console.log('create')}>
+                  <span>+</span> Свое Достижение
+                </CreateButton> */}
                 <NotificationIconWrapper>
                   <NotificationIcon
                     onClick={() => setIsNotificationsOpen(true)}
@@ -282,6 +310,15 @@ export const Header = () => {
           >
             Люди
           </NavLink>
+          {isAuthenticated && (
+            <NavLink
+              href="/journal"
+              $active={pathname === '/journal' || pathname?.startsWith('/journal/')}
+              style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
+            >
+              Дневник
+            </NavLink>
+          )}
           <NavLink
             href="/feed"
             $active={pathname === '/feed' || pathname === '/'}
@@ -316,6 +353,10 @@ export const Header = () => {
       <NotificationModal
         isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
+      />
+      <QuickNoteModal
+        isOpen={isQuickNoteOpen}
+        onClose={() => setIsQuickNoteOpen(false)}
       />
     </>
   )

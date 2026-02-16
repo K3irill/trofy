@@ -8,6 +8,7 @@ import authRoutes from './modules/auth/routes/auth.routes'
 import userRoutes from './modules/user/routes/user.routes'
 import achievementsRoutes from './modules/achievements/routes/achievements.routes'
 import notificationsRoutes from './modules/notifications/routes/notifications.routes'
+import journalRoutes from './modules/journal/routes/journal.routes'
 import { authController } from './modules/auth/controller/auth.controller'
 
 const app = express()
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/achievements', achievementsRoutes)
 app.use('/api/notifications', notificationsRoutes)
+app.use('/api/journal', journalRoutes)
 // Роут для получения других пользователей (публичный, но может использовать viewerId из токена)
 app.get('/api/users/:id', authController.getUserById.bind(authController))
 

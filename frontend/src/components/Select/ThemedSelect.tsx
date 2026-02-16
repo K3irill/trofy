@@ -10,9 +10,9 @@ export interface ThemedSelectOption {
   icon?: React.ReactNode
 }
 
-interface ThemedSelectProps extends Omit<Props<ThemedSelectOption, false>, 'styles'> {}
+interface ThemedSelectProps extends Omit<Props<ThemedSelectOption, boolean>, 'styles'> {}
 
-const getThemedStyles = (theme: DefaultTheme): StylesConfig<ThemedSelectOption, false, GroupBase<ThemedSelectOption>> => ({
+const getThemedStyles = (theme: DefaultTheme): StylesConfig<ThemedSelectOption, boolean, GroupBase<ThemedSelectOption>> => ({
   control: (provided, state) => ({
     ...provided,
     minHeight: '44px',
@@ -76,6 +76,25 @@ const getThemedStyles = (theme: DefaultTheme): StylesConfig<ThemedSelectOption, 
   singleValue: (provided) => ({
     ...provided,
     color: theme.colors.light[100],
+  }),
+  multiValue: (provided) => ({
+    ...provided,
+    backgroundColor: `${theme.colors.primary}33`,
+    borderRadius: '8px',
+  }),
+  multiValueLabel: (provided) => ({
+    ...provided,
+    color: theme.colors.primary,
+    fontWeight: 500,
+  }),
+  multiValueRemove: (provided) => ({
+    ...provided,
+    color: theme.colors.primary,
+    borderRadius: '0 8px 8px 0',
+    '&:hover': {
+      backgroundColor: `${theme.colors.danger}33`,
+      color: theme.colors.danger,
+    },
   }),
   input: (provided) => ({
     ...provided,
