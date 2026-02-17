@@ -205,11 +205,17 @@ export const UserName = styled.div`
   }
 `
 
-export const NotificationIconWrapper = styled.div`
+export const NotificationIconWrapper = styled.div<{ $hideOnMobile?: boolean }>`
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  ${(props) => props.$hideOnMobile && `
+    @media (max-width: 1024px) {
+      display: none;
+    }
+  `}
 `
 
 export const NotificationIcon = styled(motion.button) <{ $hasUnread: boolean }>`
@@ -272,12 +278,11 @@ export const CreateButton = styled(motion.button)`
   cursor: pointer;
   box-shadow: ${(props) => props.theme.shadows.glow.primary};
   transition: all 0.3s ease;
+  white-space: nowrap;
 
-  span {
-    font-size: 1.1rem;
-    line-height: 1;
-    position: relative;
-    top: 2px;
+  svg {
+    font-size: 1.125rem;
+    flex-shrink: 0;
   }
 
   &:hover {
@@ -287,6 +292,60 @@ export const CreateButton = styled(motion.button)`
 
   @media (max-width: 1024px) {
     display: none;
+  }
+`
+
+export const MobileCreateButton = styled(motion.button)`
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: ${(props) => props.theme.colors.light[100]};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 50px;
+
+  svg {
+    font-size: 1.25rem;
+    color: ${(props) => props.theme.colors.primary};
+  }
+
+  span {
+    font-size: 0.625rem;
+    font-weight: 500;
+    color: ${(props) => props.theme.colors.light[300]};
+    line-height: 1;
+  }
+
+  &:hover {
+    background: ${(props) => props.theme.colors.dark.glassLight};
+    transform: translateY(-2px);
+
+    svg {
+      color: ${(props) => props.theme.colors.primary};
+    }
+  }
+
+  @media (max-width: 1024px) {
+    display: flex;
+  }
+
+  @media (max-width: 640px) {
+    padding: 0.375rem;
+    min-width: 44px;
+
+    svg {
+      font-size: 1.125rem;
+    }
+
+    span {
+      font-size: 0.5625rem;
+    }
   }
 `
 
@@ -300,38 +359,91 @@ export const UserProfileMenu = styled(motion.div)`
   backdrop-filter: ${(props) => props.theme.glass.blur};
   -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
   border: ${(props) => props.theme.glass.border};
-  border-radius: 16px;
-  padding: 0.75rem;
-  min-width: 180px;
+  border-radius: 12px;
+  padding: 0.5rem;
+  min-width: 200px;
   box-shadow: ${(props) => props.theme.shadows.glass.heavy};
   z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 
-  div {
-    padding: 0.75rem 1rem;
-    color: ${(props) => props.theme.colors.light[100]};
-    font-size: 0.875rem;
-    font-weight: 500;
+  @media (max-width: 1024px) {
+    top: 60px;
+    right: 0.75rem;
+    min-width: 160px;
+    padding: 0.375rem;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 640px) {
+    min-width: 140px;
+    padding: 0.25rem;
     border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  }
+`
 
-    &:hover {
-      background: ${(props) => `${props.theme.colors.primary}1a`};
-      color: ${(props) => props.theme.colors.primary};
-    }
+export const UserProfileMenuItem = styled.div<{ $danger?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  color: ${(props) => props.$danger ? props.theme.colors.danger : props.theme.colors.light[100]};
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-    &:not(:last-child) {
-      margin-bottom: 0.25rem;
-    }
+  svg {
+    font-size: 1.125rem;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: ${(props) => props.$danger
+    ? `${props.theme.colors.danger}1a`
+    : `${props.theme.colors.primary}1a`};
+    color: ${(props) => props.$danger
+    ? props.theme.colors.danger
+    : props.theme.colors.primary};
   }
 
   @media (max-width: 1024px) {
-    display: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    gap: 0.625rem;
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+    gap: 0.5rem;
+    border-radius: 6px;
+
+    svg {
+      font-size: 0.9375rem;
+    }
+  }
+`
+
+export const UserProfileMenuDivider = styled.div`
+  height: 1px;
+  background: ${(props) => props.theme.colors.dark.neomorphLight};
+  margin: 0.25rem 0;
+
+  @media (max-width: 640px) {
+    margin: 0.125rem 0;
   }
 `
 
 export const HamburgerButton = styled(motion.button)`
   display: none;
+  position: relative;
   background: ${(props) => props.theme.colors.dark.glassLight};
   border: ${(props) => props.theme.glass.border};
   width: 40px;
@@ -353,6 +465,28 @@ export const HamburgerButton = styled(motion.button)`
   @media (max-width: 1024px) {
     display: flex;
   }
+
+  @media (max-width: 640px) {
+    width: 36px;
+    height: 36px;
+    font-size: 1.125rem;
+  }
+`
+
+export const MobileMenuOverlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99;
+
+  @media (min-width: 1025px) {
+    display: none;
+  }
 `
 
 export const MobileMenu = styled(motion.div)`
@@ -366,9 +500,9 @@ export const MobileMenu = styled(motion.div)`
   backdrop-filter: ${(props) => props.theme.glass.blur};
   -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
   border-bottom: ${(props) => props.theme.glass.border};
-  padding: 1.5rem;
+  padding: 1rem;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   box-shadow: ${(props) => props.theme.shadows.glass.heavy};
   max-height: calc(100vh - 64px);
   overflow-y: auto;
@@ -377,8 +511,9 @@ export const MobileMenu = styled(motion.div)`
     display: flex;
   }
 
-  ${CreateButton}{
-    display: block;
+  @media (max-width: 640px) {
+    padding: 0.75rem;
+    gap: 0.375rem;
   }
 `
 export const MobileMenuHeader = styled(motion.div)`
@@ -387,9 +522,18 @@ export const MobileMenuHeader = styled(motion.div)`
   gap: 1rem;
   justify-content: space-between;
   width: 100%;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid ${(props) => props.theme.colors.dark.neomorphLight};
+  margin-bottom: 0.5rem;
 
   ${UserName}{
     display: block;
+  }
+
+  @media (max-width: 640px) {
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
   }
 `
 
@@ -399,25 +543,117 @@ export const MobileMenuActions = styled(motion.div)`
   align-items: center;
 `
 
+export const MobileMenuActionButtonWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
 export const MobileMenuActionButton = styled(motion.button)`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: fit-content;
-  padding: 5px 10px;
+  width: 40px;
   height: 40px;
   background: ${(props) => props.theme.colors.dark.glassLight};
   border: ${(props) => props.theme.glass.border};
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 1.25rem;
   color: ${(props) => props.theme.colors.light[100]};
   transition: all 0.3s ease;
+
+  svg {
+    font-size: 1.25rem;
+  }
 
   &:hover {
     background: ${(props) => `${props.theme.colors.primary}1a`};
     border-color: ${(props) => `${props.theme.colors.primary}4d`};
     box-shadow: ${(props) => props.theme.shadows.glow.primary};
+    color: ${(props) => props.theme.colors.primary};
+  }
+
+  @media (max-width: 640px) {
+    width: 36px;
+    height: 36px;
+
+    svg {
+      font-size: 1.125rem;
+    }
+  }
+`
+
+export const MobileMenuDivider = styled.div`
+  height: 1px;
+  background: ${(props) => props.theme.colors.dark.neomorphLight};
+  margin: 0.75rem 0;
+  width: 100%;
+`
+
+export const MobileMenuLogoutButton = styled(motion.button)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: ${(props) => `${props.theme.colors.danger}15`};
+  border: 1px solid ${(props) => `${props.theme.colors.danger}40`};
+  border-radius: 10px;
+  color: ${(props) => props.theme.colors.danger};
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+
+  svg {
+    font-size: 1.125rem;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: ${(props) => `${props.theme.colors.danger}25`};
+    border-color: ${(props) => `${props.theme.colors.danger}60`};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px ${(props) => `${props.theme.colors.danger}30`};
+  }
+
+  @media (max-width: 640px) {
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+    gap: 0.625rem;
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+`
+
+export const MobileMenuNavLink = styled(motion.a) <{ $active: boolean }>`
+  display: block;
+  width: 100%;
+  font-size: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 0.25rem;
+  color: ${(props) => props.$active ? props.theme.colors.primary : props.theme.colors.light[300]};
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: ${(props) => props.$active ? `${props.theme.colors.primary}1a` : 'transparent'};
+  border: 1px solid ${(props) => props.$active ? `${props.theme.colors.primary}4d` : 'transparent'};
+
+  &:hover {
+    color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => `${props.theme.colors.primary}1a`};
+    border-color: ${(props) => `${props.theme.colors.primary}33`};
+  }
+
+  @media (max-width: 640px) {
+    font-size: 0.9375rem;
+    padding: 0.75rem;
   }
 `
 

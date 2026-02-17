@@ -48,24 +48,32 @@ const Text = styled.div`
 
 interface BlockLoaderProps {
   text?: string
-  size?: 'small' | 'medium' | 'large'
+  size?: 'button' | 'small' | 'medium' | 'large'
 }
 
 export function BlockLoader({ text = 'Загрузка...', size = 'medium' }: BlockLoaderProps) {
   const spinnerSize = {
+    button: '16px',
     small: '32px',
     medium: '48px',
     large: '64px',
   }[size]
 
   const borderWidth = {
+    button: '2px',
     small: '3px',
     medium: '4px',
     large: '5px',
   }[size]
 
   return (
-    <LoaderContainer>
+    <>{size === 'button' ? <Spinner
+      style={{
+        width: spinnerSize,
+        height: spinnerSize,
+        borderWidth: borderWidth,
+      }}
+    /> : <LoaderContainer>
       <Spinner
         style={{
           width: spinnerSize,
@@ -74,6 +82,8 @@ export function BlockLoader({ text = 'Загрузка...', size = 'medium' }: B
         }}
       />
       {text && <Text>{text}</Text>}
-    </LoaderContainer>
+    </LoaderContainer>}
+    </>
+
   )
 }

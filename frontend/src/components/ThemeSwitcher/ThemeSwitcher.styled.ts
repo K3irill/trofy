@@ -12,30 +12,41 @@ export const SettingsButton = styled(motion.button)`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  background: ${(props) => props.theme.colors.dark.glass};
-  backdrop-filter: ${(props) => props.theme.glass.blur};
-  -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
+  background: ${(props) => props.theme.colors.dark.glassLight};
   border: ${(props) => props.theme.glass.border};
   border-radius: 12px;
   color: ${(props) => props.theme.colors.light[100]};
-  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: ${(props) => props.theme.shadows.neomorph.dark};
 
+  svg {
+    color: ${(props) => props.theme.colors.light[100]};
+    transition: color 0.3s ease;
+  }
+
   &:hover {
-    box-shadow: ${(props) => props.theme.shadows.glow.primary};
+    background: ${(props) => `${props.theme.colors.primary}1a`};
     border-color: ${(props) => `${props.theme.colors.primary}4d`};
-    transform: scale(1.05);
+    box-shadow: ${(props) => props.theme.shadows.glow.primary};
+    transform: translateY(-2px);
+
+    svg {
+      color: ${(props) => props.theme.colors.primary};
+    }
   }
 
   @media (max-width: 768px) {
-    width: 2.25rem;
-    height: 2.25rem;
-    font-size: 0.875rem;
+    width: 36px;
+    height: 36px;
+  }
+
+  @media (max-width: 640px) {
+    width: 32px;
+    height: 32px;
   }
 `
 

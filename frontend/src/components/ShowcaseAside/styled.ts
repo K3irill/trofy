@@ -228,6 +228,12 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
   }
 `
 
+export const TrophyHeaderWrap = styled.div <{ rarity: string }>`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+`
+
 export const TrophyHeader = styled.div <{ rarity: string }>`
   display: flex;
   align-items: center;
@@ -314,6 +320,7 @@ export const TrophyRarity = styled.div <{ rarity: string }>`
   }};
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
   padding: 0.1875rem 0.5rem;
   background: ${(props) => {
     const rarityColor = props.theme.colors.rarity[props.rarity as keyof typeof props.theme.colors.rarity] || props.theme.colors.light[300]

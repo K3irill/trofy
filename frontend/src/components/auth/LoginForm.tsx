@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { UseFormRegister, UseFormHandleSubmit, FieldErrors, TouchedFields } from 'react-hook-form'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
 import { Button } from '@/components/ui/Button'
 import {
   Form,
@@ -13,6 +14,7 @@ import {
   TogglePasswordButton,
 } from './authForms.styled'
 import type { LoginFormSchema } from '@/lib/schemas/loginSchema'
+import { BlockLoader } from '../Loader/BlockLoader'
 
 interface LoginFormProps {
   register: UseFormRegister<LoginFormSchema>
@@ -66,7 +68,7 @@ export function LoginForm({
             onClick={() => setShowPassword(!showPassword)}
             disabled={isLoading}
           >
-            {showPassword ? '👁️' : '👁️‍🗨️'}
+            {showPassword ? <IoEye /> : <IoEyeOff />}
           </TogglePasswordButton>
         </div>
         {errors.password && touchedFields.password && <ErrorMessage>{errors.password.message}</ErrorMessage>}
@@ -80,7 +82,7 @@ export function LoginForm({
 
       <SubmitButton>
         <Button type="submit" variant="primary" size="lg" disabled={isLoading} onClick={() => { }}>
-          {isLoading ? 'Вход...' : 'Войти'}
+          {isLoading ? <>Вход... <BlockLoader size='button' text='' /></> : 'Войти'}
         </Button>
       </SubmitButton>
     </Form>

@@ -11,6 +11,7 @@ import { QuickNoteModal } from '@/components/Journal/QuickNoteModal'
 import { Button } from '@/components/ui/Button'
 import { useGetUnreadCountQuery } from '@/store/api/notificationsApi'
 import { HiBell } from 'react-icons/hi'
+import { IoTrophyOutline, IoSettingsOutline, IoLogOutOutline, IoCreateOutline } from 'react-icons/io5'
 import {
   HeaderContainer,
   HeaderContent,
@@ -24,6 +25,8 @@ import {
   LevelBadge,
   UserName,
   UserProfileMenu,
+  UserProfileMenuItem,
+  UserProfileMenuDivider,
   MobileMenu,
   NotificationIconWrapper,
   NotificationIcon,
@@ -34,6 +37,12 @@ import {
   MobileMenuHeader,
   MobileMenuActions,
   MobileMenuActionButton,
+  MobileMenuActionButtonWrapper,
+  MobileCreateButton,
+  MobileMenuDivider,
+  MobileMenuLogoutButton,
+  MobileMenuNavLink,
+  MobileMenuOverlay,
 } from './Header.styled'
 
 // Ссылки будут формироваться динамически в компоненте
@@ -71,6 +80,19 @@ export const Header = () => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isAuthenticated])
+
+  // Блокируем скролл при открытом мобильном меню
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isMobileMenuOpen])
 
   return (
     <>
@@ -113,8 +135,8 @@ export const Header = () => {
                 </NavLink>
               )}
               <NavLink
-                href="/feed"
-                $active={pathname === '/feed' || pathname === '/'}
+                href="/"
+                $active={pathname === '/' || pathname === '/'}
               >
                 Лента
               </NavLink>
@@ -127,19 +149,25 @@ export const Header = () => {
             </NavLinks>
           </HeaderLeft>
           <HeaderRight>
+            {isAuthenticated && (
+              <>
+                <MobileCreateButton onClick={() => setIsQuickNoteOpen(true)} title="Быстрая запись в дневник (Ctrl+K)">
+                  <IoCreateOutline />
+                  <span>Заметка</span>
+                </MobileCreateButton>
+                <CreateButton onClick={() => setIsQuickNoteOpen(true)} title="Быстрая запись в дневник (Ctrl+K)">
+                  <IoCreateOutline />
+                  Создать Заметку
+                </CreateButton>
+              </>
+            )}
             <ThemeSwitcher onOpenSettings={() => {
               setSettingsInitialView('theme')
               setIsSettingsOpen(true)
             }} />
             {isAuthenticated && (
               <>
-                <CreateButton onClick={() => setIsQuickNoteOpen(true)} title="Быстрая запись в дневник (Ctrl+K)">
-                  + Создать Заметку
-                </CreateButton>
-                {/* <CreateButton onClick={() => console.log('create')}>
-                  <span>+</span> Свое Достижение
-                </CreateButton> */}
-                <NotificationIconWrapper>
+                <NotificationIconWrapper $hideOnMobile>
                   <NotificationIcon
                     onClick={() => setIsNotificationsOpen(true)}
                     $hasUnread={unreadCount > 0}
@@ -185,7 +213,7 @@ export const Header = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                   >
-                    <div onClick={() => {
+                    <UserProfileMenuItem onClick={() => {
                       if (user?.username) {
                         router.push(`/user/${user.username}`)
                       } else {
@@ -194,19 +222,31 @@ export const Header = () => {
                       setShowProfileMenu(false)
                     }}>
                       Профиль
-                    </div>
-                    <div onClick={() => {
+                    </UserProfileMenuItem>
+                    <UserProfileMenuItem onClick={() => {
+                      setIsQuickNoteOpen(true)
+                      setShowProfileMenu(false)
+                    }}>
+                      <IoTrophyOutline />
+                      Создать Достижение
+                    </UserProfileMenuItem>
+                    <UserProfileMenuItem onClick={() => {
                       setSettingsInitialView('categories')
                       setIsSettingsOpen(true)
                       setShowProfileMenu(false)
                     }}>
+                      <IoSettingsOutline />
                       Настройки
-                    </div>
-                    <div onClick={() => {
+                    </UserProfileMenuItem>
+                    <UserProfileMenuDivider />
+                    <UserProfileMenuItem $danger onClick={() => {
                       dispatch(logout())
                       setShowProfileMenu(false)
                       router.push('/')
-                    }}>Выйти</div>
+                    }}>
+                      <IoLogOutOutline />
+                      Выйти
+                    </UserProfileMenuItem>
                   </UserProfileMenu>
                 )}
               </>
@@ -222,126 +262,161 @@ export const Header = () => {
             )}
             <HamburgerButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
               <span>☰</span>
+              {isAuthenticated && unreadCount > 0 && (
+                <NotificationBadge>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </NotificationBadge>
+              )}
             </HamburgerButton>
           </HeaderRight>
         </HeaderContent>
       </HeaderContainer>
 
       {isMobileMenuOpen && (
-        <MobileMenu
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-        >
-          <MobileMenuHeader>
-            {isAuthenticated && user ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem' }}>
-                    {user.avatar_url ? (
-                      <img
-                        src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_API_URL || '/api'}${user.avatar_url}`}
-                        alt={user.username}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                          e.currentTarget.parentElement!.textContent = '👤'
-                        }}
-                      />
-                    ) : (
-                      '👤'
-                    )}
-                  </Avatar>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <LevelBadge>Lvl {user.level}</LevelBadge>
-                    <UserName style={{ fontSize: '1.125rem' }}>{user.username}</UserName>
+        <>
+          <MobileMenuOverlay
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <MobileMenu
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            onAnimationStart={() => {
+              // Прокручиваем в начало при открытии меню
+              if (typeof window !== 'undefined') {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
+          >
+            <MobileMenuHeader>
+              {isAuthenticated && user ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                    <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem', flexShrink: 0 }}>
+                      {user.avatar_url ? (
+                        <img
+                          src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'}${user.avatar_url}`}
+                          alt={user.username}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                            e.currentTarget.parentElement!.textContent = '👤'
+                          }}
+                        />
+                      ) : (
+                        '👤'
+                      )}
+                    </Avatar>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', minWidth: 0 }}>
+                      <LevelBadge>Lvl {user.level}</LevelBadge>
+                      <UserName style={{ fontSize: '1.125rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.username}</UserName>
+                    </div>
                   </div>
+                  <MobileMenuActions>
+                    <MobileMenuActionButtonWrapper>
+                      <MobileMenuActionButton
+                        onClick={() => {
+                          setIsNotificationsOpen(true)
+                          setShowProfileMenu(false)
+                        }}
+                      >
+                        <HiBell size={18} />
+                      </MobileMenuActionButton>
+                      {unreadCount > 0 && (
+                        <NotificationBadge>
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </NotificationBadge>
+                      )}
+                    </MobileMenuActionButtonWrapper>
+                    <MobileMenuActionButton onClick={() => {
+                      setSettingsInitialView('categories')
+                      setIsSettingsOpen(true)
+                      setShowProfileMenu(false)
+                    }}>
+                      <IoSettingsOutline />
+                    </MobileMenuActionButton>
+                  </MobileMenuActions>
+                </>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', justifyContent: 'space-between' }}>
+                  <div style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Гость</div>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      router.push('/auth/login')
+                      setIsMobileMenuOpen(false)
+                    }}
+                  >
+                    Войти
+                  </Button>
                 </div>
-                <MobileMenuActions>
-                  <MobileMenuActionButton onClick={() => {
-                    setSettingsInitialView('categories')
-                    setIsSettingsOpen(true)
-                    setShowProfileMenu(false)
-                  }}>
-                    ⚙️
-                  </MobileMenuActionButton>
-                  <MobileMenuActionButton onClick={() => {
-                    dispatch(logout())
-                    setIsMobileMenuOpen(false)
-                    router.push('/')
-                  }}>
-                    выйти
-                  </MobileMenuActionButton>
-                </MobileMenuActions>
-              </>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', justifyContent: 'space-between' }}>
-                <div style={{ color: 'rgba(255, 255, 255, 0.6)' }}>Гость</div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    router.push('/auth/login')
-                    setIsMobileMenuOpen(false)
-                  }}
-                >
-                  Войти
-                </Button>
-              </div>
-            )}
-          </MobileMenuHeader>
-          <NavLink
-            href={isAuthenticated && user ? `/user/${user.username}` : '/feed'}
-            $active={isAuthenticated && user ? (pathname === `/user/${user.username}` || pathname?.startsWith(`/user/${user.username}/`)) : false}
-            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
-          >
-            Профиль
-          </NavLink>
-          <NavLink
-            href="/categories"
-            $active={pathname === '/categories' || pathname?.startsWith('/categories/')}
-            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
-          >
-            Достижения
-          </NavLink>
-          <NavLink
-            href="/users"
-            $active={pathname === '/users' || pathname?.startsWith('/users/')}
-            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
-          >
-            Люди
-          </NavLink>
-          {isAuthenticated && (
-            <NavLink
-              href="/journal"
-              $active={pathname === '/journal' || pathname?.startsWith('/journal/')}
-              style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
+              )}
+            </MobileMenuHeader>
+            <MobileMenuNavLink
+              href={isAuthenticated && user ? `/user/${user.username}` : '/'}
+              $active={isAuthenticated && user ? (pathname === `/user/${user.username}` || pathname?.startsWith(`/user/${user.username}/`)) : false}
+              onClick={() => setIsMobileMenuOpen(false)}
             >
-              Дневник
-            </NavLink>
-          )}
-          <NavLink
-            href="/feed"
-            $active={pathname === '/feed' || pathname === '/'}
-            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
-          >
-            Лента
-          </NavLink>
-          <NavLink
-            href="/communities"
-            $active={pathname === '/communities'}
-            style={{ display: 'block', width: '100%', fontSize: '1.25rem', padding: '1rem' }}
-          >
-            Сообщества
-          </NavLink>
-          {isAuthenticated && (
-            <div style={{ borderTop: '2px solid rgba(255, 255, 255, 0.08)', paddingTop: '1.5rem' }}>
-              <CreateButton style={{ width: '100%', justifyContent: 'center' }} onClick={() => console.log('create')}>
-                <span>+</span> Создать Достижение
-              </CreateButton>
-            </div>
-          )}
+              Профиль
+            </MobileMenuNavLink>
+            {isAuthenticated && user && (
+              <MobileMenuNavLink
+                href={`/user/${user.username}/achievements`}
+                $active={pathname === `/user/${user.username}/achievements` || pathname?.startsWith(`/user/${user.username}/achievements/`)}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Мои достижения
+              </MobileMenuNavLink>
+            )}
+            <MobileMenuNavLink
+              href="/users"
+              $active={pathname === '/users' || pathname?.startsWith('/users/')}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Люди
+            </MobileMenuNavLink>
+            {isAuthenticated && (
+              <MobileMenuNavLink
+                href="/journal"
+                $active={pathname === '/journal' || pathname?.startsWith('/journal/')}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Дневник
+              </MobileMenuNavLink>
+            )}
+            <MobileMenuNavLink
+              href="/"
+              $active={pathname === '/' || pathname === '/'}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Лента
+            </MobileMenuNavLink>
+            <MobileMenuNavLink
+              href="/communities"
+              $active={pathname === '/communities'}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Сообщества
+            </MobileMenuNavLink>
+            {isAuthenticated && (
+              <MobileMenuDivider />
+            )}
+            {isAuthenticated && (
+              <MobileMenuLogoutButton onClick={() => {
+                dispatch(logout())
+                setIsMobileMenuOpen(false)
+                router.push('/')
+              }}>
+                <IoLogOutOutline />
+                Выйти
+              </MobileMenuLogoutButton>
+            )}
 
-        </MobileMenu>
+          </MobileMenu>
+        </>
       )}
 
       <SettingsModal

@@ -26,6 +26,7 @@ import {
   TrophyOwner,
   TrophyDate,
   TrophyHeaderInfo,
+  TrophyHeaderWrap,
 } from './styled'
 
 interface ShowcaseAsideProps {
@@ -222,7 +223,12 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
                 whileHover={{ scale: 1.02, x: 5 }}
               >
                 <TrophyHeader rarity={trophy.rarity}>
-                  <TrophyIcon>{renderIcon(trophy.icon, 'trophy')}</TrophyIcon>
+                  <TrophyHeaderWrap>
+                    <TrophyIcon>{renderIcon(trophy.icon, 'trophy')}</TrophyIcon>
+                    <TrophyRarity rarity={trophy.rarity}>
+                      {trophy.rarity.toUpperCase()}
+                    </TrophyRarity>
+                  </TrophyHeaderWrap>
                   <TrophyHeaderInfo>
                     <TrophyOwner>{trophy.owner}</TrophyOwner>
                     <TrophyDate>{trophy.date}</TrophyDate>
@@ -231,9 +237,7 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
                 <TrophyContent>
                   <TrophyInfo>
                     <TrophyName>{trophy.name}</TrophyName>
-                    <TrophyRarity rarity={trophy.rarity}>
-                      {trophy.rarity.toUpperCase()}
-                    </TrophyRarity>
+
                   </TrophyInfo>
                   <TrophyOwner>{trophy.owner}</TrophyOwner>
                   <TrophyDate>{trophy.date}</TrophyDate>

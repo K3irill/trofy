@@ -35,6 +35,14 @@ export const GlobalStyle = createGlobalStyle`
   body {
     height: 100%;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #__next {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   /* Отступ снизу для нижнего меню на мобильных */

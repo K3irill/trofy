@@ -25,10 +25,7 @@ export function useLogin() {
   } = useForm<LoginFormSchema>({
     resolver: yupResolver(loginSchema),
     mode: 'onChange',
-    defaultValues: {
-      login: 'test2@trofy.art',
-      password: 'test-trofy'
-    }
+
   })
 
   const { password, login } = watch()

@@ -5,6 +5,9 @@ export const StyledButton = styled(motion.button) <{ variant: string; size: stri
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;

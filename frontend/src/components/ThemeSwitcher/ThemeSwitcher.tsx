@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '@/store'
 import { setTheme } from '@/store/slices/themeSlice'
 import { ThemeName, themes } from '@/styles/themes'
+import { IoColorPaletteOutline } from 'react-icons/io5'
 import {
   ThemeSwitcherContainer,
   ThemeSelectButton,
@@ -55,8 +56,9 @@ export const ThemeSwitcher = ({ onOpenSettings }: ThemeSwitcherProps = {}) => {
           onClick={onOpenSettings}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          title="Настройки темы"
         >
-          🎨
+          <IoColorPaletteOutline size={20} />
         </SettingsButton>
       )}
       <div style={{ visibility: 'hidden', position: 'absolute' }}>

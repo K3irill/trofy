@@ -19,7 +19,7 @@ export const BottomNavigation = () => {
   const profileHref = isAuthenticated && user ? `/user/${user.username}` : '/auth/login'
 
   const navItems = [
-    { name: 'Лента', href: '/feed', icon: HiNewspaper },
+    { name: 'Лента', href: '/', icon: HiNewspaper },
     { name: 'Достижения', href: '/categories', icon: GiAchievement },
     { name: 'Сообщества', href: '/communities', icon: HiUserGroup },
     { name: 'Профиль', href: profileHref, icon: HiSparkles },
@@ -29,8 +29,8 @@ export const BottomNavigation = () => {
     <BottomNavContainer>
       {navItems.map((item) => {
         const Icon = item.icon
-        const isActive = item.href === '/feed' 
-          ? (pathname === '/feed' || pathname === '/')
+        const isActive = item.href === '/'
+          ? (pathname === '/' || pathname === '/')
           : pathname === item.href || (item.href.startsWith('/user/') && pathname?.startsWith(item.href))
 
         return (

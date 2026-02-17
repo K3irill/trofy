@@ -66,6 +66,9 @@ export const TogglePasswordButton = styled.button`
   transform: translateY(-50%);
   background: none;
   border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   font-size: 1.25rem;
