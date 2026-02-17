@@ -21,9 +21,10 @@ interface JournalEditorProps {
   onChange?: (content: any) => void
   showToolbar?: boolean
   editable?: boolean
+  isFullscreen?: boolean
 }
 
-export const JournalEditor = ({ content, placeholder = 'Начните писать...', onChange, showToolbar = true, editable = true }: JournalEditorProps) => {
+export const JournalEditor = ({ content, placeholder = 'Начните писать...', onChange, showToolbar = true, editable = true, isFullscreen = false }: JournalEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -53,14 +54,14 @@ export const JournalEditor = ({ content, placeholder = 'Начните писа�
   // Обновляем контент редактора при изменении prop content
   useEffect(() => {
     if (!editor) return
-    
+
     const currentContent = editor.getJSON()
     const newContent = content ?? ''
-    
+
     // Сравниваем только если контент действительно изменился
     const currentStr = JSON.stringify(currentContent)
     const newStr = JSON.stringify(newContent)
-    
+
     if (currentStr !== newStr) {
       editor.commands.setContent(newContent)
     }
@@ -71,9 +72,9 @@ export const JournalEditor = ({ content, placeholder = 'Начните писа�
   }
 
   return (
-    <EditorContainer>
+    <EditorContainer $isFullscreen={isFullscreen}>
       {showToolbar && (
-        <Toolbar>
+        <Toolbar $isFullscreen={isFullscreen}>
           <ToolbarButton
             onClick={() => editor.chain().focus().toggleBold().run()}
             $active={editor.isActive('bold')}

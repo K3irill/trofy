@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence } from 'framer-motion'
-import { IoClose, IoCreateOutline } from 'react-icons/io5'
+import { IoClose, IoCreateOutline, IoExpand, IoContract } from 'react-icons/io5'
 import { JournalEditor } from './JournalEditor'
 import {
   useCreateJournalEntryMutation,
@@ -21,6 +21,7 @@ import {
   ModalHeader,
   ModalTitle,
   CloseButton,
+  FullscreenButton,
   ModalContent,
   Input,
   ButtonGroup,
@@ -28,6 +29,7 @@ import {
   CancelButton,
   SelectGroup,
   SelectLabel,
+  SelectsRow,
   EntryInfoContainer,
   InfoRow,
   InfoLabel,
@@ -64,6 +66,7 @@ export const JournalEntryModal = ({ isOpen, onClose, entry, viewMode = false }: 
   const [folderId, setFolderId] = useState<string | null>(null)
   const [tagIds, setTagIds] = useState<string[]>([])
   const [isEditMode, setIsEditMode] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const { data: folders = [] } = useGetJournalFoldersQuery()
   const { data: tags = [] } = useGetJournalTagsQuery()
@@ -76,7 +79,9 @@ export const JournalEntryModal = ({ isOpen, onClose, entry, viewMode = false }: 
   const isViewing = viewMode && entry && !isEditMode
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) {
+      return
+    }
 
     if (entry) {
       setTitle(entry.title)
@@ -94,6 +99,12 @@ export const JournalEntryModal = ({ isOpen, onClose, entry, viewMode = false }: 
       setIsEditMode(true) // Для новой записи всегда режим редактирования
     }
   }, [isOpen, entry, viewMode])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsFullscreen(false)
+    }
+  }, [isOpen])
 
   const handleSave = async () => {
     if (!title.trim() || !content) {
@@ -154,6 +165,7 @@ export const JournalEntryModal = ({ isOpen, onClose, entry, viewMode = false }: 
           exit={{ opacity: 0 }}
         >
           <ModalContainer
+            $isFullscreen={isFullscreen}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -185,12 +197,17 @@ export const JournalEntryModal = ({ isOpen, onClose, entry, viewMode = false }: 
                     Редактировать
                   </button>
                 )}
+                {!isViewing && (
+                  <FullscreenButton onClick={() => setIsFullscreen(!isFullscreen)} title={isFullscreen ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим'}>
+                    {isFullscreen ? <IoContract /> : <IoExpand />}
+                  </FullscreenButton>
+                )}
                 <CloseButton onClick={handleCancel} disabled={isLoading}>
                   <IoClose />
                 </CloseButton>
               </div>
             </ModalHeader>
-            <ModalContent>
+            <ModalContent $isFullscreen={isFullscreen}>
               {!isViewing && (
                 <>
                   <Input
@@ -201,38 +218,43 @@ export const JournalEntryModal = ({ isOpen, onClose, entry, viewMode = false }: 
                     autoFocus
                   />
 
-                  <SelectGroup>
-                    <SelectLabel>Тип записи</SelectLabel>
-                    <ThemedSelect
-                      options={entryTypeOptions}
-                      value={entryTypeOptions.find((o) => o.value === type) || null}
-                      onChange={(option) => setType((option as ThemedSelectOption)?.value as JournalEntryType)}
-                    />
-                  </SelectGroup>
+                  <SelectsRow>
+                    <SelectGroup>
+                      <SelectLabel>Тип</SelectLabel>
+                      <ThemedSelect
+                        compact
+                        options={entryTypeOptions}
+                        value={entryTypeOptions.find((o) => o.value === type) || null}
+                        onChange={(option) => setType((option as ThemedSelectOption)?.value as JournalEntryType)}
+                      />
+                    </SelectGroup>
 
-                  <SelectGroup>
-                    <SelectLabel>Папка</SelectLabel>
-                    <ThemedSelect
-                      options={folderOptions}
-                      value={folderOptions.find((o) => o.value === (folderId || '')) || null}
-                      onChange={(option) => setFolderId((option as ThemedSelectOption)?.value || null)}
-                      isClearable
-                    />
-                  </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Папка</SelectLabel>
+                      <ThemedSelect
+                        compact
+                        options={folderOptions}
+                        value={folderOptions.find((o) => o.value === (folderId || '')) || null}
+                        onChange={(option) => setFolderId((option as ThemedSelectOption)?.value || null)}
+                        isClearable
+                      />
+                    </SelectGroup>
 
-                  <SelectGroup>
-                    <SelectLabel>Теги</SelectLabel>
-                    <ThemedSelect
-                      options={tagOptions}
-                      value={tagOptions.filter((o) => tagIds.includes(o.value))}
-                      onChange={(options) => {
-                        const selected = Array.isArray(options) ? options : []
-                        setTagIds(selected.map((o) => o.value))
-                      }}
-                      isMulti
-                      isClearable
-                    />
-                  </SelectGroup>
+                    <SelectGroup>
+                      <SelectLabel>Теги</SelectLabel>
+                      <ThemedSelect
+                        compact
+                        options={tagOptions}
+                        value={tagOptions.filter((o) => tagIds.includes(o.value))}
+                        onChange={(options) => {
+                          const selected = Array.isArray(options) ? options : []
+                          setTagIds(selected.map((o) => o.value))
+                        }}
+                        isMulti
+                        isClearable
+                      />
+                    </SelectGroup>
+                  </SelectsRow>
                 </>
               )}
 
@@ -274,10 +296,11 @@ export const JournalEntryModal = ({ isOpen, onClose, entry, viewMode = false }: 
                 onChange={setContent}
                 editable={!isViewing}
                 showToolbar={!isViewing}
+                isFullscreen={isFullscreen}
               />
 
               {!isViewing && (
-                <ButtonGroup>
+                <ButtonGroup $isFullscreen={isFullscreen}>
                   <CancelButton onClick={handleCancel} disabled={isLoading}>
                     Отмена
                   </CancelButton>

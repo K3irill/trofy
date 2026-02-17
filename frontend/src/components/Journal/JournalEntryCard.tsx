@@ -103,7 +103,7 @@ export const JournalEntryCard = ({ entry, onEdit, onView }: JournalEntryCardProp
   const getPreviewText = (content: any): string => {
     if (!content) return ''
     if (typeof content === 'string') return content.substring(0, 150)
-    
+
     const extractText = (node: any): string => {
       if (typeof node === 'string') return node
       if (Array.isArray(node)) {

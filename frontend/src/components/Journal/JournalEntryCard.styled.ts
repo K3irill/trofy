@@ -58,21 +58,21 @@ export const ActionButton = styled.button<{ $active?: boolean; $danger?: boolean
     props.$active
       ? props.theme.colors.primary + '33'
       : props.$danger
-      ? props.theme.colors.danger + '33'
-      : 'transparent'};
+        ? props.theme.colors.danger + '33'
+        : 'transparent'};
   border: 1px solid
     ${(props) =>
-      props.$active
-        ? props.theme.colors.primary
-        : props.$danger
+    props.$active
+      ? props.theme.colors.primary
+      : props.$danger
         ? props.theme.colors.danger
         : props.theme.colors.dark[600] + '80'};
   color: ${(props) =>
     props.$active
       ? props.theme.colors.primary
       : props.$danger
-      ? props.theme.colors.danger
-      : props.theme.colors.light[300]};
+        ? props.theme.colors.danger
+        : props.theme.colors.light[300]};
   padding: 0.5rem;
   border-radius: 8px;
   cursor: pointer;
@@ -84,9 +84,9 @@ export const ActionButton = styled.button<{ $active?: boolean; $danger?: boolean
 
   &:hover {
     background: ${(props) =>
-      props.$active
-        ? props.theme.colors.primary + '4d'
-        : props.$danger
+    props.$active
+      ? props.theme.colors.primary + '4d'
+      : props.$danger
         ? props.theme.colors.danger + '4d'
         : props.theme.colors.dark[600] + '80'};
     transform: scale(1.1);

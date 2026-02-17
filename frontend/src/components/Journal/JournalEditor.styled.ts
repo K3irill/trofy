@@ -1,6 +1,20 @@
 import styled from 'styled-components'
 
-export const EditorContainer = styled.div`
+export const EditorContainer = styled.div<{ $isFullscreen?: boolean }>`
+  ${(props) =>
+    props.$isFullscreen
+      ? `
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    z-index: 1;
+  `
+      : ''}
   .ProseMirror {
     /* Task List (чекбоксы) - глобальные стили */
     ul[data-type="taskList"] {
@@ -43,7 +57,7 @@ export const EditorContainer = styled.div`
           -webkit-appearance: none !important;
           -moz-appearance: none !important;
           background: ${(props) => props.theme.colors.dark[700]} !important;
-          border: 2px solid ${(props) => props.theme.colors.dark[500]} !important;
+          border: 2px solid ${(props) => props.theme.colors.dark[600]} !important;
           border-radius: 4px !important;
           position: relative !important;
           transition: all 0.2s ease !important;
@@ -99,18 +113,21 @@ export const EditorContainer = styled.div`
       }
     }
     outline: none;
-    min-height: 200px;
+    min-height: ${(props) => (props.$isFullscreen ? 'calc(100vh - 200px)' : '200px')};
+    height: ${(props) => (props.$isFullscreen ? '100%' : 'auto')};
     padding: 1rem;
-    background: ${(props) => props.theme.colors.dark[800]}cc;
-    border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
-    border-radius: 12px;
+    background: ${(props) => props.theme.colors.dark[700]};
+    border: 2px solid ${(props) => props.theme.colors.dark[600]};
+    border-radius: ${(props) => (props.$isFullscreen ? '0' : '0 0 12px 12px')};
     color: ${(props) => props.theme.colors.light[100]};
     font-size: 0.875rem;
     line-height: 1.6;
+    flex: 1;
+    overflow-y: auto;
 
     &:focus {
       border-color: ${(props) => props.theme.colors.primary};
-      box-shadow: 0 0 0 3px ${(props) => props.theme.colors.primary}1a;
+      box-shadow: 0 0 0 3px ${(props) => props.theme.colors.primary}40;
     }
 
     p {
@@ -196,22 +213,23 @@ export const EditorContainer = styled.div`
   }
 `
 
-export const Toolbar = styled.div`
+export const Toolbar = styled.div<{ $isFullscreen?: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.25rem;
   padding: 0.5rem;
-  background: ${(props) => props.theme.colors.dark[700]}cc;
-  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
+  background: ${(props) => props.theme.colors.dark[800]};
+  border: 2px solid ${(props) => props.theme.colors.dark[600]};
   border-bottom: none;
-  border-radius: 12px 12px 0 0;
+  border-radius: ${(props) => (props.$isFullscreen ? '0' : '12px 12px 0 0')};
   flex-wrap: wrap;
+  flex-shrink: 0;
 `
 
 export const ToolbarButton = styled.button<{ $active?: boolean }>`
-  background: ${(props) => (props.$active ? props.theme.colors.primary + '33' : 'transparent')};
-  border: 1px solid ${(props) => (props.$active ? props.theme.colors.primary + '80' : 'transparent')};
-  color: ${(props) => (props.$active ? props.theme.colors.primary : props.theme.colors.light[300])};
+  background: ${(props) => (props.$active ? props.theme.colors.primary + '40' : props.theme.colors.dark[700])};
+  border: 2px solid ${(props) => (props.$active ? props.theme.colors.primary : props.theme.colors.dark[600])};
+  color: ${(props) => (props.$active ? props.theme.colors.primary : props.theme.colors.light[200])};
   padding: 0.5rem;
   border-radius: 6px;
   cursor: pointer;
@@ -224,15 +242,15 @@ export const ToolbarButton = styled.button<{ $active?: boolean }>`
   min-width: 2rem;
 
   &:hover {
-    background: ${(props) => props.theme.colors.primary + '33'};
+    background: ${(props) => props.theme.colors.primary + '40'};
     color: ${(props) => props.theme.colors.primary};
-    border-color: ${(props) => props.theme.colors.primary + '80'};
+    border-color: ${(props) => props.theme.colors.primary};
   }
 `
 
 export const ToolbarDivider = styled.div`
-  width: 1px;
+  width: 2px;
   height: 1.5rem;
-  background: ${(props) => props.theme.colors.dark[600]}80;
+  background: ${(props) => props.theme.colors.dark[600]};
   margin: 0 0.25rem;
 `

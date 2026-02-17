@@ -10,27 +10,26 @@ export interface ThemedSelectOption {
   icon?: React.ReactNode
 }
 
-interface ThemedSelectProps extends Omit<Props<ThemedSelectOption, boolean>, 'styles'> {}
+interface ThemedSelectProps extends Omit<Props<ThemedSelectOption, boolean>, 'styles'> {
+  compact?: boolean
+}
 
-const getThemedStyles = (theme: DefaultTheme): StylesConfig<ThemedSelectOption, boolean, GroupBase<ThemedSelectOption>> => ({
+const getThemedStyles = (theme: DefaultTheme, compact?: boolean): StylesConfig<ThemedSelectOption, boolean, GroupBase<ThemedSelectOption>> => ({
   control: (provided, state) => ({
     ...provided,
-    minHeight: '44px',
-    backgroundColor: `linear-gradient(145deg, ${theme.colors.dark[700]}e6 0%, ${theme.colors.dark[800]}f2 100%)`,
-    background: `linear-gradient(145deg, ${theme.colors.dark[700]}e6 0%, ${theme.colors.dark[800]}f2 100%)`,
-    border: `2px solid ${state.isFocused ? theme.colors.primary : `${theme.colors.dark[600]}80`}`,
-    borderRadius: '12px',
+    minHeight: compact ? '32px' : '44px',
+    backgroundColor: theme.colors.dark.neomorphDark,
+    background: theme.colors.dark.neomorphDark,
+    border: `1px solid ${state.isFocused ? `${theme.colors.primary}40` : theme.colors.dark.neomorphLight}`,
+    borderRadius: '10px',
     boxShadow: state.isFocused
-      ? `${theme.shadows.glow.primary}, ${theme.shadows.glass.medium}`
-      : theme.shadows.neomorph.dark,
-    padding: '0.25rem 0.5rem',
+      ? `0 0 0 2px ${theme.colors.primary}20`
+      : 'none',
+    padding: compact ? '0.375rem 0.375rem 0.375rem 0.5rem' : '0.625rem 0.625rem 0.625rem 0.875rem',
     cursor: 'pointer',
-    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'all 0.3s ease',
     '&:hover': {
-      borderColor: `${theme.colors.primary}66`,
-      background: `linear-gradient(145deg, ${theme.colors.dark[700]}f0 0%, ${theme.colors.dark[800]}f8 100%)`,
-      boxShadow: `${theme.shadows.glass.light}, 0 0 15px ${theme.colors.primary}20`,
-      transform: 'translateY(-2px)',
+      borderColor: state.isFocused ? `${theme.colors.primary}40` : theme.colors.dark.neomorphLight,
     },
   }),
   menu: (provided) => ({
@@ -60,9 +59,10 @@ const getThemedStyles = (theme: DefaultTheme): StylesConfig<ThemedSelectOption, 
         ? theme.colors.light[100]
         : theme.colors.light[300],
     borderRadius: '8px',
-    padding: '0.75rem 1rem',
+    padding: compact ? '0.5rem 0.75rem' : '0.75rem 1rem',
     cursor: 'pointer',
     fontWeight: state.isSelected ? 600 : 500,
+    fontSize: compact ? '0.8125rem' : '0.9375rem',
     transition: 'all 0.2s ease',
     marginBottom: '0.25rem',
     '&:active': {
@@ -71,11 +71,15 @@ const getThemedStyles = (theme: DefaultTheme): StylesConfig<ThemedSelectOption, 
   }),
   placeholder: (provided) => ({
     ...provided,
-    color: `${theme.colors.light[300]}b3`,
+    color: theme.colors.light[300],
+    fontSize: compact ? '0.8125rem' : '1rem',
+    fontWeight: 500,
   }),
   singleValue: (provided) => ({
     ...provided,
     color: theme.colors.light[100],
+    fontSize: compact ? '0.8125rem' : '1rem',
+    fontWeight: 500,
   }),
   multiValue: (provided) => ({
     ...provided,
@@ -99,6 +103,8 @@ const getThemedStyles = (theme: DefaultTheme): StylesConfig<ThemedSelectOption, 
   input: (provided) => ({
     ...provided,
     color: theme.colors.light[100],
+    fontSize: compact ? '0.8125rem' : '1rem',
+    fontWeight: 500,
   }),
   indicatorSeparator: () => ({
     display: 'none',
@@ -107,20 +113,30 @@ const getThemedStyles = (theme: DefaultTheme): StylesConfig<ThemedSelectOption, 
     ...provided,
     color: state.isFocused ? theme.colors.primary : theme.colors.light[300],
     transition: 'all 0.3s ease',
+    padding: compact ? '0.25rem' : '0.5rem',
     '&:hover': {
       color: theme.colors.primary,
+    },
+    svg: {
+      width: compact ? '14px' : '20px',
+      height: compact ? '14px' : '20px',
     },
   }),
   clearIndicator: (provided) => ({
     ...provided,
     color: theme.colors.light[300],
+    padding: compact ? '0.25rem' : '0.5rem',
     '&:hover': {
       color: theme.colors.danger,
+    },
+    svg: {
+      width: compact ? '14px' : '20px',
+      height: compact ? '14px' : '20px',
     },
   }),
 })
 
-export const ThemedSelect = (props: ThemedSelectProps) => {
+export const ThemedSelect = ({ compact, ...props }: ThemedSelectProps) => {
   const theme = useTheme()
-  return <Select styles={getThemedStyles(theme)} {...props} />
+  return <Select styles={getThemedStyles(theme, compact)} {...props} />
 }
