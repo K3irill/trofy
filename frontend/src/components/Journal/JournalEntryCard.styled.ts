@@ -14,6 +14,11 @@ export const EntryCard = styled.div<{ $isPinned?: boolean }>`
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     border-color: ${(props) => props.theme.colors.primary}80;
   }
+
+  @media (max-width: 640px) {
+    padding: 1rem;
+    border-radius: 12px;
+  }
 `
 
 export const EntryHeader = styled.div`
@@ -22,6 +27,11 @@ export const EntryHeader = styled.div`
   align-items: flex-start;
   margin-bottom: 1rem;
   gap: 1rem;
+
+  @media (max-width: 640px) {
+    margin-bottom: 0.75rem;
+    gap: 0.75rem;
+  }
 `
 
 export const EntryTitle = styled.h3`
@@ -29,11 +39,20 @@ export const EntryTitle = styled.h3`
   font-weight: 600;
   color: ${(props) => props.theme.colors.light[100]};
   margin: 0 0 0.5rem 0;
+
+  @media (max-width: 640px) {
+    font-size: 1.125rem;
+    margin: 0 0 0.375rem 0;
+  }
 `
 
 export const EntryMeta = styled.div`
   font-size: 0.75rem;
   color: ${(props) => props.theme.colors.light[300]};
+
+  @media (max-width: 640px) {
+    font-size: 0.6875rem;
+  }
 `
 
 export const EntryContent = styled.div`
@@ -45,12 +64,22 @@ export const EntryContent = styled.div`
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+
+  @media (max-width: 640px) {
+    font-size: 0.8125rem;
+    margin-bottom: 0.75rem;
+    -webkit-line-clamp: 2;
+  }
 `
 
 export const EntryActions = styled.div`
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
+
+  @media (max-width: 640px) {
+    gap: 0.375rem;
+  }
 `
 
 export const ActionButton = styled.button<{ $active?: boolean; $danger?: boolean }>`
@@ -91,6 +120,12 @@ export const ActionButton = styled.button<{ $active?: boolean; $danger?: boolean
         : props.theme.colors.dark[600] + '80'};
     transform: scale(1.1);
   }
+
+  @media (max-width: 640px) {
+    padding: 0.375rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+  }
 `
 
 export const EntryBadges = styled.div`
@@ -98,6 +133,11 @@ export const EntryBadges = styled.div`
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 1rem;
+
+  @media (max-width: 640px) {
+    gap: 0.375rem;
+    margin-top: 0.75rem;
+  }
 `
 
 export const Badge = styled.div<{ $color?: string }>`
@@ -110,6 +150,12 @@ export const Badge = styled.div<{ $color?: string }>`
   font-size: 0.75rem;
   color: ${(props) => (props.$color ? props.$color : props.theme.colors.light[300])};
   font-weight: 500;
+
+  @media (max-width: 640px) {
+    padding: 0.1875rem 0.625rem;
+    font-size: 0.6875rem;
+    border-radius: 10px;
+  }
 `
 
 export const TypeBadge = styled(Badge)`

@@ -395,11 +395,11 @@ export const Header = () => {
               Лента
             </MobileMenuNavLink>
             <MobileMenuNavLink
-              href="/communities"
-              $active={pathname === '/communities'}
+              href="/users"
+              $active={pathname === '/users'}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Сообщества
+              Сообщество
             </MobileMenuNavLink>
             {isAuthenticated && (
               <MobileMenuDivider />

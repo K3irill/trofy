@@ -18,25 +18,29 @@ const getThemedStyles = (theme: DefaultTheme, compact?: boolean): StylesConfig<T
   control: (provided, state) => ({
     ...provided,
     minHeight: compact ? '32px' : '44px',
-    backgroundColor: theme.colors.dark.neomorphDark,
-    background: theme.colors.dark.neomorphDark,
-    border: `1px solid ${state.isFocused ? `${theme.colors.primary}40` : theme.colors.dark.neomorphLight}`,
+    backgroundColor: compact
+      ? `linear-gradient(145deg, ${theme.colors.dark[700]}e6 0%, ${theme.colors.dark[800]}f2 100%)`
+      : theme.colors.dark.neomorphDark,
+    background: compact
+      ? `linear-gradient(145deg, ${theme.colors.dark[700]}e6 0%, ${theme.colors.dark[800]}f2 100%)`
+      : theme.colors.dark.neomorphDark,
+    border: `2px solid ${state.isFocused ? theme.colors.primary + '80' : theme.colors.dark[600] + '80'}`,
     borderRadius: '10px',
     boxShadow: state.isFocused
-      ? `0 0 0 2px ${theme.colors.primary}20`
+      ? `0 0 0 3px ${theme.colors.primary}1a`
       : 'none',
     padding: compact ? '0.375rem 0.375rem 0.375rem 0.5rem' : '0.625rem 0.625rem 0.625rem 0.875rem',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     '&:hover': {
-      borderColor: state.isFocused ? `${theme.colors.primary}40` : theme.colors.dark.neomorphLight,
+      borderColor: state.isFocused ? theme.colors.primary + '80' : theme.colors.dark[600] + '80',
     },
   }),
   menu: (provided) => ({
     ...provided,
     backgroundColor: theme.colors.dark[800],
     borderRadius: '12px',
-    border: `2px solid ${theme.colors.dark[600]}80`,
+    border: `2px solid ${theme.colors.dark[600]}`,
     boxShadow: theme.shadows.glass.medium,
     overflow: 'hidden',
     zIndex: 1000,
@@ -49,9 +53,9 @@ const getThemedStyles = (theme: DefaultTheme, compact?: boolean): StylesConfig<T
   option: (provided, state) => ({
     ...provided,
     backgroundColor: state.isSelected
-      ? `${theme.colors.primary}1a`
+      ? `${theme.colors.primary}33`
       : state.isFocused
-        ? `${theme.colors.primary}0d`
+        ? `${theme.colors.primary}1a`
         : 'transparent',
     color: state.isSelected
       ? theme.colors.primary
@@ -66,7 +70,7 @@ const getThemedStyles = (theme: DefaultTheme, compact?: boolean): StylesConfig<T
     transition: 'all 0.2s ease',
     marginBottom: '0.25rem',
     '&:active': {
-      backgroundColor: `${theme.colors.primary}33`,
+      backgroundColor: `${theme.colors.primary}4d`,
     },
   }),
   placeholder: (provided) => ({

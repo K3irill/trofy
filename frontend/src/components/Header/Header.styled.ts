@@ -389,18 +389,18 @@ export const UserProfileMenuItem = styled.div<{ $danger?: boolean }>`
   gap: 0.75rem;
   padding: 0.625rem 0.875rem;
   color: ${(props) => props.$danger ? props.theme.colors.danger : props.theme.colors.light[100]};
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 
   svg {
     font-size: 1.125rem;
     flex-shrink: 0;
   }
 
-  &:hover {
+    &:hover {
     background: ${(props) => props.$danger
     ? `${props.theme.colors.danger}1a`
     : `${props.theme.colors.primary}1a`};

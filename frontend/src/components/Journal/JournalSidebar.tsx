@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { IoFolder, IoFolderOutline, IoPricetag, IoAdd, IoClose, IoSearch } from 'react-icons/io5'
+import { useState, useMemo } from 'react'
+import { IoFolder, IoFolderOutline, IoPricetag, IoAdd, IoClose } from 'react-icons/io5'
 import {
   useGetJournalFoldersQuery,
   useGetJournalTagsQuery,
@@ -11,6 +11,7 @@ import {
   JournalTag,
 } from '@/store/api/journalApi'
 import { useToast } from '@/hooks/useToast'
+import { ThemedSelect, ThemedSelectOption } from '@/components/Select/ThemedSelect'
 import {
   SidebarContainer,
   SidebarSection,
@@ -21,6 +22,8 @@ import {
   AddButton,
   Input,
   AddForm,
+  MobileSelectWrapper,
+  MobileSelectGroup,
 } from './JournalSidebar.styled'
 
 interface JournalSidebarProps {
@@ -46,6 +49,22 @@ export const JournalSidebar = ({
   const [createFolder] = useCreateJournalFolderMutation()
   const [createTag] = useCreateJournalTagMutation()
   const { showToast } = useToast()
+
+  const folderOptions: ThemedSelectOption[] = useMemo(() => [
+    { value: '', label: 'Все записи' },
+    ...folders.map((folder) => ({
+      value: folder.id,
+      label: folder.name,
+    })),
+  ], [folders])
+
+  const tagOptions: ThemedSelectOption[] = useMemo(() => [
+    { value: '', label: 'Все теги' },
+    ...tags.map((tag) => ({
+      value: tag.id,
+      label: tag.name,
+    })),
+  ], [tags])
 
   const handleCreateFolder = async () => {
     if (!newFolderName.trim()) return
@@ -75,10 +94,11 @@ export const JournalSidebar = ({
 
   return (
     <SidebarContainer>
-      <SidebarSection>
+      {/* Desktop view */}
+      <SidebarSection className="desktop-view">
         <SectionTitle>
           Папки
-          <AddButton onClick={() => setShowAddFolder(true)} title="Добавить папку">
+          <AddButton onClick={() => setShowAddFolder(true)} title="Добавить папку" className="desktop-add-btn">
             <IoAdd />
           </AddButton>
         </SectionTitle>
@@ -99,7 +119,7 @@ export const JournalSidebar = ({
               <IoFolder />
               <span>{folder.name}</span>
               {folder.entriesCount > 0 && (
-                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', opacity: 0.6 }}>
+                <span className="entries-count">
                   {folder.entriesCount}
                 </span>
               )}
@@ -140,10 +160,10 @@ export const JournalSidebar = ({
         </SectionContent>
       </SidebarSection>
 
-      <SidebarSection>
+      <SidebarSection className="desktop-view">
         <SectionTitle>
           Теги
-          <AddButton onClick={() => setShowAddTag(true)} title="Добавить тег">
+          <AddButton onClick={() => setShowAddTag(true)} title="Добавить тег" className="desktop-add-btn">
             <IoAdd />
           </AddButton>
         </SectionTitle>
@@ -165,7 +185,7 @@ export const JournalSidebar = ({
               <IoPricetag />
               <span>{tag.name}</span>
               {tag.entriesCount > 0 && (
-                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', opacity: 0.6 }}>
+                <span className="entries-count">
                   {tag.entriesCount}
                 </span>
               )}
@@ -205,6 +225,111 @@ export const JournalSidebar = ({
           )}
         </SectionContent>
       </SidebarSection>
+
+      {/* Mobile view */}
+      <div className="mobile-view">
+        <MobileSelectWrapper>
+          <MobileSelectGroup>
+            <ThemedSelect
+              compact
+              options={folderOptions}
+              value={folderOptions.find((o) => o.value === (selectedFolderId || '')) || folderOptions[0]}
+              onChange={(option) => {
+                const selected = option as ThemedSelectOption
+                onFolderSelect(selected.value || undefined)
+              }}
+              isClearable={false}
+              placeholder="Папка"
+            />
+            <AddButton onClick={() => setShowAddFolder(true)} title="Добавить папку" className="mobile-add-btn">
+              <IoAdd />
+            </AddButton>
+          </MobileSelectGroup>
+
+          <MobileSelectGroup>
+            <ThemedSelect
+              compact
+              options={tagOptions}
+              value={tagOptions.find((o) => o.value === (selectedTagId || '')) || tagOptions[0]}
+              onChange={(option) => {
+                const selected = option as ThemedSelectOption
+                onTagSelect(selected.value || undefined)
+              }}
+              isClearable={false}
+              placeholder="Тег"
+            />
+            <AddButton onClick={() => setShowAddTag(true)} title="Добавить тег" className="mobile-add-btn">
+              <IoAdd />
+            </AddButton>
+          </MobileSelectGroup>
+        </MobileSelectWrapper>
+
+        {showAddFolder && (
+          <AddForm>
+            <Input
+              type="text"
+              placeholder="Название папки..."
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCreateFolder()
+                if (e.key === 'Escape') {
+                  setShowAddFolder(false)
+                  setNewFolderName('')
+                }
+              }}
+              autoFocus
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <AddButton onClick={handleCreateFolder} $small>
+                ✓
+              </AddButton>
+              <AddButton
+                onClick={() => {
+                  setShowAddFolder(false)
+                  setNewFolderName('')
+                }}
+                $small
+              >
+                <IoClose />
+              </AddButton>
+            </div>
+          </AddForm>
+        )}
+
+        {showAddTag && (
+          <AddForm>
+            <Input
+              type="text"
+              placeholder="Название тега..."
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCreateTag()
+                if (e.key === 'Escape') {
+                  setShowAddTag(false)
+                  setNewTagName('')
+                }
+              }}
+              autoFocus
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <AddButton onClick={handleCreateTag} $small>
+                ✓
+              </AddButton>
+              <AddButton
+                onClick={() => {
+                  setShowAddTag(false)
+                  setNewTagName('')
+                }}
+                $small
+              >
+                <IoClose />
+              </AddButton>
+            </div>
+          </AddForm>
+        )}
+      </div>
     </SidebarContainer>
   )
 }

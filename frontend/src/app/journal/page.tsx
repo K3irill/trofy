@@ -111,6 +111,18 @@ export default function JournalPage() {
         </PageHeader>
 
         <ContentWrapper>
+          <SearchContainer className="mobile-search">
+            <SearchIcon>
+              <IoSearch />
+            </SearchIcon>
+            <SearchInput
+              type="text"
+              placeholder="Поиск по записям..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </SearchContainer>
+
           <JournalSidebar
             selectedFolderId={selectedFolderId}
             selectedTagId={selectedTagId}
@@ -119,7 +131,7 @@ export default function JournalPage() {
           />
 
           <MainContent>
-            <SearchContainer>
+            <SearchContainer className="desktop-search">
               <SearchIcon>
                 <IoSearch />
               </SearchIcon>
