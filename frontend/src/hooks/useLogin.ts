@@ -39,7 +39,7 @@ export function useLogin() {
 
       dispatch(setUser(result.user))
       setIsNavigating(true)
-      router.replace('/')
+      router.replace('/user/' + result.user.username)
     } catch (error: unknown) {
       setIsNavigating(false)
       if (error && typeof error === 'object' && 'data' in error) {

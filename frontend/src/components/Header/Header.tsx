@@ -124,7 +124,7 @@ export const Header = () => {
                 href="/users"
                 $active={pathname === '/users' || pathname?.startsWith('/users/')}
               >
-                Сообщества
+                Сообщество
               </NavLink>
               {isAuthenticated && (
                 <NavLink

@@ -13,7 +13,7 @@ export const ShowcaseContainer = styled(motion.aside)`
   flex-direction: column;
   gap: 1.5rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     padding: 1rem 0;
     gap: 0.5rem;
     border-radius: 20px;
@@ -27,7 +27,7 @@ export const ShowcaseHeader = styled.div`
   gap: 1rem;
   flex-wrap: wrap;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     padding: 0 1.5rem ;
   }
 `
@@ -38,7 +38,7 @@ export const ShowcaseTitle = styled.h3`
   font-weight: 700;
   margin: 0;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     display: none;
   }
 `
@@ -79,7 +79,7 @@ export const SwitchOption = styled(motion.button) <{ active: boolean; position: 
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     padding: 0.4rem 0.6rem;
     font-size: 0.625rem;
   }
@@ -101,7 +101,7 @@ export const SwitchOption = styled(motion.button) <{ active: boolean; position: 
   
 
 
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       border-radius: 12px;
     }
   }
@@ -117,7 +117,7 @@ export const TrophiesList = styled.div`
   overflow-y: scroll;
   scrollbar-width: none; */
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     flex-direction: row;
     overflow: hidden;
     gap: 0.5rem;
@@ -154,7 +154,7 @@ export const TrophiesScrollTrack = styled(motion.div)`
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     flex-direction: row;
     animation: scroll 30s linear infinite;
 
@@ -165,7 +165,7 @@ export const TrophiesScrollTrack = styled(motion.div)`
 `
 
 export const DuplicateItems = styled(motion.div)`
-  @media (min-width: 769px) {
+  @media (min-width: 1025px) {
     display: none;
   }
 `
@@ -212,7 +212,7 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
   }};
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     flex-direction: column;
     height: fit-content;
     padding: 0.6rem;
@@ -254,7 +254,7 @@ export const TrophyHeader = styled.div <{ rarity: string }>`
 
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     flex-direction: row;
     flex-wrap: nowrap;
     span{
@@ -274,7 +274,7 @@ export const TrophyIcon = styled.span`
   align-items: center;
   justify-content: center;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 1.75rem;
   }
 `
@@ -285,7 +285,7 @@ export const TrophyContent = styled.div`
   flex-direction: column;
   gap: 0.5rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     gap: 0;
   }
 `
@@ -296,7 +296,7 @@ export const TrophyInfo = styled.div`
   align-items: center;
   gap: 0.5rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     gap: 0;
     display: none;
   }
@@ -307,7 +307,7 @@ export const TrophyName = styled.div`
   font-size: 1rem;
   font-weight: 700;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 0.75rem;
   }
 `
@@ -328,7 +328,7 @@ export const TrophyRarity = styled.div <{ rarity: string }>`
   }};
   border-radius: 6px;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     display: none;
   }
 `
@@ -337,7 +337,7 @@ export const TrophyOwner = styled.div`
   color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.8125rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 0.7rem;
     display: none;
   }
@@ -347,7 +347,7 @@ export const TrophyDate = styled.div`
   color: ${(props) => props.theme.colors.dark[600]};
   font-size: 0.75rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     font-size: 0.6575rem;
     display: none;
   }
@@ -363,7 +363,7 @@ export const TrophyHeaderInfo = styled.div`
       display: block;
    }
 
-   @media (max-width: 768px) {
+   @media (max-width: 1024px) {
       display: block;
   }
 `

@@ -8,7 +8,7 @@ import {
   BottomNavIcon,
   BottomNavLabel,
 } from './BottomNavigation.styled'
-import { HiHome, HiUserGroup, HiNewspaper, HiSparkles } from 'react-icons/hi'
+import { HiHome, HiNewspaper, HiSparkles, HiBookmark } from 'react-icons/hi'
 import { GiAchievement } from "react-icons/gi"
 
 export const BottomNavigation = () => {
@@ -21,7 +21,7 @@ export const BottomNavigation = () => {
   const navItems = [
     { name: 'Лента', href: '/', icon: HiNewspaper },
     { name: 'Достижения', href: '/categories', icon: GiAchievement },
-    { name: 'Сообщества', href: '/communities', icon: HiUserGroup },
+    { name: 'Дневник', href: '/journal', icon: HiBookmark },
     { name: 'Профиль', href: profileHref, icon: HiSparkles },
   ]
 
