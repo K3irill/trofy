@@ -656,6 +656,56 @@ export class AchievementsController {
       next(error)
     }
   }
+
+  /**
+   * GET /api/achievements/user-achievements/:userAchievementId/roadmap - Получение роадмапа
+   */
+  async getRoadmap(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+
+      if (!userAchievementId) {
+        return next(ApiError.badRequest('UserAchievement ID is required'))
+      }
+
+      const result = await achievementsService.getRoadmap(userId, userAchievementId)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/user-achievements/:userAchievementId/roadmap - Создание или обновление роадмапа
+   */
+  async createOrUpdateRoadmap(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { userAchievementId } = req.params
+      const userId = req.user.userId
+
+      if (!userAchievementId) {
+        return next(ApiError.badRequest('UserAchievement ID is required'))
+      }
+
+      const { CreateOrUpdateRoadmapDto } = await import('../dto/achievements.dto')
+      const dto = plainToInstance(CreateOrUpdateRoadmapDto, req.body)
+      if (!(await validateDto(dto, res, next))) return
+
+      const result = await achievementsService.createOrUpdateRoadmap(userId, userAchievementId, dto)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 export const achievementsController = new AchievementsController()

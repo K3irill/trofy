@@ -76,6 +76,32 @@ export interface UpdateProgressRequest {
   progress: number
 }
 
+export interface RoadmapData {
+  nodes: Array<{
+    id: string
+    type: string
+    position: { x: number; y: number }
+    data: {
+      label: string
+      [key: string]: any
+    }
+  }>
+  edges: Array<{
+    id: string
+    source: string
+    target: string
+    [key: string]: any
+  }>
+}
+
+export interface Roadmap {
+  id: string
+  user_achievement_id: string
+  data: RoadmapData
+  created_at: string
+  updated_at: string
+}
+
 export const achievementDetailApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAchievementDetail: builder.query<AchievementDetail, { id: string; username?: string } | string>({
@@ -227,6 +253,24 @@ export const achievementDetailApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { achievementId }) => [{ type: 'AchievementDetail', id: achievementId }],
     }),
+    getRoadmap: builder.query<Roadmap, { userAchievementId: string }>({
+      query: ({ userAchievementId }) => ({
+        url: `/achievements/user-achievements/${userAchievementId}/roadmap`,
+      }),
+      providesTags: (result, error, { userAchievementId }) => [
+        { type: 'Roadmap', id: userAchievementId },
+      ],
+    }),
+    createOrUpdateRoadmap: builder.mutation<Roadmap, { userAchievementId: string; data: RoadmapData }>({
+      query: ({ userAchievementId, data }) => ({
+        url: `/achievements/user-achievements/${userAchievementId}/roadmap`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { userAchievementId }) => [
+        { type: 'Roadmap', id: userAchievementId },
+      ],
+    }),
   }),
 })
 
@@ -244,4 +288,6 @@ export const {
   useUploadPhotosMutation,
   useDeletePhotoMutation,
   useUpdateProgressMutation,
+  useGetRoadmapQuery,
+  useCreateOrUpdateRoadmapMutation,
 } = achievementDetailApi

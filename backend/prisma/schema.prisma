@@ -110,6 +110,7 @@ model UserAchievement {
   likes     AchievementLike[]
   favorites AchievementFavorite[]
   photos    AchievementPhoto[]
+  roadmap   Roadmap?
 
   @@unique([user_id, achievement_id])
   @@index([user_id])
@@ -322,4 +323,16 @@ model JournalEntryTag {
   @@unique([journal_entry_id, journal_tag_id])
   @@index([journal_entry_id])
   @@index([journal_tag_id])
+}
+
+model Roadmap {
+  id                  String   @id @default(uuid())
+  user_achievement_id String   @unique
+  data                Json     // React Flow nodes and edges
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  userAchievement UserAchievement @relation(fields: [user_achievement_id], references: [id], onDelete: Cascade)
+
+  @@index([user_achievement_id])
 }

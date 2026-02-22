@@ -22,6 +22,8 @@ import { AchievementApplause } from './AchievementApplause'
 import { AchievementComments } from './AchievementComments'
 import { AchievementPreviewModal } from './AchievementPreviewModal'
 import { AchievementSettingsMenu } from './AchievementSettingsMenu'
+import { StartWorkButton } from './StartWorkButton'
+import { RoadmapBlock } from './RoadmapBlock'
 import {
   PageContainer,
   BackButton,
@@ -333,6 +335,18 @@ export default function AchievementDetailPage() {
                 return (
                   <ContentSection>
                     <StatusBadge status="achieved" />
+                    
+                    {/* Блок "Роадмап" для достигнутых достижений */}
+                    {achievementDetail.userAchievement?.id && (
+                      <div>
+                        <RoadmapBlock
+                          userAchievementId={achievementDetail.userAchievement.id}
+                          achievementId={achievementId}
+                          isOwner={isOwner}
+                        />
+                      </div>
+                    )}
+
                     <AchievementVerification achievement={achievement} isOwner={isOwner} />
                     <div ref={detailViewRef} id="achievement-detail-view">
                       <AchievementDetailView
@@ -374,6 +388,30 @@ export default function AchievementDetailPage() {
                   ) : isNotAchieved ? (
                     <StatusBadge status="not_achieved" />
                   ) : null}
+                  
+                  {/* Кнопка "Взять в работу" для не достигнутых достижений */}
+                  {isNotAchieved && (
+                    <div style={{ marginBottom: '1.5rem' }}>
+                      <StartWorkButton
+                        achievementId={achievementId}
+                        onStart={() => {
+                          refetch()
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Блок "Роадмап" для достижений в работе или достигнутых */}
+                  {(isInProgress || isAchieved) && achievementDetail.userAchievement?.id && (
+                    <div >
+                      <RoadmapBlock
+                        userAchievementId={achievementDetail.userAchievement.id}
+                        achievementId={achievementId}
+                        isOwner={isOwner}
+                      />
+                    </div>
+                  )}
+
                   <AchievementProgress
                     achievement={achievement}
                     achievementId={achievementId}

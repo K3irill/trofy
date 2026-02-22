@@ -153,6 +153,18 @@ router.patch(
   achievementsController.updateProgress.bind(achievementsController)
 )
 
+// Роадмап
+router.get(
+  '/user-achievements/:userAchievementId/roadmap',
+  authenticate,
+  achievementsController.getRoadmap.bind(achievementsController)
+)
+router.post(
+  '/user-achievements/:userAchievementId/roadmap',
+  authenticate,
+  achievementsController.createOrUpdateRoadmap.bind(achievementsController)
+)
+
 // Удаление достижения (только для админов) - должно быть в конце, после всех специфичных роутов
 router.delete(
   '/:id',

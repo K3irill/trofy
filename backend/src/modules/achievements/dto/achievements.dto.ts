@@ -190,3 +190,48 @@ export class UpdateProgressDto {
   @Type(() => Number)
   progress: number
 }
+
+export class RoadmapNodeDto {
+  @IsString()
+  @IsNotEmpty()
+  id: string
+
+  @IsString()
+  @IsNotEmpty()
+  type: string
+
+  @IsNotEmpty()
+  position: {
+    x: number
+    y: number
+  }
+
+  @IsNotEmpty()
+  data: Record<string, any>
+}
+
+export class RoadmapEdgeDto {
+  @IsString()
+  @IsNotEmpty()
+  id: string
+
+  @IsString()
+  @IsNotEmpty()
+  source: string
+
+  @IsString()
+  @IsNotEmpty()
+  target: string
+}
+
+export class CreateOrUpdateRoadmapDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RoadmapNodeDto)
+  nodes: RoadmapNodeDto[]
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RoadmapEdgeDto)
+  edges: RoadmapEdgeDto[]
+}

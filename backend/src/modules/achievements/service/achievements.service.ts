@@ -1596,6 +1596,97 @@ export class AchievementsService {
       achievementId,
     }
   }
+
+  /**
+   * Получение роадмапа для UserAchievement
+   */
+  async getRoadmap(userId: string, userAchievementId: string) {
+    // Проверяем, что UserAchievement принадлежит пользователю
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+      include: { roadmap: true },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('UserAchievement not found')
+    }
+
+    // Пользователь может видеть свой роадмап или любой публичный роадмап
+    if (userAchievement.user_id !== userId && !userAchievement.is_public) {
+      throw ApiError.forbidden('Access denied')
+    }
+
+    if (!userAchievement.roadmap) {
+      return null
+    }
+
+    return {
+      id: userAchievement.roadmap.id,
+      user_achievement_id: userAchievement.roadmap.user_achievement_id,
+      data: userAchievement.roadmap.data as any,
+      created_at: userAchievement.roadmap.created_at,
+      updated_at: userAchievement.roadmap.updated_at,
+    }
+  }
+
+  /**
+   * Создание или обновление роадмапа для UserAchievement
+   */
+  async createOrUpdateRoadmap(userId: string, userAchievementId: string, dto: any) {
+    // Проверяем, что UserAchievement принадлежит пользователю
+    const userAchievement = await prisma.userAchievement.findUnique({
+      where: { id: userAchievementId },
+      include: { roadmap: true },
+    })
+
+    if (!userAchievement) {
+      throw ApiError.notFound('UserAchievement not found')
+    }
+
+    // Только владелец может создавать/редактировать роадмап
+    if (userAchievement.user_id !== userId) {
+      throw ApiError.forbidden('Only the owner can create or update roadmap')
+    }
+
+    const roadmapData = {
+      nodes: dto.nodes,
+      edges: dto.edges,
+    }
+
+    if (userAchievement.roadmap) {
+      // Обновляем существующий роадмап
+      const updated = await prisma.roadmap.update({
+        where: { id: userAchievement.roadmap.id },
+        data: {
+          data: roadmapData as any,
+        },
+      })
+
+      return {
+        id: updated.id,
+        user_achievement_id: updated.user_achievement_id,
+        data: updated.data as any,
+        created_at: updated.created_at,
+        updated_at: updated.updated_at,
+      }
+    } else {
+      // Создаем новый роадмап
+      const created = await prisma.roadmap.create({
+        data: {
+          user_achievement_id: userAchievementId,
+          data: roadmapData as any,
+        },
+      })
+
+      return {
+        id: created.id,
+        user_achievement_id: created.user_achievement_id,
+        data: created.data as any,
+        created_at: created.created_at,
+        updated_at: created.updated_at,
+      }
+    }
+  }
 }
 
 export const achievementsService = new AchievementsService()
