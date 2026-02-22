@@ -652,6 +652,7 @@ export class UserService {
       is_achieved: !!ua.completion_date,
       is_public: ua.is_public,
       is_hidden: ua.is_hidden,
+      progress: (ua as any).progress || (ua.completion_date ? 100 : 0),
     }))
   }
 
@@ -702,6 +703,88 @@ export class UserService {
       const isOwnProfile = viewerId === user.id
       return formatUser(user, isOwnProfile, viewerId)
     })
+  }
+
+  /**
+   * Получение глобальной статистики платформы
+   */
+  async getGlobalStats() {
+    const now = new Date()
+    const today = new Date(now)
+    today.setHours(0, 0, 0, 0)
+    
+    const weekAgo = new Date(now)
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    weekAgo.setHours(0, 0, 0, 0)
+    
+    const twoWeeksAgo = new Date(now)
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
+    twoWeeksAgo.setHours(0, 0, 0, 0)
+    
+    const thirtyDaysAgo = new Date(now)
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    thirtyDaysAgo.setHours(0, 0, 0, 0)
+
+    // Активные пользователи (за последние 30 дней)
+    const activeUsers = await prisma.user.count({
+      where: {
+        last_activity_date: {
+          gte: thirtyDaysAgo,
+        },
+      },
+    })
+
+    // Общее количество завершенных достижений
+    const totalCompletedAchievements = await prisma.userAchievement.count({
+      where: {
+        completion_date: {
+          not: null,
+        },
+      },
+    })
+
+    // Новые достижения сегодня
+    const newToday = await prisma.userAchievement.count({
+      where: {
+        completion_date: {
+          gte: today,
+        },
+      },
+    })
+
+    // Достижения за последнюю неделю
+    const completedThisWeek = await prisma.userAchievement.count({
+      where: {
+        completion_date: {
+          gte: weekAgo,
+        },
+      },
+    })
+
+    // Достижения за предыдущую неделю (для расчета роста)
+    const completedPreviousWeek = await prisma.userAchievement.count({
+      where: {
+        completion_date: {
+          gte: twoWeeksAgo,
+          lt: weekAgo,
+        },
+      },
+    })
+
+    // Расчет роста за неделю
+    let weeklyGrowth = 0
+    if (completedPreviousWeek > 0) {
+      weeklyGrowth = Math.round(((completedThisWeek - completedPreviousWeek) / completedPreviousWeek) * 100)
+    } else if (completedThisWeek > 0) {
+      weeklyGrowth = 100 // Если в предыдущей неделе не было, а сейчас есть - это 100% рост
+    }
+
+    return {
+      active_users: activeUsers,
+      total_completed_achievements: totalCompletedAchievements,
+      new_today: newToday,
+      weekly_growth: weeklyGrowth,
+    }
   }
 }
 

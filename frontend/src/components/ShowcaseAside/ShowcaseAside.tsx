@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { IoTrophy, IoTime, IoPerson } from 'react-icons/io5'
 import { useGetShowcaseAchievementsQuery } from '@/store/api/achievementsApi'
 import { useGetRecentAchievementsQuery } from '@/store/api/userApi'
@@ -39,13 +39,34 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
   // Если не авторизован и выбран фильтр "mine", используем "best"
   const activeFilter = (!isAuthenticated && filter === 'mine') ? 'best' : filter
 
+  // Определяем, десктоп ли это (> 1024px)
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth > 1024
+    }
+    return false
+  })
+
+  useEffect(() => {
+    const checkIsDesktop = () => {
+      setIsDesktop(window.innerWidth > 1024)
+    }
+    
+    checkIsDesktop()
+    window.addEventListener('resize', checkIsDesktop)
+    return () => window.removeEventListener('resize', checkIsDesktop)
+  }, [])
+
   const { data: currentUser } = useGetMeQuery(undefined, { skip: !isAuthenticated })
+
+  // Для десктопа показываем 5, для планшета 10 (как сейчас)
+  const limit = isDesktop ? 5 : 10
 
   // Получаем лучшие достижения (глобальные, среди всех пользователей)
   const { data: bestAchievementsData, isLoading: isLoadingBest } = useGetShowcaseAchievementsQuery(
     {
       type: 'best',
-      limit: 10,
+      limit: 10, // Всегда запрашиваем 10, но показываем только нужное количество
     },
     { skip: activeFilter !== 'best' }
   )
@@ -54,7 +75,7 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
   const { data: recentAchievementsData, isLoading: isLoadingRecent } = useGetShowcaseAchievementsQuery(
     {
       type: 'recent',
-      limit: 10,
+      limit: 10, // Всегда запрашиваем 10, но показываем только нужное количество
     },
     { skip: activeFilter !== 'recent' }
   )
@@ -68,22 +89,36 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
 
   const trophies = useMemo(() => {
     if (!bestAchievementsData) return []
-    return bestAchievementsData.map((achievement) => ({
-      id: achievement.id,
-      name: achievement.title,
-      rarity: achievement.rarity,
-      owner: achievement.is_current_user ? 'Вы' : achievement.owner.username,
-      date: achievement.unlocked_at
-        ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
-        : 'Недавно',
-      icon: achievement.icon_url || '🏆',
-    }))
+    const seen = new Set<string>()
+    return bestAchievementsData
+      .filter((achievement) => {
+        if (seen.has(achievement.id)) return false
+        seen.add(achievement.id)
+        return true
+      })
+      .map((achievement) => ({
+        id: achievement.id,
+        name: achievement.title,
+        rarity: achievement.rarity,
+        owner: achievement.is_current_user ? 'Вы' : achievement.owner.username,
+        date: achievement.unlocked_at
+          ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
+          : 'Недавно',
+        icon: achievement.icon_url || '🏆',
+      }))
   }, [bestAchievementsData])
 
   const recentTrophies = useMemo(() => {
     if (!recentAchievementsData) return []
+    // Убираем дубликаты по ID
+    const seen = new Set<string>()
+    const unique = recentAchievementsData.filter((achievement) => {
+      if (seen.has(achievement.id)) return false
+      seen.add(achievement.id)
+      return true
+    })
     // Сортируем по completion_date (самые новые первыми)
-    const sorted = [...recentAchievementsData].sort((a, b) => {
+    const sorted = [...unique].sort((a, b) => {
       const dateA = a.completion_date ? new Date(a.completion_date).getTime() : 0
       const dateB = b.completion_date ? new Date(b.completion_date).getTime() : 0
       return dateB - dateA // По убыванию (новые первыми)
@@ -107,8 +142,13 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
     if (!myAchievementsData || !currentUser) return []
     // myAchievementsData - это массив RecentAchievement из /users/me/achievements/recent
     // Это достижения текущего пользователя, поэтому всегда "Вы"
+    const seen = new Set<string>()
     return myAchievementsData
-      .filter((achievement) => achievement.is_achieved)
+      .filter((achievement) => {
+        if (seen.has(achievement.id)) return false
+        seen.add(achievement.id)
+        return achievement.is_achieved
+      })
       .map((achievement) => ({
         id: achievement.id,
         name: achievement.title,
@@ -121,16 +161,24 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
       }))
   }, [myAchievementsData, currentUser])
 
-  const getTrophies = () => {
+  const getTrophies = useMemo(() => {
+    let result: typeof trophies = []
     switch (activeFilter) {
       case 'recent':
-        return recentTrophies
+        result = recentTrophies
+        break
       case 'mine':
-        return myTrophies
+        result = myTrophies
+        break
       default:
-        return trophies
+        result = trophies
     }
-  }
+    // На десктопе всегда ограничиваем до 5, на планшете все
+    // Применяем ограничение всегда, чтобы избежать проблем с кэшированием
+    const limited = isDesktop ? result.slice(0, 5) : result
+    // Убеждаемся, что возвращаем новый массив, чтобы избежать проблем с React
+    return [...limited]
+  }, [activeFilter, trophies, recentTrophies, myTrophies, isDesktop])
 
   const getTitle = () => {
     switch (activeFilter) {
@@ -208,19 +256,20 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #666)' }}>
               Загрузка...
             </div>
-          ) : getTrophies().length === 0 ? (
+          ) : getTrophies.length === 0 ? (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #666)' }}>
               {!isAuthenticated && activeFilter !== 'best' ? 'Войдите, чтобы увидеть достижения' : 'Достижения не найдены'}
             </div>
           ) : (
-            getTrophies().map((trophy, index) => (
+            getTrophies.map((trophy, index) => (
               <TrophyItem
-                key={trophy.id}
+                key={`${activeFilter}-${trophy.id}-${index}`}
                 rarity={trophy.rarity}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02, x: 5 }}
+                layout
               >
                 <TrophyHeader rarity={trophy.rarity}>
                   <TrophyHeaderWrap>

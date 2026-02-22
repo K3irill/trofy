@@ -137,8 +137,8 @@ export default function UserAchievementsPage() {
       // Фильтр по статусу
       if (statusFilter) {
         const isAchieved = !!achievement.completion_date
-        const progress = achievement.is_achieved ? 100 : undefined
-        const isInProgress = !isAchieved && progress !== undefined && progress > 0 && progress <= 100
+        const progress = achievement.progress ?? (isAchieved ? 100 : undefined)
+        const isInProgress = !isAchieved && progress !== undefined && progress > 0 && progress < 100
         const isNotAchieved = !isAchieved && (progress === undefined || progress === 0)
 
         switch (statusFilter) {
@@ -161,13 +161,13 @@ export default function UserAchievementsPage() {
     if (sortBy && sortBy !== 'default') {
       filtered.sort((a, b) => {
         const aIsAchieved = !!a.completion_date
-        const aProgress = a.is_achieved ? 100 : undefined
-        const aIsInProgress = !aIsAchieved && aProgress !== undefined && aProgress > 0 && aProgress <= 100
+        const aProgress = a.progress ?? (aIsAchieved ? 100 : undefined)
+        const aIsInProgress = !aIsAchieved && aProgress !== undefined && aProgress > 0 && aProgress < 100
         const aIsNotAchieved = !aIsAchieved && (aProgress === undefined || aProgress === 0)
 
         const bIsAchieved = !!b.completion_date
-        const bProgress = b.is_achieved ? 100 : undefined
-        const bIsInProgress = !bIsAchieved && bProgress !== undefined && bProgress > 0 && bProgress <= 100
+        const bProgress = b.progress ?? (bIsAchieved ? 100 : undefined)
+        const bIsInProgress = !bIsAchieved && bProgress !== undefined && bProgress > 0 && bProgress < 100
         const bIsNotAchieved = !bIsAchieved && (bProgress === undefined || bProgress === 0)
 
         switch (sortBy) {
@@ -196,19 +196,24 @@ export default function UserAchievementsPage() {
     }
 
     // Преобразование в формат Achievement
-    return filtered.map((achievement) => ({
-      id: achievement.id,
-      name: achievement.title,
-      description: achievement.description,
-      icon: achievement.icon_url || '',
-      categoryId: achievement.category.id,
-      categoryName: achievement.category.name,
-      unlocked: achievement.is_achieved,
-      rarity: achievement.rarity,
-      completionDate: achievement.completion_date || undefined,
-      progress: achievement.is_achieved ? 100 : undefined,
-      completion_date: achievement.completion_date || undefined,
-    }))
+    return filtered.map((achievement) => {
+      const isAchieved = !!achievement.completion_date
+      const progress = achievement.progress ?? (isAchieved ? 100 : undefined)
+      
+      return {
+        id: achievement.id,
+        name: achievement.title,
+        description: achievement.description,
+        icon: achievement.icon_url || '',
+        categoryId: achievement.category.id,
+        categoryName: achievement.category.name,
+        unlocked: achievement.is_achieved,
+        rarity: achievement.rarity,
+        completionDate: achievement.completion_date || undefined,
+        progress: progress,
+        completion_date: achievement.completion_date || undefined,
+      }
+    })
   }, [achievements, debouncedSearchQuery, selectedCategory, statusFilter, rarityFilter, sortBy])
 
   // Фильтрация категорий

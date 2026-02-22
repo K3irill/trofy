@@ -4,7 +4,7 @@ import { validate } from 'class-validator'
 import { plainToInstance } from 'class-transformer'
 import multer from 'multer'
 import { achievementsService } from '../service/achievements.service'
-import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto, UpdateProgressDto } from '../dto/achievements.dto'
+import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto, CreateAchievementsDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto, UpdateProgressDto } from '../dto/achievements.dto'
 import { ApiError } from '../../../core/errors/ApiError'
 import { AuthRequest } from '../../auth/middleware/auth.middleware'
 import { userService } from '../../user/service/user.service'
@@ -286,7 +286,8 @@ export class AchievementsController {
   }
 
   /**
-   * POST /api/achievements - Создание достижения (только для админов)
+   * POST /api/achievements - Создание достижения или нескольких достижений (только для админов)
+   * Поддерживает как один объект, так и массив объектов
    */
   async createAchievement(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -295,12 +296,24 @@ export class AchievementsController {
         throw ApiError.unauthorized('User not authenticated')
       }
 
-      const dto = plainToInstance(CreateAchievementDto, req.body)
-      const isValid = await validateDto(dto, res, next)
-      if (!isValid) return
+      // Проверяем, является ли тело запроса массивом
+      if (Array.isArray(req.body)) {
+        // Создание нескольких достижений
+        const dto = plainToInstance(CreateAchievementsDto, { achievements: req.body })
+        const isValid = await validateDto(dto, res, next)
+        if (!isValid) return
 
-      const achievement = await achievementsService.createAchievement(dto, userId, true)
-      res.status(201).json(achievement)
+        const achievements = await achievementsService.createAchievements(dto.achievements, userId, true)
+        res.status(201).json(achievements)
+      } else {
+        // Создание одного достижения (обратная совместимость)
+        const dto = plainToInstance(CreateAchievementDto, req.body)
+        const isValid = await validateDto(dto, res, next)
+        if (!isValid) return
+
+        const achievement = await achievementsService.createAchievement(dto, userId, true)
+        res.status(201).json(achievement)
+      }
     } catch (error) {
       next(error)
     }
@@ -322,6 +335,25 @@ export class AchievementsController {
 
       const achievement = await achievementsService.createAchievement(dto, userId, false)
       res.status(201).json(achievement)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * DELETE /api/achievements/:id - Удаление достижения (только для админов)
+   */
+  async deleteAchievement(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const { id } = req.params
+
+      const result = await achievementsService.deleteAchievement(id)
+      res.json(result)
     } catch (error) {
       next(error)
     }

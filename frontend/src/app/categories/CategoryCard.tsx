@@ -56,7 +56,7 @@ export const CategoryCardComponent = ({ category, onClick, isAuthenticated = fal
             style={{
               width: '100%',
               height: '100%',
-              objectFit: 'contain',
+              objectFit: 'cover',
             }}
           />
         ) : (

@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     unoptimized: process.env.NODE_ENV === 'development',
   },
   async rewrites() {
-    // В продакшене Nginx проксирует /api, поэтому rewrites не нужны
+    // В продакшене Nginx проксирует /api и /uploads, поэтому rewrites не нужны
     if (process.env.NODE_ENV === 'production') {
       return []
     }
@@ -30,6 +30,10 @@ const nextConfig: NextConfig = {
       {
         source: '/api/:path*',
         destination: 'http://localhost:3333/api/:path*',
+      },
+      {
+        source: '/uploads/:path*',
+        destination: 'http://localhost:3333/uploads/:path*',
       },
     ]
   },

@@ -620,6 +620,125 @@ export class AchievementsService {
   }
 
   /**
+   * Создание нескольких достижений за раз (для админов - обычные, для пользователей - кастомные)
+   */
+  async createAchievements(dtos: CreateAchievementDto[], userId: string, isAdmin: boolean = false) {
+    if (!dtos || dtos.length === 0) {
+      throw ApiError.badRequest('Achievements array cannot be empty')
+    }
+
+    // Проверяем все категории заранее
+    const categoryIds = [...new Set(dtos.map(dto => dto.category_id))]
+    const categories = await prisma.category.findMany({
+      where: { id: { in: categoryIds } },
+    })
+
+    if (categories.length !== categoryIds.length) {
+      throw ApiError.notFound('One or more categories not found')
+    }
+
+    const categoryMap = new Map(categories.map(cat => [cat.id, cat]))
+
+    // Если пользователь создает достижения, проверяем права на все категории
+    if (!isAdmin) {
+      for (const dto of dtos) {
+        const category = categoryMap.get(dto.category_id)
+        if (!category || !category.is_custom || category.creator_id !== userId) {
+          throw ApiError.forbidden('You can only create achievements in your own custom categories')
+        }
+      }
+    }
+
+    // Создаем все достижения в транзакции
+    const achievements = await prisma.$transaction(
+      dtos.map(dto =>
+        prisma.achievement.create({
+          data: {
+            title: dto.title,
+            description: dto.description,
+            icon_url: dto.icon_url || null,
+            rarity: dto.rarity || Rarity.COMMON,
+            category_id: dto.category_id,
+            xp_reward: dto.xp_reward || 100,
+          },
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                icon_url: true,
+              },
+            },
+          },
+        })
+      )
+    )
+
+    return achievements.map(achievement => ({
+      id: achievement.id,
+      title: achievement.title,
+      description: achievement.description,
+      icon_url: achievement.icon_url,
+      rarity: achievement.rarity,
+      category: {
+        id: achievement.category.id,
+        name: achievement.category.name,
+        icon_url: achievement.category.icon_url,
+      },
+      xp_reward: achievement.xp_reward,
+      created_at: achievement.created_at.toISOString(),
+      updated_at: achievement.updated_at.toISOString(),
+    }))
+  }
+
+  /**
+   * Удаление достижения (только для админов, только системные достижения)
+   */
+  async deleteAchievement(achievementId: string) {
+    // Проверяем существование достижения
+    const achievement = await prisma.achievement.findUnique({
+      where: { id: achievementId },
+      include: {
+        category: true,
+        userAchievements: {
+          include: {
+            photos: true,
+          },
+        },
+      },
+    })
+
+    if (!achievement) {
+      throw ApiError.notFound('Achievement not found')
+    }
+
+    // Проверяем, что это системное достижение (не кастомное)
+    // Кастомные достижения находятся в кастомных категориях
+    if (achievement.category.is_custom) {
+      throw ApiError.forbidden('Cannot delete custom achievements. Only system achievements can be deleted.')
+    }
+
+    // Удаляем все связанные фотографии
+    const fs = require('fs')
+    const path = require('path')
+    for (const userAchievement of achievement.userAchievements) {
+      for (const photo of userAchievement.photos) {
+        const filePath = path.join(process.cwd(), (photo as any).file_path)
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+        }
+      }
+    }
+
+    // Удаляем достижение (каскадно удалятся все связанные UserAchievement)
+    await prisma.achievement.delete({
+      where: { id: achievementId },
+    })
+
+    return { success: true, message: 'Achievement deleted successfully' }
+  }
+
+  /**
    * Получение детальной информации о достижении
    */
   async getAchievementDetail(achievementId: string, userId?: string, currentUserId?: string) {

@@ -278,7 +278,17 @@ export default function UserAchievementDetailPage() {
           <div style={{ flex: 1 }}>
             <AchievementTitle>{achievement.name}</AchievementTitle>
             <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {achievementDetail.category.icon_url ? renderIcon(achievementDetail.category.icon_url, 'folder') : <IoFolderOpen />} {achievementDetail.category.name}
+              <div style={{ 
+                width: '30px', 
+                height: '30px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                fontSize: '1.25rem'
+              }}>
+                {achievementDetail.category.icon_url ? renderIcon(achievementDetail.category.icon_url, 'folder') : <IoFolderOpen />}
+              </div>
+              {achievementDetail.category.name}
             </div>
             {isAuthenticated && achievement.unlocked && (
               <AchievementIndicators>

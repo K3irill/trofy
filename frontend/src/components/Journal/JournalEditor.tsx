@@ -6,7 +6,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import TaskList from '@tiptap/extension-task-list'
 import TaskItem from '@tiptap/extension-task-item'
 import { styled } from 'styled-components'
-import { useEffect } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { IoList, IoCode, IoCheckmarkCircle } from 'react-icons/io5'
 import {
   EditorContainer,
@@ -25,6 +25,10 @@ interface JournalEditorProps {
 }
 
 export const JournalEditor = ({ content, placeholder = 'Начните писать...', onChange, showToolbar = true, editable = true, isFullscreen = false }: JournalEditorProps) => {
+  // Флаг для отслеживания внутренних изменений редактора
+  const isInternalUpdate = useRef(false)
+  const contentRef = useRef<any>(content)
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -40,7 +44,12 @@ export const JournalEditor = ({ content, placeholder = 'Начните писа�
     editable,
     onUpdate: ({ editor }) => {
       if (onChange && editable) {
-        onChange(editor.getJSON())
+        // Помечаем, что изменение идет из редактора
+        isInternalUpdate.current = true
+        // Вызываем onChange напрямую - TipTap сам оптимизирует рендеринг
+        const newContent = editor.getJSON()
+        contentRef.current = newContent
+        onChange(newContent)
       }
     },
     editorProps: {
@@ -51,19 +60,28 @@ export const JournalEditor = ({ content, placeholder = 'Начните писа�
     immediatelyRender: false,
   })
 
-  // Обновляем контент редактора при изменении prop content
+  // Обновляем контент редактора при изменении prop content (только внешние изменения)
   useEffect(() => {
     if (!editor) return
+    
+    // Игнорируем обновление, если изменение идет из самого редактора
+    if (isInternalUpdate.current) {
+      isInternalUpdate.current = false
+      return
+    }
 
-    const currentContent = editor.getJSON()
-    const newContent = content ?? ''
-
-    // Сравниваем только если контент действительно изменился
-    const currentStr = JSON.stringify(currentContent)
-    const newStr = JSON.stringify(newContent)
-
-    if (currentStr !== newStr) {
-      editor.commands.setContent(newContent)
+    // Обновляем только если content действительно изменился извне
+    // Используем быстрое сравнение по ссылке, затем по JSON
+    if (contentRef.current !== content) {
+      const currentStr = JSON.stringify(contentRef.current)
+      const newStr = JSON.stringify(content ?? '')
+      
+      if (currentStr !== newStr) {
+        contentRef.current = content
+        const newContent = content ?? ''
+        // Используем setContent без emitUpdate для предотвращения триггера onUpdate
+        editor.commands.setContent(newContent, false)
+      }
     }
   }, [editor, content])
 

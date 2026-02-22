@@ -235,12 +235,14 @@ GET /api/achievements?query=победа&categoryId=123&rarity=EPIC&sortBy=date-
 ```
 
 #### `POST /api/achievements`
-Создание обычного достижения (только для админов).
+Создание обычного достижения или нескольких достижений (только для админов).
 
 **Требуется авторизация:** Да  
 **Требуется админ:** Да
 
-**Тело запроса:**
+**Поддерживает два формата:**
+
+1. **Создание одного достижения** (обратная совместимость):
 ```json
 {
   "title": "string",                    // обязательное
@@ -252,7 +254,7 @@ GET /api/achievements?query=победа&categoryId=123&rarity=EPIC&sortBy=date-
 }
 ```
 
-**Ответ:**
+**Ответ (один объект):**
 ```json
 {
   "id": "uuid",
@@ -270,6 +272,69 @@ GET /api/achievements?query=победа&categoryId=123&rarity=EPIC&sortBy=date-
   "updated_at": "2024-01-01T00:00:00.000Z"
 }
 ```
+
+2. **Создание нескольких достижений** (массив):
+```json
+[
+  {
+    "title": "string",
+    "description": "string",
+    "icon_url": "string | null",
+    "rarity": "COMMON | RARE | EPIC | LEGENDARY",
+    "category_id": "uuid",
+    "xp_reward": 100
+  },
+  {
+    "title": "string",
+    "description": "string",
+    "icon_url": "string | null",
+    "rarity": "RARE",
+    "category_id": "uuid",
+    "xp_reward": 200
+  }
+]
+```
+
+**Ответ (массив объектов):**
+```json
+[
+  {
+    "id": "uuid",
+    "title": "string",
+    "description": "string",
+    "icon_url": "string | null",
+    "rarity": "COMMON",
+    "category": {
+      "id": "uuid",
+      "name": "string",
+      "icon_url": "string | null"
+    },
+    "xp_reward": 100,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "uuid",
+    "title": "string",
+    "description": "string",
+    "icon_url": "string | null",
+    "rarity": "RARE",
+    "category": {
+      "id": "uuid",
+      "name": "string",
+      "icon_url": "string | null"
+    },
+    "xp_reward": 200,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  }
+]
+```
+
+**Примечания:**
+- При создании нескольких достижений все они создаются в одной транзакции
+- Если хотя бы одно достижение не может быть создано, вся операция откатывается
+- Все достижения должны иметь валидные `category_id` (категории проверяются заранее)
 
 ### Защищенные роуты (для пользователей)
 
@@ -462,6 +527,55 @@ Content-Type: application/json
   "xp_reward": 100
 }
 ```
+
+### Создание нескольких достижений (админ)
+```bash
+POST /api/achievements
+Authorization: Bearer <admin_token>
+Content-Type: application/json
+
+[
+  {
+    "title": "Пробежать 5 км",
+    "description": "Пробежать дистанцию 5 километров",
+    "icon_url": "🏃",
+    "rarity": "COMMON",
+    "category_id": "uuid-категории",
+    "xp_reward": 100
+  },
+  {
+    "title": "Пробежать 10 км",
+    "description": "Пробежать дистанцию 10 километров",
+    "icon_url": "🏃‍♂️",
+    "rarity": "RARE",
+    "category_id": "uuid-категории",
+    "xp_reward": 200
+  }
+]
+```
+
+### Удаление достижения (админ)
+```bash
+DELETE /api/achievements/:id
+Authorization: Bearer <admin_token>
+
+# Пример:
+DELETE /api/achievements/1f626804-ec74-46e6-9fb3-a51a71b4558f
+Authorization: Bearer <admin_token>
+```
+
+**Ответ:**
+```json
+{
+  "success": true,
+  "message": "Achievement deleted successfully"
+}
+```
+
+**Особенности:**
+- Удалить можно только системные достижения (не кастомные)
+- При удалении каскадно удаляются все связанные `UserAchievement` и фотографии
+- Удаление доступно только для админов
 
 ### Создание достижения (пользователь)
 ```bash

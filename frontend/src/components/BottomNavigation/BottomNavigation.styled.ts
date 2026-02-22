@@ -23,7 +23,7 @@ export const BottomNavContainer = styled(motion.nav)`
   }
 `
 
-export const BottomNavItem = styled.button<{ active: boolean }>`
+export const BottomNavItem = styled.button<{ $active: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;

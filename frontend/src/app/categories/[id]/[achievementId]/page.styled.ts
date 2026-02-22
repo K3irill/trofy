@@ -144,9 +144,9 @@ export const AchievementHeader = styled.div`
 `
 
 export const AchievementIcon = styled.div<{ $unlocked: boolean }>`
-  width: 240px;
-  height: 240px;
-  border-radius: 28px;
+  width: 400px;
+  height: 400px;
+  border-radius: 32px;
   background: ${props => props.$unlocked
     ? `linear-gradient(135deg, ${props.theme.colors.primary}40 0%, ${props.theme.colors.secondary}20 50%, ${props.theme.colors.gold}15 100%)`
     : `linear-gradient(135deg, ${props.theme.colors.dark[600]}90 0%, ${props.theme.colors.dark[700]}b3 100%)`};
@@ -154,7 +154,7 @@ export const AchievementIcon = styled.div<{ $unlocked: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 7rem;
+  font-size: 10rem;
   filter: ${props => props.$unlocked ? `drop-shadow(${props.theme.shadows.glow.primary}) drop-shadow(${props.theme.shadows.glow.gold})` : 'grayscale(0.7) brightness(0.6)'};
   flex-shrink: 0;
   cursor: pointer;
@@ -226,14 +226,15 @@ export const AchievementIcon = styled.div<{ $unlocked: boolean }>`
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
+    padding: 1rem;
   }
 
   @media (max-width: 768px) {
-    width: 180px;
-    height: 180px;
-    font-size: 6rem;
-    border-radius: 24px;
+    width: 280px;
+    height: 280px;
+    font-size: 8rem;
+    border-radius: 28px;
   }
 `
 

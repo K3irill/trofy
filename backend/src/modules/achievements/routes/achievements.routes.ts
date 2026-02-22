@@ -39,7 +39,6 @@ router.get(
 )
 router.get('/showcase/:type', optionalAuthenticate, achievementsController.getShowcaseAchievements.bind(achievementsController))
 router.get('/', optionalAuthenticate, achievementsController.getAchievements.bind(achievementsController))
-router.get('/:id', optionalAuthenticate, achievementsController.getAchievementById.bind(achievementsController))
 
 // Роуты для создания (только для админов)
 router.post(
@@ -153,5 +152,16 @@ router.patch(
   authenticate,
   achievementsController.updateProgress.bind(achievementsController)
 )
+
+// Удаление достижения (только для админов) - должно быть в конце, после всех специфичных роутов
+router.delete(
+  '/:id',
+  authenticate,
+  requireAdmin,
+  achievementsController.deleteAchievement.bind(achievementsController)
+)
+
+// GET /:id должен быть последним, чтобы не перехватывать другие роуты
+router.get('/:id', optionalAuthenticate, achievementsController.getAchievementById.bind(achievementsController))
 
 export default router

@@ -179,23 +179,15 @@ export const Avatar = styled.div<{ $level?: number }>`
   border: 3px solid ${props => props.theme.colors.primary};
   box-shadow: ${props => props.theme.shadows.glow.primary};
   flex-shrink: 0;
+  overflow: hidden;
 
-  &::after {
-    content: '${props => props.$level || 1}';
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     position: absolute;
-    bottom: -4px;
-    right: -4px;
-    background: ${props => props.theme.colors.secondary};
-    color: ${props => props.theme.colors.dark.bg};
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 800;
-    border: 2px solid ${props => props.theme.colors.dark.bg};
+    top: 0;
+    left: 0;
   }
 `
 

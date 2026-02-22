@@ -5,7 +5,21 @@ import { IoFolder, IoTrophy } from 'react-icons/io5'
  */
 export const isImageUrl = (iconUrl: string | null): boolean => {
   if (!iconUrl) return false
-  return iconUrl.startsWith('http://') || iconUrl.startsWith('https://')
+  
+  // Проверяем абсолютные URL (http/https)
+  if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
+    return true
+  }
+  
+  // Проверяем относительные пути, начинающиеся с /
+  if (iconUrl.startsWith('/')) {
+    // Проверяем расширения изображений
+    const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp']
+    const lowerIconUrl = iconUrl.toLowerCase()
+    return imageExtensions.some(ext => lowerIconUrl.endsWith(ext))
+  }
+  
+  return false
 }
 
 /**

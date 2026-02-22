@@ -8,6 +8,8 @@ import {
   Max,
   IsNotEmpty,
   IsISO8601,
+  IsArray,
+  ValidateNested,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 
@@ -101,6 +103,13 @@ export class CreateAchievementDto {
   @IsOptional()
   @Type(() => Number)
   xp_reward?: number
+}
+
+export class CreateAchievementsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateAchievementDto)
+  achievements: CreateAchievementDto[]
 }
 
 export class CompleteAchievementDto {

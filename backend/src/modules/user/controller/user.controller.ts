@@ -249,6 +249,18 @@ export class UserController {
       next(error)
     }
   }
+
+  /**
+   * GET /api/users/stats/global - Получение глобальной статистики платформы
+   */
+  async getGlobalStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const stats = await userService.getGlobalStats()
+      res.json(stats)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 export const userController = new UserController()

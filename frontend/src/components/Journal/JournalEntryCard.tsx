@@ -100,11 +100,13 @@ export const JournalEntryCard = ({ entry, onEdit, onView }: JournalEntryCardProp
   }
 
   // Извлекаем текст из TipTap JSON для предпросмотра
-  const getPreviewText = (content: any): string => {
+  type TipTapNode = string | { type?: string; text?: string; content?: TipTapNode[] } | TipTapNode[]
+
+  const getPreviewText = (content: TipTapNode): string => {
     if (!content) return ''
     if (typeof content === 'string') return content.substring(0, 150)
 
-    const extractText = (node: any): string => {
+    const extractText = (node: TipTapNode): string => {
       if (typeof node === 'string') return node
       if (Array.isArray(node)) {
         return node.map(extractText).filter(Boolean).join(' ')

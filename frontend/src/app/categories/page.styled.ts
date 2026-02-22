@@ -53,12 +53,15 @@ export const CategoryCard = styled(motion.div)`
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  padding: 2rem;
+  padding: 2.5rem;
   border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   &::before {
     content: '';
@@ -86,30 +89,37 @@ export const CategoryCard = styled(motion.div)`
 `
 
 export const CategoryIcon = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 16px;
+  width: 140px;
+  height: 140px;
+  border-radius: 20px;
   background: linear-gradient(135deg, ${(props) => `${props.theme.colors.primary}26`} 0%, ${(props) => `${props.theme.colors.secondary}1a`} 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
   border: 2px solid ${(props) => `${props.theme.colors.primary}4d`};
   box-shadow: ${(props) => props.theme.shadows.glow.primary};
   transition: all 0.3s ease;
   overflow: hidden;
+  align-self: center;
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover img {
+    transform: scale(1.15);
   }
 
   @media (max-width: 768px) {
-    width: 64px;
-    height: 64px;
-    font-size: 2rem;
+    width: 100px;
+    height: 100px;
+    font-size: 3rem;
+    margin-bottom: 1rem;
   }
 `
 

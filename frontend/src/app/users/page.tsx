@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { IoSearch, IoPeople, IoStar, IoTrophy, IoFlame, IoTime, IoCloseCircle } from 'react-icons/io5'
+import { IoSearch, IoPeople, IoStar, IoTrophy, IoFlame, IoTime, IoCloseCircle, IoPerson } from 'react-icons/io5'
 import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
 import { useSearchUsersQuery, useGetTopUsersQuery } from '@/store/api/userApi'
@@ -139,7 +139,21 @@ export default function UsersPage() {
                 >
                   <UserHeader>
                     <Avatar $level={user.level}>
-                      {user.username.charAt(0).toUpperCase()}
+                      {user.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
+                          alt={user.username}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      ) : null}
+                      {!user.avatar_url && (
+                        <span style={{ position: 'relative', zIndex: 0 }}>
+                          {user.username.charAt(0).toUpperCase()}
+                        </span>
+                      )}
                     </Avatar>
                     <UserInfo>
                       <Username>{user.username}</Username>
@@ -181,7 +195,21 @@ export default function UsersPage() {
                   >
                     <UserHeader>
                       <Avatar $level={user.level}>
-                        {user.username.charAt(0).toUpperCase()}
+                        {user.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
+                            alt={user.username}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
+                        ) : null}
+                        {!user.avatar_url && (
+                          <span style={{ position: 'relative', zIndex: 0 }}>
+                            {user.username.charAt(0).toUpperCase()}
+                          </span>
+                        )}
                       </Avatar>
                       <UserInfo>
                         <Username>{user.username}</Username>

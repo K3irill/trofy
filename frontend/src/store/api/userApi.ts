@@ -73,6 +73,7 @@ export interface UserAchievement {
   is_achieved: boolean
   is_public: boolean
   is_hidden: boolean
+  progress?: number
 }
 
 export const userApi = baseApi.injectEndpoints({
@@ -155,6 +156,15 @@ export const userApi = baseApi.injectEndpoints({
         params: { limit },
       }),
     }),
+    getGlobalStats: builder.query<{
+      active_users: number
+      total_completed_achievements: number
+      new_today: number
+      weekly_growth: number
+    }, void>({
+      query: () => '/users/stats/global',
+      providesTags: ['User'],
+    }),
   }),
 })
 
@@ -170,4 +180,5 @@ export const {
   useGetRecentAchievementsByUsernameQuery,
   useSearchUsersQuery,
   useGetTopUsersQuery,
+  useGetGlobalStatsQuery,
 } = userApi

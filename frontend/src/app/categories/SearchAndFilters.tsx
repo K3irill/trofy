@@ -126,6 +126,7 @@ interface SearchAndFiltersProps {
   sortBy: string
   onSortChange: (value: string) => void
   isAuthenticated?: boolean
+  hideCategoryFilter?: boolean
 }
 
 export const SearchAndFilters = ({
@@ -140,6 +141,7 @@ export const SearchAndFilters = ({
   sortBy,
   onSortChange,
   isAuthenticated = false,
+  hideCategoryFilter = false,
 }: SearchAndFiltersProps) => {
   const { data: categoriesData = [] } = useGetCategoriesQuery()
 
@@ -191,15 +193,17 @@ export const SearchAndFilters = ({
         />
       </SearchInputWrapper>
       <FiltersRow>
-        <FilterSelectWrapper>
-          <ThemedSelect
-            options={categoryOptions}
-            value={categoryOptions.find((opt) => opt.value === selectedCategory)}
-            onChange={(option) => onCategoryChange(option?.value || '')}
-            isClearable
-            placeholder="Все категории"
-          />
-        </FilterSelectWrapper>
+        {!hideCategoryFilter && (
+          <FilterSelectWrapper>
+            <ThemedSelect
+              options={categoryOptions}
+              value={categoryOptions.find((opt) => opt.value === selectedCategory)}
+              onChange={(option) => onCategoryChange(option?.value || '')}
+              isClearable
+              placeholder="Все категории"
+            />
+          </FilterSelectWrapper>
+        )}
         {isAuthenticated && (
           <FilterSelectWrapper>
             <ThemedSelect

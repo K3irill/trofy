@@ -8,7 +8,7 @@ import {
   BottomNavIcon,
   BottomNavLabel,
 } from './BottomNavigation.styled'
-import { HiHome, HiNewspaper, HiSparkles, HiBookmark } from 'react-icons/hi'
+import { HiNewspaper, HiSparkles, HiBookmark } from 'react-icons/hi'
 import { GiAchievement } from "react-icons/gi"
 
 export const BottomNavigation = () => {

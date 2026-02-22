@@ -9,6 +9,7 @@ import styled from 'styled-components'
 import { motion } from 'framer-motion'
 import { IoFlame, IoStar, IoTrendingUp, IoPeople, IoTime, IoTrophy, IoGrid, IoPerson, IoSearch } from 'react-icons/io5'
 import { useRouter } from 'next/navigation'
+import { useGetGlobalStatsQuery } from '@/store/api/userApi'
 
 const Content = styled.div`
   display: grid;
@@ -458,6 +459,7 @@ export default function FeedPage() {
   const [showcaseFilter, setShowcaseFilter] = useState<'best' | 'recent' | 'mine'>('best')
 
   const router = useRouter()
+  const { data: globalStats, isLoading: isLoadingStats } = useGetGlobalStatsQuery()
 
   useEffect(() => {
     // router.push('/user')
@@ -473,11 +475,36 @@ export default function FeedPage() {
     }
   }
 
+  // Форматирование чисел с разделителями тысяч
+  const formatNumber = (num: number) => {
+    return num.toLocaleString('ru-RU')
+  }
+
   const stats = [
-    { icon: IoFlame, value: '1,234', label: 'Активных пользователей', color: '#ff6b6b' },
-    { icon: IoTrophy, value: '5,678', label: 'Достижений выполнено', color: '#4ecdc4' },
-    { icon: IoStar, value: '890', label: 'Новых сегодня', color: '#ffe66d' },
-    { icon: IoTrendingUp, value: '+12%', label: 'Рост за неделю', color: '#95e1d3' },
+    { 
+      icon: IoFlame, 
+      value: isLoadingStats ? '...' : formatNumber(globalStats?.active_users || 0), 
+      label: 'Активных пользователей', 
+      color: '#ff6b6b' 
+    },
+    { 
+      icon: IoTrophy, 
+      value: isLoadingStats ? '...' : formatNumber(globalStats?.total_completed_achievements || 0), 
+      label: 'Достижений выполнено', 
+      color: '#4ecdc4' 
+    },
+    { 
+      icon: IoStar, 
+      value: isLoadingStats ? '...' : formatNumber(globalStats?.new_today || 0), 
+      label: 'Новых сегодня', 
+      color: '#ffe66d' 
+    },
+    { 
+      icon: IoTrendingUp, 
+      value: isLoadingStats ? '...' : `${globalStats?.weekly_growth && globalStats.weekly_growth > 0 ? '+' : ''}${globalStats?.weekly_growth || 0}%`, 
+      label: 'Рост за неделю', 
+      color: '#95e1d3' 
+    },
   ]
 
   const feedItems = [

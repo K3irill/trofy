@@ -273,7 +273,7 @@ export default function AchievementDetailPage() {
           <div style={{ flex: 1 }}>
             <AchievementTitle>{achievement.name}</AchievementTitle>
             <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {achievementDetail.category.icon_url ? renderIcon(achievementDetail.category.icon_url, 'folder') : <IoFolderOpen />} {achievementDetail.category.name}
+              <IoFolderOpen /> {achievementDetail.category.name}
             </div>
             {isAuthenticated && achievement.unlocked && (
               <AchievementIndicators>
