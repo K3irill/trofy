@@ -150,7 +150,7 @@ export const AchievementPreviewModal = ({
                   transformStyle: 'preserve-3d',
                 }}
               >
-пше фв                 <Image 
+                <Image 
                   src={icon!} 
                   alt={name} 
                   fill 
