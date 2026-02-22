@@ -150,7 +150,13 @@ export const AchievementPreviewModal = ({
                   transformStyle: 'preserve-3d',
                 }}
               >
-                <Image src={icon!} alt={name} fill style={{ objectFit: 'contain' }} />
+пше фв                 <Image 
+                  src={icon!} 
+                  alt={name} 
+                  fill 
+                  style={{ objectFit: 'contain' }} 
+                  unoptimized
+                />
               </ModalImage>
             ) : (
               <ModalIcon
