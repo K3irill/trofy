@@ -3,8 +3,20 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
-const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'achievements')
-const AVATAR_DIR = path.join(process.cwd(), 'uploads', 'avatars')
+// Определяем путь к uploads с учетом структуры проекта
+// В продакшене PM2: cwd = /root/trofy/trofy, uploads в backend/uploads
+// В dev: cwd = backend, uploads в uploads
+function getUploadsBasePath() {
+  let basePath = path.join(process.cwd(), 'backend', 'uploads')
+  if (!fs.existsSync(basePath)) {
+    basePath = path.join(process.cwd(), 'uploads')
+  }
+  return basePath
+}
+
+const UPLOADS_BASE = getUploadsBasePath()
+const UPLOAD_DIR = path.join(UPLOADS_BASE, 'achievements')
+const AVATAR_DIR = path.join(UPLOADS_BASE, 'avatars')
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 
