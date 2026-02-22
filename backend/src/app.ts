@@ -29,6 +29,8 @@ app.use(express.json())
 
 // Статическая раздача загруженных файлов
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
+// Также поддерживаем /api/uploads для совместимости
+app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
 // API routes
 app.use('/api/auth', authRoutes)
