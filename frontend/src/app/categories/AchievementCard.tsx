@@ -53,6 +53,11 @@ const AchievementCardContainer = styled(motion.div) <{ $status: AchievementStatu
   overflow: hidden;
   opacity: 1;
 
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -117,6 +122,13 @@ const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+
+  @media (max-width: 768px) {
+    width: 64px;
+    height: 64px;
+    font-size: 2rem;
+    border-radius: 12px;
   }
 `
 
@@ -205,6 +217,12 @@ const AchievementCategory = styled.div`
   font-size: 0.75rem;
   color: ${(props) => props.theme.colors.primary};
   border: 1px solid ${(props) => `${props.theme.colors.primary}33`};
+
+  @media (max-width: 768px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    gap: 0.375rem;
+  }
 `
 
 const RarityBadge = styled.div<{ rarity?: string }>`
@@ -235,6 +253,63 @@ const RarityBadge = styled.div<{ rarity?: string }>`
     const rarityColor = getRarityColor(props.theme, props.rarity)
     return `0 0 8px ${rarityColor}20`
   }};
+
+  @media (max-width: 768px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    gap: 0.2rem;
+  }
+`
+
+const CardContentWrapper = styled.div`
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  align-items: flex-start;
+
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+    flex-direction: column;
+  }
+`
+
+const CardInfoWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  align-items: flex-end;
+
+  @media (max-width: 768px) {
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.375rem;
+  }
+`
+
+const BadgesContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 0.375rem;
+    width: 100%;
+    justify-content: flex-start;
+  }
+`
+
+const IconWrapper = styled.div<{ $transform: string }>`
+  transform: ${(props) => props.$transform};
+  transform-style: preserve-3d;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    align-self: center;
+  }
 `
 
 const getRarityLabel = (rarity?: string) => {
@@ -328,32 +403,31 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
       {achievement.description && (
         <AchievementDescription>{achievement.description}</AchievementDescription>
       )}
-      <div style={{ display: 'flex', gap: '1rem', width: '100%', alignItems: 'flex-start' }}>
-        <AchievementIcon
-          $status={status}
-          onMouseMove={handleIconMouseMove}
-          onMouseLeave={handleIconMouseLeave}
-          onTouchMove={handleIconTouchMove}
-          onTouchEnd={handleIconTouchEnd}
-          style={{
-            transform: `perspective(1000px) rotateX(${iconTransform.rotateX}deg) rotateY(${iconTransform.rotateY}deg) scale(${iconTransform.scale})`,
-            transformStyle: 'preserve-3d',
-            flexShrink: 0,
-          }}
+      <CardContentWrapper>
+        <IconWrapper
+          $transform={`perspective(1000px) rotateX(${iconTransform.rotateX}deg) rotateY(${iconTransform.rotateY}deg) scale(${iconTransform.scale})`}
         >
-          {renderIcon(achievement.icon, 'trophy')}
-          {isAchieved && (
-            <StatusBadge $status="achieved">
-              <IoCheckmarkCircle />
-            </StatusBadge>
-          )}
-          {isInProgress && (
-            <StatusBadge $status="in_progress">
-              <IoTimeOutline />
-            </StatusBadge>
-          )}
-        </AchievementIcon>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, alignItems: 'flex-end' }}>
+          <AchievementIcon
+            $status={status}
+            onMouseMove={handleIconMouseMove}
+            onMouseLeave={handleIconMouseLeave}
+            onTouchMove={handleIconTouchMove}
+            onTouchEnd={handleIconTouchEnd}
+          >
+            {renderIcon(achievement.icon, 'trophy')}
+            {isAchieved && (
+              <StatusBadge $status="achieved">
+                <IoCheckmarkCircle />
+              </StatusBadge>
+            )}
+            {isInProgress && (
+              <StatusBadge $status="in_progress">
+                <IoTimeOutline />
+              </StatusBadge>
+            )}
+          </AchievementIcon>
+        </IconWrapper>
+        <CardInfoWrapper>
           <AchievementStatus $status={status}>
             {isAchieved
               ? 'Достигнуто'
@@ -361,16 +435,16 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
                 ? `В работе ${progress}%`
                 : 'Не достигнуто'}
           </AchievementStatus>
-          <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}>
+          <BadgesContainer>
             <AchievementCategory>
               <span>{achievement.categoryName}</span>
             </AchievementCategory>
             <RarityBadge rarity={achievement.rarity}>
               {getRarityLabel(achievement.rarity)}
             </RarityBadge>
-          </div>
-        </div>
-      </div>
+          </BadgesContainer>
+        </CardInfoWrapper>
+      </CardContentWrapper>
     </AchievementCardContainer>
   )
 }

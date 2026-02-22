@@ -98,9 +98,14 @@ const FiltersRow = styled.div`
   flex-wrap: wrap;
   align-items: center;
 
-  @media (max-width: 768px) {
-    flex-direction: column;
+  @media (max-width: 1024px) {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
+  }
+
+  @media (max-width: 768px) {
+    gap: 0.625rem;
   }
 `
 
@@ -108,7 +113,7 @@ const FilterSelectWrapper = styled.div`
   position: relative;
   min-width: 200px;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     width: 100%;
     min-width: unset;
   }
