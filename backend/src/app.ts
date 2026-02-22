@@ -27,12 +27,10 @@ app.use(
 //   })
 // )
 app.use(express.json())
-// Статическая раздача загруженных файлов
-// Определяем путь к uploads с учетом структуры проекта
-let uploadsPath = path.join(process.cwd(), 'uploads')
+// app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
+let uploadsPath = path.join(process.cwd(), 'backend', 'uploads')
 if (!fs.existsSync(uploadsPath)) {
-  // В продакшене PM2: cwd = /root/trofy/trofy, uploads в backend/uploads
-  uploadsPath = path.join(process.cwd(), 'backend', 'uploads')
+  uploadsPath = path.join(process.cwd(), 'uploads')
 }
 console.log('📁 Uploads path:', uploadsPath)
 console.log('📁 Uploads exists:', fs.existsSync(uploadsPath))
