@@ -34,8 +34,5 @@ uploads/*
 .DS_Store
 Thumbs.db
 
-# Prisma
-prisma/migrations/
-
 # TypeScript
 *.tsbuildinfo

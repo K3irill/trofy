@@ -609,7 +609,7 @@ export default function FeedPage() {
             ))}
           </StatsGrid>
 
-          {isAuthenticated && <DailyMissionSection />}
+          {/* {isAuthenticated && <DailyMissionSection />} */}
 
 
 

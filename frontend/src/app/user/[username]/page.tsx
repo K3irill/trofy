@@ -98,8 +98,8 @@ export default function UserProfilePage() {
           <RecentTrophiesSection username={username} isOwnProfile={isOwnProfile} />
           {isOwnProfile && (
             <>
-              <DailyMissionSection />
-              <InviteFriendSection />
+              {/* <DailyMissionSection />
+              <InviteFriendSection /> */}
             </>
           )}
         </MainSection>
