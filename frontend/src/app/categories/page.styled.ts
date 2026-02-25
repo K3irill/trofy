@@ -43,9 +43,17 @@ export const Grid = styled.div`
   max-width: 1200px;
   margin: 0 auto;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    gap: 0.75rem;
+  }
+
+  @media (max-width: 400px) {
+    gap: 0.5rem;
   }
 `
 
@@ -83,8 +91,18 @@ export const CategoryCard = styled(motion.div)`
    
   }
 
-  @media (max-width: 768px) {
-    padding: 1.5rem;
+  @media (max-width: 1024px) {
+    padding: 1.75rem;
+  }
+
+  @media (max-width: 640px) {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+
+  @media (max-width: 400px) {
+    padding: 1rem;
+    border-radius: 12px;
   }
 `
 
@@ -115,11 +133,27 @@ export const CategoryIcon = styled.div`
     transform: scale(1.15);
   }
 
-  @media (max-width: 768px) {
-    width: 100px;
-    height: 100px;
-    font-size: 3rem;
+  @media (max-width: 1024px) {
+    width: 120px;
+    height: 120px;
+    font-size: 3.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  @media (max-width: 640px) {
+    width: 90px;
+    height: 90px;
+    font-size: 2.75rem;
     margin-bottom: 1rem;
+    border-radius: 16px;
+  }
+
+  @media (max-width: 400px) {
+    width: 70px;
+    height: 70px;
+    font-size: 2.25rem;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
   }
 `
 
@@ -129,8 +163,16 @@ export const CategoryName = styled.h3`
   font-weight: 700;
   margin-bottom: 0.5rem;
 
-  @media (max-width: 768px) {
-    font-size: 1.25rem;
+  @media (max-width: 1024px) {
+    font-size: 1.375rem;
+  }
+
+  @media (max-width: 640px) {
+    font-size: 1.125rem;
+  }
+
+  @media (max-width: 400px) {
+    font-size: 1rem;
   }
 `
 
@@ -139,8 +181,20 @@ export const CategoryStats = styled.div`
   gap: 1rem;
   flex-wrap: wrap;
 
-  @media (max-width: 768px) {
-    gap: 0.75rem;
+  @media (max-width: 1024px) {
+    gap: 0.625rem;
+  }
+
+  @media (max-width: 640px) {
+    #progress{
+      display:none;
+    };
+
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 400px) {
+    gap: 0.375rem;
   }
 `
 
@@ -153,8 +207,18 @@ export const StatItem = styled.div`
   gap: 0.5rem;
   border: 1px solid ${(props) => `${props.theme.colors.primary}33`};
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
+    padding: 0.45rem 0.875rem;
+  }
+
+  @media (max-width: 640px) {
     padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+  }
+
+  @media (max-width: 400px) {
+    padding: 0.35rem 0.625rem;
+    gap: 0.375rem;
   }
 `
 
@@ -162,8 +226,16 @@ export const StatLabel = styled.span`
   color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.875rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
+    font-size: 0.84375rem;
+  }
+
+  @media (max-width: 640px) {
     font-size: 0.8125rem;
+  }
+
+  @media (max-width: 400px) {
+    font-size: 0.75rem;
   }
 `
 
@@ -176,8 +248,16 @@ export const StatValue = styled.span<{ $status?: AchievementStatus }>`
   font-weight: 700;
   font-size: 1rem;
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
+    font-size: 0.90625rem;
+  }
+
+  @media (max-width: 640px) {
     font-size: 0.875rem;
+  }
+
+  @media (max-width: 400px) {
+    font-size: 0.8125rem;
   }
 `
 
@@ -212,14 +292,36 @@ export const ProgressRing = styled.div<{ progress: number }>`
     color: ${(props) => props.theme.colors.light[100]};
   }
 
-  @media (max-width: 768px) {
-    width: 35px;
-    height: 35px;
-    top: 0.75rem;
-    right: 0.75rem;
+  @media (max-width: 1024px) {
+    width: 50px;
+    height: 50px;
+    top: 0.875rem;
+    right: 0.875rem;
+
+    &::before {
+      font-size: 0.6875rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    width: 40px;
+    height: 40px;
+    top: 0.58rem;
+    right: 0.58rem;
 
     &::before {
       font-size: 0.625rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    width: 35px;
+    height: 35px;
+    top: 0.625rem;
+    right: 0.625rem;
+
+    &::before {
+      font-size: 0.5625rem;
     }
   }
 `
@@ -230,8 +332,19 @@ export const AchievementPreview = styled.div`
   margin-top: 1rem;
   flex-wrap: wrap;
 
-  @media (max-width: 768px) {
-    gap: 0.4rem;
+  @media (max-width: 1024px) {
+    gap: 0.375rem;
+    margin-top: 0.875rem;
+  }
+
+  @media (max-width: 640px) {
+    gap: 0.3rem;
+    margin-top: 0.75rem;
+  }
+
+  @media (max-width: 400px) {
+    gap: 0.25rem;
+    margin-top: 0.625rem;
   }
 `
 
@@ -278,10 +391,24 @@ export const PreviewItem = styled.div<{ $status: PreviewStatus }>`
     ${props => props.$status !== 'not_achieved' && `filter: drop-shadow(${props.theme.shadows.glow.primary});`}
   }
 
-  @media (max-width: 768px) {
-    width: 50px;
-    height: 50px;
-    font-size: 1.25rem;
+  @media (max-width: 1024px) {
+    width: 55px;
+    height: 55px;
+    font-size: 1.375rem;
+  }
+
+  @media (max-width: 640px) {
+    width: 45px;
+    height: 45px;
+    font-size: 1.125rem;
+    border-radius: 10px;
+  }
+
+  @media (max-width: 400px) {
+    width: 38px;
+    height: 38px;
+    font-size: 1rem;
+    border-radius: 8px;
   }
 `
 

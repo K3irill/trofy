@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
 
-export const ProfileContainer = styled(motion.div)<{ $isBlurred?: boolean }>`
+export const ProfileContainer = styled(motion.div) <{ $isBlurred?: boolean }>`
 	background: ${props => props.theme.glass.bg};
 	backdrop-filter: ${props => props.theme.glass.blur};
 	-webkit-backdrop-filter: ${props => props.theme.glass.blur};
@@ -58,159 +58,159 @@ export const MainInfoWrap = styled.div`
 `
 
 export type ProfileThemeType =
-	| 'midnight'
-	| 'deepBlue'
-	| 'velvetPurple'
-	| 'forest'
-	| 'cosmic'
-	| 'sunset'
-	| 'nebula'
-	| 'aurora'
-	| 'gold'
-	| 'platinum'
-	| 'dragonScale'
-	| 'frostedGlass'
+  | 'midnight'
+  | 'deepBlue'
+  | 'velvetPurple'
+  | 'forest'
+  | 'cosmic'
+  | 'sunset'
+  | 'nebula'
+  | 'aurora'
+  | 'gold'
+  | 'platinum'
+  | 'dragonScale'
+  | 'frostedGlass'
 
 export type MainInfoProps = {
-	profileTheme?: ProfileThemeType
+  profileTheme?: ProfileThemeType
 }
 
 export const mapProfileColorToTheme = (color: string): ProfileThemeType => {
-	const colorMap: Record<string, ProfileThemeType> = {
-		dark: 'midnight',
-		blue: 'deepBlue',
-		purple: 'velvetPurple',
-		green: 'forest',
-		orange: 'sunset',
-		pink: 'nebula',
-		red: 'aurora',
-		yellow: 'gold',
-	}
-	return colorMap[color] || 'midnight'
+  const colorMap: Record<string, ProfileThemeType> = {
+    dark: 'midnight',
+    blue: 'deepBlue',
+    purple: 'velvetPurple',
+    green: 'forest',
+    orange: 'sunset',
+    pink: 'nebula',
+    red: 'aurora',
+    yellow: 'gold',
+  }
+  return colorMap[color] || 'midnight'
 }
 
 const getThemeStyles = (theme: MainInfoProps['profileTheme'] = 'midnight') => {
-	const themes = {
-		midnight: {
-			gradient:
-				'linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
-			shadow: '0 8px 32px rgba(15, 23, 42, 0.4)',
-			accent: 'rgba(148, 163, 184, 0.15)',
-			border: '1px solid rgba(148, 163, 184, 0.1)',
-			overlay: 'rgba(15, 23, 42, 0.7)',
-			name: 'Полночь',
-		},
-		deepBlue: {
-			gradient:
-				'linear-gradient(145deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%)',
-			shadow: '0 8px 32px rgba(30, 58, 138, 0.35)',
-			accent: 'rgba(59, 130, 246, 0.2)',
-			border: '1px solid rgba(96, 165, 250, 0.2)',
-			overlay: 'rgba(30, 58, 138, 0.6)',
-			name: 'Глубокий синий',
-		},
-		velvetPurple: {
-			gradient:
-				'linear-gradient(145deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%)',
-			shadow: '0 8px 32px rgba(76, 29, 149, 0.35)',
-			accent: 'rgba(124, 58, 237, 0.2)',
-			border: '1px solid rgba(167, 139, 250, 0.2)',
-			overlay: 'rgba(76, 29, 149, 0.6)',
-			name: 'Бархатный фиолет',
-		},
-		forest: {
-			gradient:
-				'linear-gradient(145deg, #064e3b 0%, #059669 50%, #34d399 100%)',
-			shadow: '0 8px 32px rgba(6, 78, 59, 0.35)',
-			accent: 'rgba(5, 150, 105, 0.2)',
-			border: '1px solid rgba(52, 211, 153, 0.2)',
-			overlay: 'rgba(6, 78, 59, 0.6)',
-			name: 'Лес',
-		},
+  const themes = {
+    midnight: {
+      gradient:
+        'linear-gradient(145deg, rgba(15, 23, 42, 0.15) 0%, rgba(30, 41, 59, 0.08) 50%, rgba(51, 65, 85, 0.03) 100%)',
+      shadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(148, 163, 184, 0.2)',
+      accent: 'rgba(148, 163, 184, 0.1)',
+      border: '1px solid rgba(148, 163, 184, 0.18)',
+      overlay: 'rgba(15, 23, 42, 0.4)',
+      name: 'Полночь',
+    },
+    deepBlue: {
+      gradient:
+        'linear-gradient(145deg, rgba(30, 58, 138, 0.15) 0%, rgba(59, 130, 246, 0.08) 50%, rgba(96, 165, 250, 0.03) 100%)',
+      shadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(96, 165, 250, 0.2)',
+      accent: 'rgba(59, 130, 246, 0.1)',
+      border: '1px solid rgba(96, 165, 250, 0.18)',
+      overlay: 'rgba(30, 58, 138, 0.4)',
+      name: 'Глубокий синий',
+    },
+    velvetPurple: {
+      gradient:
+        'linear-gradient(145deg, rgba(76, 29, 149, 0.15) 0%, rgba(124, 58, 237, 0.08) 50%, rgba(167, 139, 250, 0.03) 100%)',
+      shadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(167, 139, 250, 0.2)',
+      accent: 'rgba(124, 58, 237, 0.1)',
+      border: '1px solid rgba(167, 139, 250, 0.18)',
+      overlay: 'rgba(76, 29, 149, 0.4)',
+      name: 'Бархатный фиолет',
+    },
+    forest: {
+      gradient:
+        'linear-gradient(145deg, rgba(6, 78, 59, 0.15) 0%, rgba(5, 150, 105, 0.08) 50%, rgba(52, 211, 153, 0.03) 100%)',
+      shadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(52, 211, 153, 0.2)',
+      accent: 'rgba(5, 150, 105, 0.1)',
+      border: '1px solid rgba(52, 211, 153, 0.18)',
+      overlay: 'rgba(6, 78, 59, 0.4)',
+      name: 'Лес',
+    },
 
-		// Более уникальные с изюминкой
-		cosmic: {
-			gradient:
-				'linear-gradient(145deg, #1e1b4b 0%, #3730a3 50%, #818cf8 100%)',
-			shadow:
-				'0 8px 32px rgba(30, 27, 75, 0.4), 0 0 24px rgba(129, 140, 248, 0.3)',
-			accent: 'rgba(129, 140, 248, 0.25)',
-			border: '1px solid rgba(129, 140, 248, 0.3)',
-			overlay: 'rgba(30, 27, 75, 0.7)',
-			name: 'Космос',
-		},
-		sunset: {
-			gradient:
-				'linear-gradient(145deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%)',
-			shadow: '0 8px 32px rgba(124, 45, 18, 0.35)',
-			accent: 'rgba(234, 88, 12, 0.2)',
-			border: '1px solid rgba(251, 146, 60, 0.2)',
-			overlay: 'rgba(124, 45, 18, 0.6)',
-			name: 'Закат',
-		},
-		nebula: {
-			gradient:
-				'linear-gradient(145deg, #500724 0%, #be185d 50%, #f472b6 100%)',
-			shadow:
-				'0 8px 32px rgba(80, 7, 36, 0.4), 0 0 20px rgba(244, 114, 182, 0.2)',
-			accent: 'rgba(190, 24, 93, 0.25)',
-			border: '1px solid rgba(244, 114, 182, 0.25)',
-			overlay: 'rgba(80, 7, 36, 0.7)',
-			name: 'Туманность',
-		},
-		aurora: {
-			gradient:
-				'linear-gradient(145deg, #064e3b 0%, #0d9488 50%, #22d3ee 100%)',
-			shadow: '0 8px 32px rgba(6, 78, 59, 0.35)',
-			accent: 'rgba(13, 148, 136, 0.2)',
-			border: '1px solid rgba(34, 211, 238, 0.2)',
-			overlay: 'rgba(6, 78, 59, 0.6)',
-			name: 'Северное сияние',
-		},
+    // Более уникальные с изюминкой
+    cosmic: {
+      gradient:
+        'linear-gradient(145deg, rgba(30, 27, 75, 0.15) 0%, rgba(55, 48, 163, 0.08) 50%, rgba(129, 140, 248, 0.03) 100%)',
+      shadow:
+        '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(129, 140, 248, 0.2), 0 0 24px rgba(129, 140, 248, 0.15)',
+      accent: 'rgba(129, 140, 248, 0.1)',
+      border: '1px solid rgba(129, 140, 248, 0.18)',
+      overlay: 'rgba(30, 27, 75, 0.4)',
+      name: 'Космос',
+    },
+    sunset: {
+      gradient:
+        'linear-gradient(145deg, rgba(124, 45, 18, 0.15) 0%, rgba(234, 88, 12, 0.08) 50%, rgba(251, 146, 60, 0.03) 100%)',
+      shadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(251, 146, 60, 0.2)',
+      accent: 'rgba(234, 88, 12, 0.1)',
+      border: '1px solid rgba(251, 146, 60, 0.18)',
+      overlay: 'rgba(124, 45, 18, 0.4)',
+      name: 'Закат',
+    },
+    nebula: {
+      gradient:
+        'linear-gradient(145deg, rgba(80, 7, 36, 0.15) 0%, rgba(190, 24, 93, 0.08) 50%, rgba(244, 114, 182, 0.03) 100%)',
+      shadow:
+        '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(244, 114, 182, 0.2), 0 0 20px rgba(244, 114, 182, 0.1)',
+      accent: 'rgba(190, 24, 93, 0.1)',
+      border: '1px solid rgba(244, 114, 182, 0.18)',
+      overlay: 'rgba(80, 7, 36, 0.4)',
+      name: 'Туманность',
+    },
+    aurora: {
+      gradient:
+        'linear-gradient(145deg, rgba(6, 78, 59, 0.15) 0%, rgba(13, 148, 136, 0.08) 50%, rgba(34, 211, 238, 0.03) 100%)',
+      shadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(34, 211, 238, 0.2)',
+      accent: 'rgba(13, 148, 136, 0.1)',
+      border: '1px solid rgba(34, 211, 238, 0.18)',
+      overlay: 'rgba(6, 78, 59, 0.4)',
+      name: 'Северное сияние',
+    },
 
-		// Премиум-темы (разблокируются за достижения)
-		gold: {
-			gradient:
-				'linear-gradient(145deg, #78350f 0%, #d97706 50%, #fbbf24 100%)',
-			shadow:
-				'0 8px 40px rgba(120, 53, 15, 0.5), 0 0 30px rgba(251, 191, 36, 0.3)',
-			accent: 'rgba(217, 119, 6, 0.25)',
-			border: '1px solid rgba(251, 191, 36, 0.3)',
-			overlay: 'rgba(120, 53, 15, 0.7)',
-			name: 'Золото',
-		},
-		platinum: {
-			gradient:
-				'linear-gradient(145deg, #374151 0%, #9ca3af 50%, #d1d5db 100%)',
-			shadow:
-				'0 8px 40px rgba(55, 65, 81, 0.5), 0 0 30px rgba(209, 213, 219, 0.2)',
-			accent: 'rgba(156, 163, 175, 0.25)',
-			border: '1px solid rgba(209, 213, 219, 0.3)',
-			overlay: 'rgba(55, 65, 81, 0.7)',
-			name: 'Платина',
-		},
-		dragonScale: {
-			gradient:
-				'linear-gradient(145deg, #064e3b 0%, #0891b2 50%, #7dd3fc 100%)',
-			shadow:
-				'0 8px 40px rgba(6, 78, 59, 0.5), 0 0 30px rgba(125, 211, 252, 0.3)',
-			accent: 'rgba(8, 145, 178, 0.25)',
-			border: '1px solid rgba(125, 211, 252, 0.25)',
-			overlay: 'rgba(6, 78, 59, 0.7)',
-			name: 'Чешуя дракона',
-		},
-		frostedGlass: {
-			gradient:
-				'linear-gradient(145deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 100%)',
-			shadow:
-				'0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-			accent: 'rgba(255, 255, 255, 0.1)',
-			border: '1px solid rgba(255, 255, 255, 0.18)',
-			overlay: 'rgba(0, 0, 0, 0.4)',
-			name: 'Матовое стекло',
-		},
-	}
-	return themes[theme] || themes.midnight
+    // Премиум-темы (разблокируются за достижения)
+    gold: {
+      gradient:
+        'linear-gradient(145deg, rgba(120, 53, 15, 0.15) 0%, rgba(217, 119, 6, 0.08) 50%, rgba(251, 191, 36, 0.03) 100%)',
+      shadow:
+        '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(251, 191, 36, 0.2), 0 0 30px rgba(251, 191, 36, 0.15)',
+      accent: 'rgba(217, 119, 6, 0.1)',
+      border: '1px solid rgba(251, 191, 36, 0.18)',
+      overlay: 'rgba(120, 53, 15, 0.4)',
+      name: 'Золото',
+    },
+    platinum: {
+      gradient:
+        'linear-gradient(145deg, rgba(55, 65, 81, 0.15) 0%, rgba(156, 163, 175, 0.08) 50%, rgba(209, 213, 219, 0.03) 100%)',
+      shadow:
+        '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(209, 213, 219, 0.2), 0 0 30px rgba(209, 213, 219, 0.1)',
+      accent: 'rgba(156, 163, 175, 0.1)',
+      border: '1px solid rgba(209, 213, 219, 0.18)',
+      overlay: 'rgba(55, 65, 81, 0.4)',
+      name: 'Платина',
+    },
+    dragonScale: {
+      gradient:
+        'linear-gradient(145deg, rgba(6, 78, 59, 0.15) 0%, rgba(8, 145, 178, 0.08) 50%, rgba(125, 211, 252, 0.03) 100%)',
+      shadow:
+        '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(125, 211, 252, 0.2), 0 0 30px rgba(125, 211, 252, 0.15)',
+      accent: 'rgba(8, 145, 178, 0.1)',
+      border: '1px solid rgba(125, 211, 252, 0.18)',
+      overlay: 'rgba(6, 78, 59, 0.4)',
+      name: 'Чешуя дракона',
+    },
+    frostedGlass: {
+      gradient:
+        'linear-gradient(145deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 100%)',
+      shadow:
+        '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+      accent: 'rgba(255, 255, 255, 0.1)',
+      border: '1px solid rgba(255, 255, 255, 0.18)',
+      overlay: 'rgba(0, 0, 0, 0.4)',
+      name: 'Матовое стекло',
+    },
+  }
+  return themes[theme] || themes.midnight
 }
 
 export const MainInfo = styled.div<MainInfoProps>`
@@ -222,8 +222,8 @@ export const MainInfo = styled.div<MainInfoProps>`
 	box-shadow: ${props => getThemeStyles(props.profileTheme).shadow};
 	border: ${props => getThemeStyles(props.profileTheme).border};
 	${props =>
-		props.profileTheme === 'frostedGlass' &&
-		`
+    props.profileTheme === 'frostedGlass' &&
+    `
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     background: ${getThemeStyles(props.profileTheme).gradient};
@@ -486,7 +486,7 @@ export const BadgesContainer = styled.div`
 	z-index: 1;
 `
 
-export const Badge = styled(motion.div)<{ rarity: string }>`
+export const Badge = styled(motion.div) <{ rarity: string }>`
 	padding: 0.25rem 0.75rem;
 	border-radius: 20px;
 	font-size: 0.6875rem;
@@ -495,32 +495,32 @@ export const Badge = styled(motion.div)<{ rarity: string }>`
 	letter-spacing: 0.5px;
 
 	${props => {
-		switch (props.rarity) {
-			case 'legendary':
-				return `
+    switch (props.rarity) {
+      case 'legendary':
+        return `
           background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
           color: #fff;
           box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
         `
-			case 'epic':
-				return `
+      case 'epic':
+        return `
           background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
           color: #fff;
           box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
         `
-			case 'rare':
-				return `
+      case 'rare':
+        return `
           background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
           color: #fff;
           box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
         `
-			default:
-				return `
+      default:
+        return `
           background: rgba(156, 163, 175, 0.2);
           color: #9ca3af;
         `
-		}
-	}}
+    }
+  }}
 `
 
 export const SectionTitle = styled.h3`
@@ -559,7 +559,7 @@ export const RareTrophiesGrid = styled.div`
 	}
 `
 
-export const TrophyCard = styled(motion.div)<{ isNew: boolean }>`
+export const TrophyCard = styled(motion.div) <{ isNew: boolean }>`
 	background: ${props => props.theme.colors.dark.neomorphDark};
 	border-radius: 16px;
 	padding: 1rem;
@@ -576,8 +576,8 @@ export const TrophyCard = styled(motion.div)<{ isNew: boolean }>`
 	justify-content: center;
 
 	${props =>
-		props.isNew &&
-		`
+    props.isNew &&
+    `
     animation: pulse-border 2s infinite;
   `}
 
@@ -604,7 +604,7 @@ export const TrophyCard = styled(motion.div)<{ isNew: boolean }>`
 	}
 `
 
-export const TrophyIcon = styled(motion.div)<{ rarity: string }>`
+export const TrophyIcon = styled(motion.div) <{ rarity: string }>`
 	font-size: 4rem;
 	margin-bottom: 0.5rem;
 	display: flex;
@@ -613,17 +613,17 @@ export const TrophyIcon = styled(motion.div)<{ rarity: string }>`
 	width: 100%;
 	height: 120px;
 	filter: ${props => {
-		switch (props.rarity) {
-			case 'legendary':
-				return 'drop-shadow(0 0 15px rgba(255, 107, 107, 0.8))'
-			case 'epic':
-				return 'drop-shadow(0 0 15px rgba(168, 85, 247, 0.8))'
-			case 'rare':
-				return 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.8))'
-			default:
-				return 'drop-shadow(0 0 10px rgba(156, 163, 175, 0.5))'
-		}
-	}};
+    switch (props.rarity) {
+      case 'legendary':
+        return 'drop-shadow(0 0 15px rgba(255, 107, 107, 0.8))'
+      case 'epic':
+        return 'drop-shadow(0 0 15px rgba(168, 85, 247, 0.8))'
+      case 'rare':
+        return 'drop-shadow(0 0 15px rgba(59, 130, 246, 0.8))'
+      default:
+        return 'drop-shadow(0 0 10px rgba(156, 163, 175, 0.5))'
+    }
+  }};
 
 	img {
 		width: 100%;
@@ -767,7 +767,7 @@ export const CurrentGoals = styled.div`
 	gap: 0.5rem;
 `
 
-export const GoalItem = styled(motion.div)<{ $isComplete?: boolean }>`
+export const GoalItem = styled(motion.div) <{ $isComplete?: boolean }>`
 	background: ${props => props.theme.colors.dark.neomorphDark};
 	border-radius: 12px;
 	padding: 1rem;
@@ -779,13 +779,12 @@ export const GoalItem = styled(motion.div)<{ $isComplete?: boolean }>`
 	align-items: center;
 
 	${props =>
-		props.$isComplete &&
-		`
+    props.$isComplete &&
+    `
     border-color: ${props.theme.colors.success || '#10b981'};
     box-shadow: 0 0 20px ${props.theme.colors.success || '#10b981'}40;
-    background: linear-gradient(145deg, ${
-			props.theme.colors.dark.neomorphDark
-		} 0%, ${props.theme.colors.success || '#10b981'}15 100%);
+    background: linear-gradient(145deg, ${props.theme.colors.dark.neomorphDark
+    } 0%, ${props.theme.colors.success || '#10b981'}15 100%);
     animation: pulse-complete 2s infinite;
   `}
 
@@ -800,7 +799,7 @@ export const GoalItem = styled(motion.div)<{ $isComplete?: boolean }>`
 			box-shadow: 0 0 30px
 				${props => (props.theme.colors.success || '#10b981') + '80'};
 			border-color: ${props =>
-				(props.theme.colors.success || '#10b981') + 'CC'};
+    (props.theme.colors.success || '#10b981') + 'CC'};
 		}
 	}
 
@@ -864,15 +863,15 @@ export const GoalTitle = styled.div`
 
 export const GoalProgress = styled.div<{ $isComplete?: boolean }>`
 	color: ${props =>
-		props.$isComplete
-			? props.theme.colors.success || '#10b981'
-			: props.theme.colors.primary};
+    props.$isComplete
+      ? props.theme.colors.success || '#10b981'
+      : props.theme.colors.primary};
 	font-size: 0.75rem;
 	font-weight: 600;
 	text-shadow: ${props =>
-		props.$isComplete
-			? `0 0 10px ${props.theme.colors.success || '#10b981'}80`
-			: 'none'};
+    props.$isComplete
+      ? `0 0 10px ${props.theme.colors.success || '#10b981'}80`
+      : 'none'};
 	transition: all 0.3s ease;
 `
 
@@ -884,19 +883,18 @@ export const GoalBar = styled.div`
 	overflow: hidden;
 `
 
-export const GoalProgressBar = styled(motion.div)<{ $isComplete?: boolean }>`
+export const GoalProgressBar = styled(motion.div) <{ $isComplete?: boolean }>`
 	height: 100%;
 	background: ${props =>
-		props.$isComplete
-			? `linear-gradient(90deg, ${
-					props.theme.colors.success || '#10b981'
-			  } 0%, ${props.theme.colors.success || '#10b981'}CC 100%)`
-			: `linear-gradient(90deg, ${props.theme.colors.primary} 0%, ${props.theme.colors.secondary} 100%)`};
+    props.$isComplete
+      ? `linear-gradient(90deg, ${props.theme.colors.success || '#10b981'
+      } 0%, ${props.theme.colors.success || '#10b981'}CC 100%)`
+      : `linear-gradient(90deg, ${props.theme.colors.primary} 0%, ${props.theme.colors.secondary} 100%)`};
 	border-radius: 6px;
 	box-shadow: ${props =>
-		props.$isComplete
-			? `0 0 10px ${props.theme.colors.success || '#10b981'}80`
-			: 'none'};
+    props.$isComplete
+      ? `0 0 10px ${props.theme.colors.success || '#10b981'}80`
+      : 'none'};
 	transition: all 0.3s ease;
 `
 
@@ -1010,7 +1008,7 @@ export const ParticlesContainer = styled.div`
 	z-index: 2;
 `
 
-export const Particle = styled(motion.div)<{ color: string }>`
+export const Particle = styled(motion.div) <{ color: string }>`
 	position: absolute;
 	width: 6px;
 	height: 6px;

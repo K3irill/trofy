@@ -70,7 +70,7 @@ export const CategoryCardComponent = ({ category, onClick, isAuthenticated = fal
             <StatLabel>Доступно:</StatLabel>
             <StatValue>{category.unlocked}/{category.total}</StatValue>
           </StatItem>
-          <StatItem>
+          <StatItem id='progress'>
             <StatLabel>Прогресс:</StatLabel>
             <StatValue>{progress}%</StatValue>
           </StatItem>
