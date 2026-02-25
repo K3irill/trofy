@@ -635,6 +635,25 @@ export class UserService {
       skip: filters?.offset || 0,
     })
 
+    // Если это свой профиль, проверяем избранное для каждого достижения
+    let favoriteMap = new Map<string, boolean>()
+    if (isOwnProfile && viewerId) {
+      const favoriteIds = await (prisma as any).achievementFavorite.findMany({
+        where: {
+          user_id: viewerId,
+          user_achievement_id: {
+            in: userAchievements.map(ua => ua.id),
+          },
+        },
+        select: {
+          user_achievement_id: true,
+        },
+      })
+      favoriteIds.forEach((fav: any) => {
+        favoriteMap.set(fav.user_achievement_id, true)
+      })
+    }
+
     return userAchievements.map((ua) => ({
       id: ua.achievement.id,
       title: ua.achievement.title,
@@ -653,6 +672,7 @@ export class UserService {
       is_public: ua.is_public,
       is_hidden: ua.is_hidden,
       progress: (ua as any).progress || (ua.completion_date ? 100 : 0),
+      is_favorite: isOwnProfile ? favoriteMap.get(ua.id) || false : false,
     }))
   }
 

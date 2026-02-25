@@ -21,6 +21,7 @@ export interface Achievement {
   completionDate?: string
   progress?: number
   completion_date?: string
+  is_favorite?: boolean
 }
 
 export interface SearchAchievementsResponse {

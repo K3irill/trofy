@@ -89,8 +89,9 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
   border-radius: 20px;
   padding: 1.5rem;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
   box-shadow: ${(props) => props.theme.shadows.neomorph.flat};
   cursor: pointer;
   transition: all 0.3s ease;
@@ -141,17 +142,18 @@ export const TrophyItem = styled(motion.div) <{ rarity: string }>`
   @media (max-width: 768px) {
     padding: 1.25rem;
     border-radius: 16px;
+    gap: 1rem;
   }
 `
 
 export const TrophyIcon = styled.div <{ rarity: string }>`
-  font-size: 3rem;
-  align-self: flex-start;
-  width: 60px;
-  height: 60px;
+  font-size: 4rem;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   filter: drop-shadow(0 0 15px ${(props) => {
     const rarityMap: Record<string, keyof typeof props.theme.colors.rarity> = {
       common: 'base',
@@ -172,9 +174,9 @@ export const TrophyIcon = styled.div <{ rarity: string }>`
   }
 
   @media (max-width: 768px) {
-    font-size: 2.5rem;
-    width: 50px;
-    height: 50px;
+    font-size: 3.5rem;
+    width: 70px;
+    height: 70px;
   }
 `
 
@@ -182,6 +184,8 @@ export const TrophyContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
 `
 
 export const TrophyName = styled.div`

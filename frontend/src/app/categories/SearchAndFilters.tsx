@@ -132,6 +132,9 @@ interface SearchAndFiltersProps {
   onSortChange: (value: string) => void
   isAuthenticated?: boolean
   hideCategoryFilter?: boolean
+  favoriteFilter?: string
+  onFavoriteFilterChange?: (value: string) => void
+  isOwnProfile?: boolean
 }
 
 export const SearchAndFilters = ({
@@ -147,6 +150,9 @@ export const SearchAndFilters = ({
   onSortChange,
   isAuthenticated = false,
   hideCategoryFilter = false,
+  favoriteFilter = '',
+  onFavoriteFilterChange,
+  isOwnProfile = false,
 }: SearchAndFiltersProps) => {
   const { data: categoriesData = [] } = useGetCategoriesQuery()
 
@@ -186,6 +192,11 @@ export const SearchAndFilters = ({
       : []),
   ]
 
+  const favoriteOptions: ThemedSelectOption[] = [
+    { value: '', label: 'Все достижения' },
+    { value: 'favorite', label: 'Только избранные' },
+  ]
+
   return (
     <SearchFiltersContainer>
       <SearchInputWrapper>
@@ -217,6 +228,17 @@ export const SearchAndFilters = ({
               onChange={(option) => onStatusFilterChange(option?.value || '')}
               isClearable
               placeholder="Все статусы"
+            />
+          </FilterSelectWrapper>
+        )}
+        {isOwnProfile && onFavoriteFilterChange && (
+          <FilterSelectWrapper>
+            <ThemedSelect
+              options={favoriteOptions}
+              value={favoriteOptions.find((opt) => opt.value === favoriteFilter)}
+              onChange={(option) => onFavoriteFilterChange(option?.value || '')}
+              isClearable
+              placeholder="Все достижения"
             />
           </FilterSelectWrapper>
         )}

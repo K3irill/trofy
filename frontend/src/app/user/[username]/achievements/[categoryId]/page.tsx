@@ -47,6 +47,7 @@ export default function UserCategoryPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
+  const [favoriteFilter, setFavoriteFilter] = useState('')
   const { isAuthenticated, user: currentUser } = useAppSelector((state) => state.auth)
 
   const username = params?.username as string
@@ -81,6 +82,11 @@ export default function UserCategoryPage() {
     return allUserAchievements.filter(achievement => achievement.category.id === categoryId)
   }, [allUserAchievements, categoryId])
 
+  // Проверяем, является ли текущий пользователь владельцем страницы
+  const isOwnPage = useMemo(() => {
+    return currentUser?.username === username
+  }, [currentUser?.username, username])
+
   // Преобразуем в формат Achievement и применяем фильтры
   const transformedAchievements: Achievement[] = useMemo(() => {
     let filtered = achievements.map((achievement) => {
@@ -99,6 +105,7 @@ export default function UserCategoryPage() {
         completionDate: achievement.completion_date || undefined,
         progress: progress,
         completion_date: achievement.completion_date || undefined,
+        is_favorite: achievement.is_favorite || false,
       }
     })
 
@@ -135,6 +142,14 @@ export default function UserCategoryPage() {
           default:
             return true
         }
+      })
+    }
+
+    // Фильтрация по избранному (только для своих достижений)
+    if (favoriteFilter === 'favorite' && isOwnPage) {
+      filtered = filtered.filter((achievement) => {
+        const originalAchievement = achievements.find(a => a.id === achievement.id)
+        return originalAchievement?.is_favorite === true
       })
     }
 
@@ -177,7 +192,7 @@ export default function UserCategoryPage() {
     }
 
     return filtered
-  }, [achievements, debouncedSearchQuery, rarityFilter, statusFilter, sortBy, isAuthenticated])
+  }, [achievements, debouncedSearchQuery, rarityFilter, statusFilter, sortBy, favoriteFilter, isOwnPage, isAuthenticated])
 
   const isLoading = isLoadingCategory || isLoadingAchievements
   const hasCategoryData = !!category
@@ -332,6 +347,9 @@ export default function UserCategoryPage() {
           onSortChange={setSortBy}
           isAuthenticated={isAuthenticated}
           hideCategoryFilter={true}
+          favoriteFilter={favoriteFilter}
+          onFavoriteFilterChange={setFavoriteFilter}
+          isOwnProfile={isOwnPage}
         />
 
         <AnimatePresence mode="wait">

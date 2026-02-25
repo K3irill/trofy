@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { IoSearchOutline, IoDocumentTextOutline } from 'react-icons/io5'
@@ -35,16 +35,64 @@ import {
 } from './page.styled'
 import { AchievementCard } from './AchievementCard'
 import { ViewModeSelector, AchievementViewMode } from './ViewModeSelector'
+import { SearchAndFilters } from '@/app/categories/SearchAndFilters'
 import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
 
 export default function CategoryPage() {
   const router = useRouter()
   const params = useParams()
-  const [viewMode, setViewMode] = useState<AchievementViewMode>('grid6')
+  const [viewMode, setViewMode] = useState<AchievementViewMode>(() => {
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth
+      if (width <= 767) return 'grid3' // Мобилка: 2 колонки
+      if (width <= 1024) return 'grid3' // Планшет: 3 колонки
+      return 'grid6' // Десктоп: 6 колонок
+    }
+    return 'grid6'
+  })
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+  const [rarityFilter, setRarityFilter] = useState('')
+  const [sortBy, setSortBy] = useState('default')
   const { isAuthenticated } = useAppSelector((state) => state.auth)
 
   const categoryId = params?.id as string
+
+  // Автоматическое переключение режима при изменении размера экрана
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth
+      if (width <= 767) {
+        // Мобилка: grid3, grid2, list
+        if (viewMode === 'grid6') {
+          setViewMode('grid3')
+        }
+      } else if (width <= 1024) {
+        // Планшет: grid3, grid2, list
+        if (viewMode === 'grid6') {
+          setViewMode('grid3')
+        }
+      } else {
+        // Десктоп: grid6, grid3, list
+        if (viewMode === 'grid2') {
+          setViewMode('grid3')
+        }
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [viewMode])
+
+  // Debounce для поискового запроса
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   // Получаем категорию со статистикой для авторизованных, без статистики для неавторизованных
   const { data: categoryWithStats, isLoading: isLoadingCategoryWithStats } = useGetCategoryByIdWithStatsQuery(
@@ -74,6 +122,88 @@ export default function CategoryPage() {
   const activeCategory = categoryWithStats || category
   const isLoading = isLoadingCategoryWithStats || isLoadingCategory
   const hasCategoryData = !!activeCategory
+  const achievements = achievementsData?.achievements || []
+
+  // Фильтрация и сортировка достижений (должен быть до условных return)
+  const filteredAndSortedAchievements = useMemo(() => {
+    let filtered = [...achievements]
+
+    // Фильтрация по поисковому запросу
+    if (debouncedSearchQuery) {
+      const query = debouncedSearchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (achievement) =>
+          achievement.title.toLowerCase().includes(query) ||
+          achievement.description.toLowerCase().includes(query)
+      )
+    }
+
+    // Фильтрация по статусу
+    if (statusFilter && isAuthenticated) {
+      filtered = filtered.filter((achievement) => {
+        const isCompleted = !!achievement.completion_date
+        const progress = achievement.progress || 0
+        const isInProgress = !isCompleted && progress > 0 && progress <= 100
+        const isNotAchieved = !isCompleted && progress === 0
+
+        switch (statusFilter) {
+          case 'achieved':
+            return isCompleted
+          case 'in_progress':
+            return isInProgress
+          case 'not_achieved':
+            return isNotAchieved
+          default:
+            return true
+        }
+      })
+    }
+
+    // Фильтрация по редкости
+    if (rarityFilter) {
+      filtered = filtered.filter((achievement) => achievement.rarity === rarityFilter)
+    }
+
+    // Сортировка
+    if (sortBy && sortBy !== 'default') {
+      filtered.sort((a, b) => {
+        const aIsCompleted = !!a.completion_date
+        const aProgress = a.progress || 0
+        const aIsInProgress = !aIsCompleted && aProgress > 0 && aProgress <= 100
+        const aIsNotAchieved = !aIsCompleted && aProgress === 0
+
+        const bIsCompleted = !!b.completion_date
+        const bProgress = b.progress || 0
+        const bIsInProgress = !bIsCompleted && bProgress > 0 && bProgress <= 100
+        const bIsNotAchieved = !bIsCompleted && bProgress === 0
+
+        switch (sortBy) {
+          case 'achieved-first':
+            if (aIsCompleted && !bIsCompleted) return -1
+            if (!aIsCompleted && bIsCompleted) return 1
+            return 0
+          case 'not-achieved-first':
+            if (aIsNotAchieved && !bIsNotAchieved) return -1
+            if (!aIsNotAchieved && bIsNotAchieved) return 1
+            return 0
+          case 'in-progress-first':
+            if (aIsInProgress && !bIsInProgress) return -1
+            if (!aIsInProgress && bIsInProgress) return 1
+            return 0
+          case 'date-asc':
+            if (!a.completion_date || !b.completion_date) return 0
+            return new Date(a.completion_date).getTime() - new Date(b.completion_date).getTime()
+          case 'date-desc':
+            if (!a.completion_date || !b.completion_date) return 0
+            return new Date(b.completion_date).getTime() - new Date(a.completion_date).getTime()
+          default:
+            return 0
+        }
+      })
+    }
+
+    return filtered
+  }, [achievements, debouncedSearchQuery, statusFilter, rarityFilter, sortBy, isAuthenticated])
 
   // Показываем лоадер только если действительно загружаем и данных еще нет
   if (isLoading && !hasCategoryData) {
@@ -95,7 +225,6 @@ export default function CategoryPage() {
     )
   }
 
-  const achievements = achievementsData?.achievements || []
   const unlockedCount = categoryWithStats?.unlocked || 0
   const totalCount = categoryWithStats?.total || ('achievements_count' in activeCategory ? activeCategory.achievements_count : 0) || 0
   const progress = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0
@@ -226,6 +355,21 @@ export default function CategoryPage() {
           </CategoryDetails>
         </CategoryInfo>
 
+        <SearchAndFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory=""
+          onCategoryChange={() => {}}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          rarityFilter={rarityFilter}
+          onRarityFilterChange={setRarityFilter}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          isAuthenticated={isAuthenticated}
+          hideCategoryFilter={true}
+        />
+
         <AnimatePresence mode="wait">
           <motion.div
             key={viewMode}
@@ -234,7 +378,7 @@ export default function CategoryPage() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {renderAchievements(achievements)}
+            {renderAchievements(filteredAndSortedAchievements)}
           </motion.div>
         </AnimatePresence>
       </Container>

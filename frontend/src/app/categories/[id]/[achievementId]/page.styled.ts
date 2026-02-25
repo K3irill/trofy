@@ -265,6 +265,7 @@ export const AchievementDescription = styled.p`
   border: 2px solid ${(props) => props.theme.colors.dark[600]}60;
   box-shadow: ${(props) => props.theme.shadows.glass.light};
   position: relative;
+  overflow: hidden;
 
   &::before {
     content: '';

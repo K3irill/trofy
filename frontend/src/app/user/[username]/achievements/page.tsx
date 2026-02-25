@@ -42,6 +42,7 @@ export default function UserAchievementsPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
+  const [favoriteFilter, setFavoriteFilter] = useState('')
 
   // Debounce для поискового запроса
   useEffect(() => {
@@ -60,6 +61,11 @@ export default function UserAchievementsPage() {
         skip: !username,
       }
     )
+
+  // Проверяем, является ли текущий пользователь владельцем страницы
+  const isOwnPage = useMemo(() => {
+    return currentUser?.username === username
+  }, [currentUser?.username, username])
 
   // Преобразование категорий в формат CategoryCardComponent
   const categories: Category[] = useMemo(() => {
@@ -154,6 +160,11 @@ export default function UserAchievementsPage() {
         }
       }
 
+      // Фильтр по избранному (только для своих достижений)
+      if (favoriteFilter === 'favorite' && isOwnPage) {
+        if (!achievement.is_favorite) return false
+      }
+
       return true
     })
 
@@ -212,9 +223,10 @@ export default function UserAchievementsPage() {
         completionDate: achievement.completion_date || undefined,
         progress: progress,
         completion_date: achievement.completion_date || undefined,
+        is_favorite: achievement.is_favorite || false,
       }
     })
-  }, [achievements, debouncedSearchQuery, selectedCategory, statusFilter, rarityFilter, sortBy])
+  }, [achievements, debouncedSearchQuery, selectedCategory, statusFilter, rarityFilter, sortBy, favoriteFilter, isOwnPage])
 
   // Фильтрация категорий
   const filteredCategories = useMemo(() => {
@@ -249,9 +261,6 @@ export default function UserAchievementsPage() {
   const hasData = viewMode === 'categories' 
     ? filteredCategories.length > 0 
     : transformedAchievements.length > 0
-
-  // Проверяем, является ли текущий пользователь владельцем страницы
-  const isOwnPage = currentUser?.username === username
 
   return (
     <Container>
@@ -345,6 +354,9 @@ export default function UserAchievementsPage() {
               sortBy={sortBy}
               onSortChange={setSortBy}
               isAuthenticated={isAuthenticated}
+              favoriteFilter={favoriteFilter}
+              onFavoriteFilterChange={setFavoriteFilter}
+              isOwnProfile={isOwnPage}
             />
             {showLoader ? (
               <BlockLoader text="Загрузка достижений..." />

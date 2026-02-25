@@ -16,6 +16,7 @@ import { ActionButton } from './AchievementActions.styled'
 import { isImageUrl } from '@/lib/utils/iconUtils'
 import Image from 'next/image'
 import { IoShareSocial } from 'react-icons/io5'
+import { useToast } from '@/hooks/useToast'
 
 interface AchievementPreviewModalProps {
   isOpen: boolean
@@ -36,6 +37,7 @@ export const AchievementPreviewModal = ({
 }: AchievementPreviewModalProps) => {
   const isIconImage = icon && isImageUrl(icon)
   const [transform, setTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
+  const { showToast, ToastComponent } = useToast()
 
   useEffect(() => {
     if (isOpen) {
@@ -121,6 +123,23 @@ export const AchievementPreviewModal = ({
     setTransform({ rotateX: 0, rotateY: 0, scale: 1 })
   }
 
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: name,
+        text: description,
+        url: window.location.href,
+      }).catch(() => {
+        // Fallback: копирование в буфер обмена
+        navigator.clipboard.writeText(window.location.href)
+        showToast('Ссылка скопирована в буфер обмена!', 'success')
+      })
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+      showToast('Ссылка скопирована в буфер обмена!', 'success')
+    }
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -176,7 +195,7 @@ export const AchievementPreviewModal = ({
             <ModalContent>
               <ModalTitle>{name}</ModalTitle>
               <ModalDescription>{description}</ModalDescription>
-              <ActionButton onClick={() => console.log()} variant="primary">
+              <ActionButton onClick={handleShare} variant="primary">
                 <IoShareSocial />
                 Поделиться
               </ActionButton>
@@ -184,6 +203,7 @@ export const AchievementPreviewModal = ({
           </ModalContainer>
         </ModalOverlay>
       )}
+      <ToastComponent />
     </AnimatePresence>
   )
 }

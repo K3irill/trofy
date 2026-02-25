@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import styled, { DefaultTheme } from 'styled-components'
-import { IoTimeOutline, IoCheckmarkCircle } from 'react-icons/io5'
+import { IoTimeOutline, IoCheckmarkCircle, IoHeart } from 'react-icons/io5'
 import { Achievement } from './api'
 import { renderIcon } from '@/lib/utils/iconUtils'
 
@@ -32,7 +32,7 @@ const getRarityGlow = (theme: DefaultTheme, rarity?: string) => {
   return `0 0 20px ${rarityColor}40, 0 0 40px ${rarityColor}20`
 }
 
-const AchievementCardContainer = styled(motion.div) <{ $status: AchievementStatus; rarity?: string }>`
+const AchievementCardContainer = styled(motion.div) <{ $status: AchievementStatus; rarity?: string; $isFavorite?: boolean }>`
   background: linear-gradient(
     145deg,
     ${(props) => props.theme.colors.dark[700]}e6 0%,
@@ -43,6 +43,7 @@ const AchievementCardContainer = styled(motion.div) <{ $status: AchievementStatu
   padding: 1.5rem;
   border: 2px solid
     ${(props) => {
+    if (props.$isFavorite) return `${props.theme.colors.primary}cc`
     if (props.$status === 'not_achieved') return `${props.theme.colors.dark[600]}80`
     const rarityColor = getRarityColor(props.theme, props.rarity)
     return `${rarityColor}80`
@@ -52,6 +53,7 @@ const AchievementCardContainer = styled(motion.div) <{ $status: AchievementStatu
   position: relative;
   overflow: hidden;
   opacity: 1;
+  box-shadow: ${(props) => props.$isFavorite ? `0 0 20px ${props.theme.colors.primary}40, 0 0 40px ${props.theme.colors.primary}20` : 'none'};
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -84,12 +86,17 @@ const AchievementCardContainer = styled(motion.div) <{ $status: AchievementStatu
 
   &:hover {
     border-color: ${(props) => {
+    if (props.$isFavorite) return props.theme.colors.primary
     if (props.$status === 'not_achieved') return props.theme.colors.dark[600]
     return getRarityColor(props.theme, props.rarity)
   }};
     transform: translateY(-8px);
-    box-shadow: ${(props) => props.theme.shadows.glass.medium},
-      ${(props) => (props.$status !== 'not_achieved' ? getRarityGlow(props.theme, props.rarity) : 'none')};
+    box-shadow: ${(props) => {
+    if (props.$isFavorite) {
+      return `${props.theme.shadows.glass.medium}, 0 0 30px ${props.theme.colors.primary}60, 0 0 60px ${props.theme.colors.primary}30`
+    }
+    return `${props.theme.shadows.glass.medium}, ${props.$status !== 'not_achieved' ? getRarityGlow(props.theme, props.rarity) : 'none'}`
+  }};
   }
 `
 
@@ -201,6 +208,11 @@ const AchievementDescription = styled.p`
   color: ${(props) => props.theme.colors.light[300]};
   margin-bottom: 0.75rem;
   line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   @media (max-width: 768px) {
     font-size: 0.775rem;
@@ -312,6 +324,44 @@ const IconWrapper = styled.div<{ $transform: string }>`
   }
 `
 
+const FavoriteBadge = styled.div`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.primary}cc 100%);
+  color: ${(props) => props.theme.colors.light[100]};
+  font-size: 1.125rem;
+  border: 2px solid ${(props) => props.theme.colors.dark.bg};
+  box-shadow: ${(props) => props.theme.shadows.glow.primary}, 0 0 15px ${(props) => props.theme.colors.primary}60;
+  z-index: 10;
+  animation: pulse 2s ease-in-out infinite;
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: ${(props) => props.theme.shadows.glow.primary}, 0 0 15px ${(props) => props.theme.colors.primary}60;
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: ${(props) => props.theme.shadows.glow.primary}, 0 0 25px ${(props) => props.theme.colors.primary}80;
+    }
+  }
+
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+`
+
 const getRarityLabel = (rarity?: string) => {
   switch (rarity) {
     case 'common':
@@ -395,10 +445,16 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
     <AchievementCardContainer
       $status={status}
       rarity={achievement.rarity}
+      $isFavorite={achievement.is_favorite}
       onClick={onClick}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
+      {achievement.is_favorite && (
+        <FavoriteBadge>
+          <IoHeart />
+        </FavoriteBadge>
+      )}
       <AchievementName>{achievement.name}</AchievementName>
       {achievement.description && (
         <AchievementDescription>{achievement.description}</AchievementDescription>

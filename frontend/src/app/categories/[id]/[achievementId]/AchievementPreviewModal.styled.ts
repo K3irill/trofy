@@ -23,7 +23,7 @@ export const ModalOverlay = styled(motion.div)`
 
 export const ModalContainer = styled(motion.div)`
   position: relative;
-  max-width: 600px;
+  max-width: 700px;
   width: 100%;
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}fa 0%, ${(props) => props.theme.colors.dark[800]}fa 100%);
   border-radius: 24px;
@@ -38,6 +38,7 @@ export const ModalContainer = styled(motion.div)`
   @media (max-width: 768px) {
     padding: 2rem 1.5rem;
     gap: 1.5rem;
+    max-width: 100%;
   }
 `
 
@@ -76,8 +77,8 @@ export const ModalCloseButton = styled.button`
 `
 
 export const ModalIcon = styled.div<{ $unlocked: boolean }>`
-  width: 280px;
-  height: 280px;
+  width: 450px;
+  height: 450px;
   border-radius: 32px;
   background: ${props => props.$unlocked
     ? `linear-gradient(135deg, ${props.theme.colors.primary}40 0%, ${props.theme.colors.secondary}26 100%)`
@@ -86,7 +87,7 @@ export const ModalIcon = styled.div<{ $unlocked: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10rem;
+  font-size: 16rem;
   filter: ${props => props.$unlocked
     ? `drop-shadow(0 0 40px ${props.theme.colors.primary}80)`
     : 'grayscale(0.6) brightness(0.7)'};
@@ -118,16 +119,16 @@ export const ModalIcon = styled.div<{ $unlocked: boolean }>`
   }
 
   @media (max-width: 768px) {
-    width: 200px;
-    height: 200px;
-    font-size: 7rem;
+    width: 300px;
+    height: 300px;
+    font-size: 10rem;
     border-radius: 24px;
   }
 `
 
 export const ModalImage = styled.div<{ $unlocked: boolean }>`
-  width: 280px;
-  height: 280px;
+  width: 450px;
+  height: 450px;
   border-radius: 32px;
   border: 3px solid ${props => props.$unlocked ? `${props.theme.colors.primary}99` : `${props.theme.colors.dark[600]}99`};
   filter: ${props => props.$unlocked
@@ -165,8 +166,8 @@ export const ModalImage = styled.div<{ $unlocked: boolean }>`
   }
 
   @media (max-width: 768px) {
-    width: 200px;
-    height: 200px;
+    width: 300px;
+    height: 300px;
     border-radius: 24px;
   }
 `

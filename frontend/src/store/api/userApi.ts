@@ -74,6 +74,7 @@ export interface UserAchievement {
   is_public: boolean
   is_hidden: boolean
   progress?: number
+  is_favorite?: boolean
 }
 
 export const userApi = baseApi.injectEndpoints({

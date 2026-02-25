@@ -11,7 +11,7 @@ import { QuickNoteModal } from '@/components/Journal/QuickNoteModal'
 import { Button } from '@/components/ui/Button'
 import { useGetUnreadCountQuery } from '@/store/api/notificationsApi'
 import { HiBell } from 'react-icons/hi'
-import { IoTrophyOutline, IoSettingsOutline, IoLogOutOutline, IoCreateOutline } from 'react-icons/io5'
+import { IoTrophyOutline, IoSettingsOutline, IoLogOutOutline, IoCreateOutline, IoAdd } from 'react-icons/io5'
 import {
   HeaderContainer,
   HeaderContent,
@@ -219,10 +219,21 @@ export const Header = () => {
                       Профиль
                     </UserProfileMenuItem>
                     <UserProfileMenuItem onClick={() => {
-                      setIsQuickNoteOpen(true)
+                      if (user?.username) {
+                        router.push(`/user/${user.username}/achievements`)
+                      } else {
+                        router.push('/')
+                      }
                       setShowProfileMenu(false)
                     }}>
                       <IoTrophyOutline />
+                      Мои достижения
+                    </UserProfileMenuItem>
+                    <UserProfileMenuItem onClick={() => {
+                      setIsQuickNoteOpen(true)
+                      setShowProfileMenu(false)
+                    }}>
+                      <IoAdd />
                       Создать Достижение
                     </UserProfileMenuItem>
                     <UserProfileMenuItem onClick={() => {
