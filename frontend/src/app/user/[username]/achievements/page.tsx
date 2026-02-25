@@ -250,6 +250,9 @@ export default function UserAchievementsPage() {
     ? filteredCategories.length > 0 
     : transformedAchievements.length > 0
 
+  // Проверяем, является ли текущий пользователь владельцем страницы
+  const isOwnPage = currentUser?.username === username
+
   return (
     <Container>
       <PageHeader>
@@ -258,12 +261,12 @@ export default function UserAchievementsPage() {
             {viewMode === 'categories' ? (
               <>
                 <TitleIcon as={IoFolder} />
-                Категории достижений
+                {isOwnPage ? 'Категории моих достижений' : `Категории достижений ${username}`}
               </>
             ) : (
               <>
                 <TitleIcon as={IoTrophy} />
-                Достижения пользователя
+                {isOwnPage ? 'Мои достижения' : `Достижения ${username}`}
               </>
             )}
           </Title>

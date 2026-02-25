@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import ReactFlow, {
   Node,
   Edge,
-  addEdge,
   Connection,
   useNodesState,
   useEdgesState,
@@ -15,6 +14,12 @@ import ReactFlow, {
   Handle,
   Position,
   useReactFlow,
+  ConnectionLineType,
+  NodeTypes,
+  EdgeChange,
+  OnNodesChange,
+  OnEdgesChange,
+  OnConnect,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -26,8 +31,8 @@ const reactFlowStyles = `
   .react-flow__node-group {
     color: var(--text-primary, #fff) !important;
     text-align: center !important;
-    background-color: var(--bg-primary, #1a1a1a) !important;
-    border: 2px solid var(--border-color, #2a2a2a) !important;
+    background-color: var(--bg-primary, #1a1a1a);
+    border: 2px solid var(--border-color, #2a2a2a);
     border-radius: 12px !important;
     width: auto !important;
     min-width: 150px !important;
@@ -36,9 +41,18 @@ const reactFlowStyles = `
     font-size: 14px !important;
     cursor: pointer !important;
     box-shadow: var(--shadow-md, rgba(0, 0, 0, 0.3) 0px 2px 8px) !important;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
+  }
+  .react-flow__node-default.selected,
+  .react-flow__node-input.selected,
+  .react-flow__node-output.selected,
+  .react-flow__node-group.selected {
+    background-color: #6366f1 !important;
+    border-color: var(--primary-color, #6366f1) ;
+    color: var(--text-primary, #fff) !important;
+    box-shadow: 0 4px 12px var(--primary-color-alpha, rgba(99, 102, 241, 0.4)) !important;
   }
   @media (max-width: 768px) {
     .react-flow__node-default,
@@ -52,51 +66,43 @@ const reactFlowStyles = `
       border-radius: 10px !important;
     }
   }
-  .react-flow__node-default.selected,
-  .react-flow__node-input.selected,
-  .react-flow__node-output.selected,
-  .react-flow__node-group.selected {
-    background-color: var(--primary-color, #6366f1) !important;
-    border-color: var(--primary-color, #6366f1) !important;
-    color: var(--text-primary, #fff) !important;
-    box-shadow: 0 4px 12px var(--primary-color-alpha, rgba(99, 102, 241, 0.4)) !important;
-  }
   .react-flow__handle {
     background: var(--primary-color, #6366f1) !important;
     border: 2px solid var(--bg-primary, #1a1a1a) !important;
-    width: 12px !important;
-    height: 12px !important;
+    width: 16px !important;
+    height: 16px !important;
+    cursor: crosshair !important;
   }
   @media (max-width: 768px) {
     .react-flow__handle {
-      width: 10px !important;
-      height: 10px !important;
+      width: 14px !important;
+      height: 14px !important;
     }
   }
   .react-flow__handle-top {
-    top: -6px !important;
+    top: -8px !important;
   }
   .react-flow__handle-bottom {
-    bottom: -6px !important;
+    bottom: -8px !important;
   }
   .react-flow__handle-left {
-    left: -6px !important;
+    left: -8px !important;
   }
   .react-flow__handle-right {
-    right: -6px !important;
+    right: -8px !important;
   }
   @media (max-width: 768px) {
     .react-flow__handle-top {
-      top: -5px !important;
+      top: -7px !important;
     }
     .react-flow__handle-bottom {
-      bottom: -5px !important;
+      bottom: -7px !important;
     }
     .react-flow__handle-left {
-      left: -5px !important;
+      left: -7px !important;
     }
     .react-flow__handle-right {
-      right: -5px !important;
+      right: -7px !important;
     }
   }
   .react-flow__connection-line {
@@ -116,6 +122,9 @@ const reactFlowStyles = `
     stroke: var(--primary-color, #6366f1) !important;
     stroke-width: 3px !important;
     filter: drop-shadow(0 0 4px var(--primary-color-alpha, rgba(99, 102, 241, 0.6))) !important;
+  }
+  .react-flow__edge[data-color] .react-flow__edge-path {
+    stroke: var(--edge-color) !important;
   }
   @media (max-width: 768px) {
     .react-flow__edge.selected .react-flow__edge-path {
@@ -170,6 +179,16 @@ import styled from 'styled-components'
 import { IoClose, IoAdd, IoTrash, IoRefresh } from 'react-icons/io5'
 import { useGetRoadmapQuery, useCreateOrUpdateRoadmapMutation } from '@/store/api/achievementDetailApi'
 import { useToast } from '@/hooks/useToast'
+
+// Палитра из 6 основных цветов
+const COLOR_PALETTE = [
+  { name: 'Синий', value: '#3b82f6', id: 'blue' },
+  { name: 'Зеленый', value: '#10b981', id: 'green' },
+  { name: 'Желтый', value: '#f59e0b', id: 'yellow' },
+  { name: 'Красный', value: '#ef4444', id: 'red' },
+  { name: 'Фиолетовый', value: '#8b5cf6', id: 'purple' },
+  { name: 'Розовый', value: '#ec4899', id: 'pink' },
+]
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -382,6 +401,54 @@ const ToolbarHint = styled.div`
   }
 `
 
+const ColorPalette = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  background: var(--bg-secondary, #2a2a2a);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #3a3a3a);
+
+  @media (max-width: 768px) {
+    gap: 0.375rem;
+    padding: 0.375rem;
+  }
+`
+
+const ColorButton = styled.button<{ $color: string; $isActive?: boolean }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 2px solid ${(props) => (props.$isActive ? '#fff' : 'transparent')};
+  background: ${(props) => props.$color};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 8px ${(props) => props.$color}80;
+  }
+
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+  }
+`
+
+const ColorPickerLabel = styled.span`
+  font-size: 0.875rem;
+  color: var(--text-secondary, #999);
+  margin-right: 0.25rem;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`
+
 interface RoadmapModalProps {
   userAchievementId: string
   achievementId: string
@@ -393,14 +460,13 @@ interface RoadmapModalProps {
 const CustomNode = ({ 
   data, 
   id, 
-  selected,
   updateNodeData,
   isOwner,
 }: { 
-  data: { label: string }
+  data: { label: string; color?: string }
   id: string
   selected?: boolean
-  updateNodeData?: (nodeId: string, newData: any) => void
+  updateNodeData?: (nodeId: string, newData: { label?: string; color?: string }) => void
   isOwner?: boolean
 }) => {
   const [isEditing, setIsEditing] = useState(false)
@@ -429,6 +495,8 @@ const CustomNode = ({
     }
   }
 
+  const handleColor = data.color || 'var(--primary-color, #6366f1)'
+
   return (
     <>
       {isOwner && (
@@ -438,10 +506,10 @@ const CustomNode = ({
             position={Position.Top}
             id="top-target"
             style={{
-              background: 'var(--primary-color, #6366f1)',
+              background: handleColor,
               border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '12px',
-              height: '12px',
+              width: '16px',
+              height: '16px',
             }}
           />
           <Handle
@@ -449,10 +517,10 @@ const CustomNode = ({
             position={Position.Top}
             id="top-source"
             style={{
-              background: 'var(--primary-color, #6366f1)',
+              background: handleColor,
               border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '12px',
-              height: '12px',
+              width: '16px',
+              height: '16px',
             }}
           />
           <Handle
@@ -460,10 +528,10 @@ const CustomNode = ({
             position={Position.Bottom}
             id="bottom-target"
             style={{
-              background: 'var(--primary-color, #6366f1)',
+              background: handleColor,
               border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '12px',
-              height: '12px',
+              width: '16px',
+              height: '16px',
             }}
           />
           <Handle
@@ -471,10 +539,10 @@ const CustomNode = ({
             position={Position.Bottom}
             id="bottom-source"
             style={{
-              background: 'var(--primary-color, #6366f1)',
+              background: handleColor,
               border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '12px',
-              height: '12px',
+              width: '16px',
+              height: '16px',
             }}
           />
           <Handle
@@ -482,10 +550,10 @@ const CustomNode = ({
             position={Position.Left}
             id="left-target"
             style={{
-              background: 'var(--primary-color, #6366f1)',
+              background: handleColor,
               border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '12px',
-              height: '12px',
+              width: '16px',
+              height: '16px',
             }}
           />
           <Handle
@@ -493,10 +561,10 @@ const CustomNode = ({
             position={Position.Left}
             id="left-source"
             style={{
-              background: 'var(--primary-color, #6366f1)',
+              background: handleColor,
               border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '12px',
-              height: '12px',
+              width: '16px',
+              height: '16px',
             }}
           />
           <Handle
@@ -504,10 +572,10 @@ const CustomNode = ({
             position={Position.Right}
             id="right-target"
             style={{
-              background: 'var(--primary-color, #6366f1)',
+              background: handleColor,
               border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '12px',
-              height: '12px',
+              width: '16px',
+              height: '16px',
             }}
           />
           <Handle
@@ -515,10 +583,10 @@ const CustomNode = ({
             position={Position.Right}
             id="right-source"
             style={{
-              background: 'var(--primary-color, #6366f1)',
+              background: handleColor,
               border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '12px',
-              height: '12px',
+              width: '16px',
+              height: '16px',
             }}
           />
         </>
@@ -574,16 +642,16 @@ const RoadmapFlowInner = ({
 }: {
   nodes: Node[]
   edges: Edge[]
-  onNodesChange: any
-  onEdgesChange: any
-  onConnect: any
-  nodeTypes: any
+  onNodesChange: OnNodesChange
+  onEdgesChange: OnEdgesChange
+  onConnect: OnConnect
+  nodeTypes: NodeTypes
   isOwner: boolean
   isMobile: boolean
-  setEdges: any
+  setEdges: React.Dispatch<React.SetStateAction<Edge[]>>
   addNodeRef: React.MutableRefObject<(() => void) | null>
   nodesLength: number
-  setNodes: any
+  setNodes: React.Dispatch<React.SetStateAction<Node[]>>
 }) => {
   const { screenToFlowPosition, fitView } = useReactFlow()
 
@@ -628,14 +696,32 @@ const RoadmapFlowInner = ({
       nodesDraggable={isOwner}
       nodesConnectable={isOwner}
       elementsSelectable={isOwner}
-      edgesDeletable={isOwner}
       deleteKeyCode={isOwner ? 'Delete' : null}
       connectionLineStyle={{ stroke: 'var(--primary-color, #6366f1)', strokeWidth: 2 }}
-      connectionLineType="smoothstep"
+      connectionLineType={ConnectionLineType.SmoothStep}
       defaultEdgeOptions={{
         style: { stroke: 'var(--primary-color, #6366f1)', strokeWidth: 2 },
         type: 'smoothstep',
         deletable: isOwner,
+      }}
+      onEdgeUpdate={(oldEdge, newConnection) => {
+        if (newConnection.source && newConnection.target) {
+          const sourceNode = nodes.find((n) => n.id === newConnection.source)
+          const edgeColor = sourceNode?.data?.color || 'var(--primary-color, #6366f1)'
+          setEdges((eds: Edge[]) =>
+            eds.map((edge: Edge) =>
+              edge.id === oldEdge.id
+                ? {
+                    ...edge,
+                    source: newConnection.source!,
+                    target: newConnection.target!,
+                    style: { stroke: edgeColor, strokeWidth: 2 },
+                    data: { color: edgeColor },
+                  }
+                : edge
+            )
+          )
+        }
       }}
       onEdgesDelete={isOwner ? (deletedEdges) => {
         const edgeIds = deletedEdges.map((edge) => edge.id)
@@ -688,7 +774,7 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
   const [savedEdges, setSavedEdges] = useState<Edge[]>(initialEdges)
 
   // Кастомный обработчик изменений edges для правильной обработки удаления
-  const handleEdgesChange = useCallback((changes: any[]) => {
+  const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
     // Обрабатываем удаление edges
     const removeChanges = changes.filter((change) => change.type === 'remove')
     if (removeChanges.length > 0 && isOwner) {
@@ -701,19 +787,48 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
   }, [isOwner, setEdges, onEdgesChange])
 
   // Функция для обновления данных ноды
-  const updateNodeData = useCallback((nodeId: string, newData: any) => {
+  const updateNodeData = useCallback((nodeId: string, newData: { label?: string; color?: string }) => {
     setNodes((nds) =>
-      nds.map((node) =>
-        node.id === nodeId
-          ? { ...node, data: { ...node.data, ...newData } }
-          : node
-      )
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          const updatedNode = { ...node, data: { ...node.data, ...newData } }
+          // Применяем цвет к внешнему wrapper div
+          const nodeColor = updatedNode.data?.color
+          if (nodeColor) {
+            updatedNode.style = {
+              backgroundColor: `${nodeColor}20`,
+              borderColor: nodeColor,
+            }
+          } else {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { style, ...rest } = updatedNode
+            return rest
+          }
+          return updatedNode
+        }
+        return node
+      })
     )
   }, [setNodes])
 
+  // Обновляем цвета связей при изменении цветов нод
+  useEffect(() => {
+    setEdges((eds) =>
+      eds.map((edge) => {
+        const sourceNode = nodes.find((n) => n.id === edge.source)
+        const edgeColor = sourceNode?.data?.color || 'var(--primary-color, #6366f1)'
+        return {
+          ...edge,
+          style: { stroke: edgeColor, strokeWidth: 2 },
+          data: { color: edgeColor },
+        }
+      })
+    )
+  }, [nodes, setEdges])
+
   // Создаем nodeTypes с передачей необходимых пропсов
-  const nodeTypes = useMemo(() => ({
-    default: (props: any) => (
+  const nodeTypes = useMemo<NodeTypes>(() => ({
+    default: (props) => (
       <CustomNode 
         {...props} 
         updateNodeData={updateNodeData}
@@ -724,7 +839,19 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
 
   useEffect(() => {
     if (roadmap?.data) {
-      const loadedNodes = roadmap.data.nodes as Node[]
+      const loadedNodes = (roadmap.data.nodes as Node[]).map((node) => {
+        const nodeColor = node.data?.color
+        if (nodeColor) {
+          return {
+            ...node,
+            style: {
+              backgroundColor: `${nodeColor}20`,
+              borderColor: nodeColor,
+            },
+          }
+        }
+        return node
+      })
       const loadedEdges = roadmap.data.edges as Edge[]
       console.log('Loading roadmap:', { nodesCount: loadedNodes.length, edgesCount: loadedEdges.length, edges: loadedEdges })
       setNodes(loadedNodes)
@@ -747,13 +874,15 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
       return !saved || 
         node.position.x !== saved.position.x || 
         node.position.y !== saved.position.y ||
-        node.data.label !== saved.data.label
+        node.data.label !== saved.data.label ||
+        node.data.color !== saved.data.color
     })
     const edgesChanged = edges.some((edge, index) => {
       const saved = savedEdges[index]
       return !saved || 
         edge.source !== saved.source || 
-        edge.target !== saved.target
+        edge.target !== saved.target ||
+        edge.data?.color !== saved.data?.color
     })
     return nodesChanged || edgesChanged
   }, [nodes, edges, savedNodes, savedEdges])
@@ -767,12 +896,18 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
       if (!params.source || !params.target) {
         return
       }
+      // Находим цвет исходной ноды
+      const sourceNode = nodes.find((n) => n.id === params.source)
+      const edgeColor = sourceNode?.data?.color || 'var(--primary-color, #6366f1)'
+      
       const newEdge: Edge = {
         id: `edge-${params.source}-${params.target}-${Date.now()}-${Math.random()}`,
         source: params.source,
         target: params.target,
         sourceHandle: params.sourceHandle,
         targetHandle: params.targetHandle,
+        style: { stroke: edgeColor, strokeWidth: 2 },
+        data: { color: edgeColor },
       }
       setEdges((eds) => {
         // Проверяем, нет ли уже такой связи с таким же id
@@ -783,7 +918,7 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
         return [...eds, newEdge]
       })
     },
-    [setEdges]
+    [setEdges, nodes]
   )
 
   const addNodeRef = useRef<(() => void) | null>(null)
@@ -835,6 +970,8 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
           target: edge.target,
           sourceHandle: edge.sourceHandle,
           targetHandle: edge.targetHandle,
+          style: edge.style,
+          data: edge.data,
         })),
       }
       console.log('Saving roadmap:', { nodesCount: roadmapData.nodes.length, edgesCount: roadmapData.edges.length, edges: roadmapData.edges })
@@ -847,9 +984,9 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
       setHasUnsavedChanges(false)
       showToast('Роадмап сохранен', 'success')
       onClose()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving roadmap:', error)
-      showToast(error?.data?.message || 'Ошибка при сохранении роадмапа', 'error')
+      showToast((error as { data?: { message?: string } })?.data?.message || 'Ошибка при сохранении роадмапа', 'error')
     }
   }
 
@@ -939,8 +1076,33 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
               <SaveButton onClick={handleSave} disabled={isSaving}>
                 {isSaving ? 'Сохранение...' : 'Сохранить'}
               </SaveButton>
+              {hasSelectedNodes && (
+                <ColorPalette>
+                  <ColorPickerLabel>Цвет:</ColorPickerLabel>
+                  {COLOR_PALETTE.map((color) => {
+                    const selectedNode = nodes.find((n) => n.selected)
+                    const isActive = selectedNode?.data?.color === color.value
+                    return (
+                      <ColorButton
+                        key={color.id}
+                        $color={color.value}
+                        $isActive={isActive}
+                        onClick={() => {
+                          const selectedNodes = nodes.filter((n) => n.selected)
+                          selectedNodes.forEach((node) => {
+                            updateNodeData(node.id, { color: isActive ? undefined : color.value })
+                          })
+                        }}
+                        title={color.name}
+                      />
+                    )
+                  })}
+                </ColorPalette>
+              )}
               <ToolbarHint>
                 <span>💡 Двойной клик по ноде для редактирования</span>
+                <span>•</span>
+                <span>Выберите ноду и используйте палитру для изменения цвета</span>
                 <span>•</span>
                 <span>Перетащите от края ноды для соединения</span>
               </ToolbarHint>
@@ -952,7 +1114,7 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
               edges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={handleEdgesChange}
-              onConnect={isOwner ? onConnect : undefined}
+              onConnect={isOwner ? onConnect : () => {}}
               nodeTypes={nodeTypes}
               isOwner={isOwner}
               isMobile={isMobile}
