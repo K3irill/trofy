@@ -673,6 +673,7 @@ export class UserService {
       is_hidden: ua.is_hidden,
       progress: (ua as any).progress || (ua.completion_date ? 100 : 0),
       is_favorite: isOwnProfile ? favoriteMap.get(ua.id) || false : false,
+      is_main: ua.is_main,
     }))
   }
 

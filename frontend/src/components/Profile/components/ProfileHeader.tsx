@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { User } from '@/types'
+import type { UserAchievement } from '@/store/api/userApi'
 import {
   Avatar,
   Username,
@@ -17,11 +18,13 @@ import {
   MainInfo,
   mapProfileColorToTheme,
   type ProfileThemeType,
+  AvatarAndMainAchievementWrapper,
 } from '../styled'
 import { useProfileBio } from '../hooks/useProfileBio'
 import { ProfileThemeModal } from './ProfileThemeModal'
 import { BackgroundIcons } from './BackgroundIcons'
 import { AvatarUploadModal } from './AvatarUploadModal'
+import { MainAchievement } from './MainAchievement'
 import { IoColorPaletteOutline, IoPerson, IoCamera } from 'react-icons/io5'
 import styled from 'styled-components'
 
@@ -59,9 +62,10 @@ interface ProfileHeaderProps {
   progress: number
   xpToNextLevel: number
   currentXP: number
+  mainAchievement?: UserAchievement | null
 }
 
-export function ProfileHeader({ user, isAuthenticated, isOwnProfile = false, progress, xpToNextLevel, currentXP }: ProfileHeaderProps) {
+export function ProfileHeader({ user, isAuthenticated, isOwnProfile = false, progress, xpToNextLevel, currentXP, mainAchievement }: ProfileHeaderProps) {
   const {
     status,
     setStatus,
@@ -96,36 +100,41 @@ export function ProfileHeader({ user, isAuthenticated, isOwnProfile = false, pro
           <IoColorPaletteOutline size={20} />
         </ThemeButton>
       )}
-      <div style={{ position: 'relative', display: 'inline-block' }}>
-        <Avatar
-          onClick={() => isAuthenticated && setIsAvatarModalOpen(true)}
-          style={{ cursor: isAuthenticated ? 'pointer' : 'default' }}
-        >
-          {user.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={user.avatar_url}
-              src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
-              alt={user.username}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute' }}
-              onError={(e) => {
-                // Если изображение не загрузилось, показываем иконку
-                e.currentTarget.style.display = 'none'
-              }}
-            />
-          ) : (
-            <IoPerson size={48} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
-          )}
-        </Avatar>
-        {isAuthenticated && (
-          <AvatarEditButton
-            onClick={() => setIsAvatarModalOpen(true)}
-            title="Изменить аватарку"
+      <AvatarAndMainAchievementWrapper>
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <Avatar
+            onClick={() => isAuthenticated && setIsAvatarModalOpen(true)}
+            style={{ cursor: isAuthenticated ? 'pointer' : 'default' }}
           >
-            <IoCamera size={16} />
-          </AvatarEditButton>
+            {user.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={user.avatar_url}
+                src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
+                alt={user.username}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute' }}
+                onError={(e) => {
+                  // Если изображение не загрузилось, показываем иконку
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+            ) : (
+              <IoPerson size={48} style={{ color: 'rgba(255, 255, 255, 0.7)' }} />
+            )}
+          </Avatar>
+          {isAuthenticated && (
+            <AvatarEditButton
+              onClick={() => setIsAvatarModalOpen(true)}
+              title="Изменить аватарку"
+            >
+              <IoCamera size={16} />
+            </AvatarEditButton>
+          )}
+        </div>
+        {mainAchievement && (
+          <MainAchievement achievement={mainAchievement} username={user.username} />
         )}
-      </div>
+      </AvatarAndMainAchievementWrapper>
 
       <Username>{user.username}</Username>
 

@@ -30,7 +30,7 @@ export const ProfileContainer = styled(motion.div) <{ $isBlurred?: boolean }>`
 		pointer-events: none;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 1rem;
 		border-radius: 20px;
 	}
@@ -41,7 +41,7 @@ export const ProfileTitleWrap = styled.div`
 	gap: 1rem;
 	margin-bottom: 1.5rem;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		display: none;
 	}
 `
@@ -52,7 +52,7 @@ export const MainInfoWrap = styled.div`
 	gap: 1rem;
 	margin-bottom: 1rem;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		grid-template-columns: auto;
 	}
 `
@@ -253,10 +253,23 @@ export const MainInfo = styled.div<MainInfoProps>`
 		}
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 1.25rem;
 		margin-bottom: 1rem;
 		border-radius: 20px;
+	}
+`
+
+export const AvatarAndMainAchievementWrapper = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1.5rem;
+	margin-bottom: 1.5rem;
+	position: relative;
+
+	@media (max-width: 767px) {
+		gap: 1rem;
 	}
 `
 
@@ -269,7 +282,6 @@ export const Avatar = styled.div`
 		${props => props.theme.colors.primary} 0%,
 		${props => props.theme.colors.secondary} 100%
 	);
-	margin: 0 auto 1.5rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -280,6 +292,7 @@ export const Avatar = styled.div`
 	position: relative;
 	z-index: 1;
 	overflow: hidden;
+	flex-shrink: 0;
 
 	img {
 		width: 100%;
@@ -293,7 +306,7 @@ export const Avatar = styled.div`
 		z-index: 1;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		width: 100px;
 		height: 100px;
 		font-size: 3rem;
@@ -308,7 +321,7 @@ export const Username = styled.h2`
 	position: relative;
 	z-index: 1;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 1.5rem;
 	}
 `
@@ -330,7 +343,7 @@ export const Level = styled.div`
 	position: relative;
 	z-index: 1;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.4rem 1.25rem;
 		font-size: 0.875rem;
 	}
@@ -343,7 +356,7 @@ export const LevelRing = styled.div`
 	width: 40px;
 	height: 40px;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		width: 32px;
 		height: 32px;
 		right: -3px;
@@ -380,7 +393,7 @@ export const XPText = styled.p`
 	position: relative;
 	z-index: 1;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		margin-bottom: 1.5rem;
 	}
 `
@@ -394,7 +407,7 @@ export const Stats = styled.div`
 	z-index: 1;
 	margin-bottom: 1rem;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		grid-template-columns: repeat(2, 1fr);
 		gap: 0.75rem;
 		margin-bottom: 0.75rem;
@@ -409,7 +422,7 @@ export const StatItem = styled.div`
 	backdrop-filter: blur(10px);
 	box-shadow: ${props => props.theme.shadows.neomorph.dark};
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 1rem;
 		border-radius: 12px;
 	}
@@ -422,7 +435,7 @@ export const StatValue = styled(motion.div)`
 	text-shadow: ${props => props.theme.shadows.glow.primary};
 	font-family: 'Courier New', monospace;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 1.5rem;
 	}
 `
@@ -534,7 +547,7 @@ export const SectionTitle = styled.h3`
 	position: relative;
 	z-index: 1;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 0.875rem;
 	}
 `
@@ -544,7 +557,7 @@ export const RareTrophiesSection = styled.div`
 	position: relative;
 	z-index: 1;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		margin-bottom: 1.5rem;
 	}
 `
@@ -554,7 +567,7 @@ export const RareTrophiesGrid = styled.div`
 	grid-template-columns: repeat(3, 1fr);
 	gap: 1rem;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		gap: 0.75rem;
 	}
 `
@@ -599,7 +612,7 @@ export const TrophyCard = styled(motion.div) <{ isNew: boolean }>`
 		border-color: ${props => `${props.theme.colors.primary}4d`};
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.75rem;
 	}
 `
@@ -632,7 +645,7 @@ export const TrophyIcon = styled(motion.div) <{ rarity: string }>`
 		padding: 0.5rem;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 3rem;
 		height: 100px;
 	}
@@ -645,7 +658,7 @@ export const TrophyTitle = styled.div`
 	text-align: center;
 	line-height: 1.2;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 0.625rem;
 	}
 `
@@ -673,7 +686,7 @@ export const AddTrophyButton = styled(motion.button)`
 		transform: translateY(-5px);
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.75rem;
 		min-height: 180px;
 		height: 180px;
@@ -693,7 +706,7 @@ export const AddTrophyIcon = styled.div`
 		height: 100%;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 2rem;
 	}
 `
@@ -730,7 +743,7 @@ export const AddGoalButton = styled(motion.button)`
 		transform: scale(1.1);
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.75rem;
 		min-height: 100px;
 		height: 100px;
@@ -757,7 +770,7 @@ export const CurrentGoalsSection = styled.div`
 	position: relative;
 	z-index: 1;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		margin-bottom: 1.5rem;
 	}
 `
@@ -807,7 +820,7 @@ export const GoalItem = styled(motion.div) <{ $isComplete?: boolean }>`
 		margin-bottom: 0;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.75rem;
 		margin-bottom: 0.5rem;
 	}
@@ -841,7 +854,7 @@ export const GoalIcon = styled.div`
 		padding: 0.5rem;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		width: 64px;
 		height: 64px;
 		font-size: 2.5rem;
@@ -943,7 +956,7 @@ export const StreakContainer = styled(motion.div)`
 	position: relative;
 	z-index: 1;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.5rem 1rem;
 		margin-bottom: 1.5rem;
 	}
@@ -991,7 +1004,7 @@ export const ShareButton = styled(motion.button)`
 		box-shadow: ${props => props.theme.shadows.glow.primary};
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.75rem;
 		font-size: 0.8125rem;
 	}
@@ -1025,7 +1038,7 @@ export const QuickActionsSection = styled.div`
 	position: relative;
 	z-index: 1;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		gap: 0.5rem;
 		margin-bottom: 1rem;
 	}
@@ -1052,7 +1065,7 @@ export const QuickActionButton = styled(motion.button)`
 		box-shadow: ${props => props.theme.shadows.glow.primary};
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.75rem 0.5rem;
 		border-radius: 12px;
 	}
@@ -1061,7 +1074,7 @@ export const QuickActionButton = styled(motion.button)`
 export const ButtonIcon = styled.span`
 	font-size: 1.5rem;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 1.25rem;
 	}
 `
@@ -1070,7 +1083,7 @@ export const ButtonText = styled.span`
 	font-size: 0.8125rem;
 	font-weight: 600;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 0.75rem;
 	}
 `
@@ -1093,7 +1106,7 @@ export const ProfileOverlay = styled.div`
 	gap: 1.5rem;
 	padding: 2rem;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 1.5rem;
 		gap: 1rem;
 	}
@@ -1106,7 +1119,7 @@ export const OverlayTitle = styled.h3`
 	margin: 0;
 	text-align: center;
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		font-size: 1.25rem;
 	}
 `
@@ -1128,8 +1141,153 @@ export const OverlayButton = styled(motion.button)`
 		box-shadow: ${props => props.theme.shadows.glow.secondary};
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 767px) {
 		padding: 0.75rem 1.5rem;
 		font-size: 0.875rem;
+	}
+`
+
+export const MainAchievementContainer = styled.div`
+	position: absolute;
+	top: 80%;
+	right: 55%;
+	transform: translateY(-50%);
+	width: 140px;
+	height: 140px;
+	cursor: pointer;
+	z-index: 2;
+
+	@media (max-width: 1024px) {
+		right: -12%;
+		width: 120px;
+		height: 120px;
+	}
+
+	@media (max-width: 767px) {
+		right: 55%;
+		width: 100px;
+		height: 100px;
+	}
+`
+
+export const MainAchievementGlow = styled.div<{ $rarityColor: string }>`
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 160px;
+	height: 160px;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle,
+		${props => props.$rarityColor}40 0%,
+		${props => props.$rarityColor}20 40%,
+		transparent 70%
+	);
+	opacity: 0.6;
+	animation: pulse 3s ease-in-out infinite;
+	pointer-events: none;
+	z-index: 0;
+
+	@keyframes pulse {
+		0%, 100% {
+			opacity: 0.6;
+			transform: translate(-50%, -50%) scale(1);
+		}
+		50% {
+			opacity: 0.8;
+			transform: translate(-50%, -50%) scale(1.1);
+		}
+	}
+
+	@media (max-width: 767px) {
+		width: 140px;
+		height: 140px;
+	}
+`
+
+export const MainAchievementTiltWrapper = styled.div`
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	position: relative;
+	z-index: 1;
+	transform-style: preserve-3d;
+`
+
+export const MainAchievementIcon = styled(motion.div) <{ $iconUrl: string | null; $rarityColor: string }>`
+	width: 70px;
+	height: 70px;
+	border-radius: 50%;
+	background: linear-gradient(
+		135deg,
+		${props => props.$rarityColor}30 0%,
+		${props => props.$rarityColor}10 100%
+	);
+	border: 3px solid ${props => props.$rarityColor}80;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 
+		0 0 30px ${props => props.$rarityColor}80,
+		0 0 60px ${props => props.$rarityColor}40,
+		inset 0 0 20px ${props => props.$rarityColor}20;
+	overflow: hidden;
+	position: relative;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	transform-style: preserve-3d;
+
+	img {
+		width: 80%;
+		height: 80%;
+		object-fit: contain;
+		filter: drop-shadow(0 0 15px ${props => props.$rarityColor}90);
+		transform-style: preserve-3d;
+	}
+
+	span {
+		font-size: 4rem;
+		filter: drop-shadow(0 0 15px ${props => props.$rarityColor}90);
+		transform-style: preserve-3d;
+	}
+
+	@media (max-width: 1024px) {
+		span {
+			font-size: 3.5rem;
+		}
+	}
+
+	@media (max-width: 767px) {
+		width: 55px;
+		height: 55px;
+
+		span {
+			font-size: 3rem;
+		}
+	}
+`
+
+export const MainAchievementTitle = styled(motion.div) <{ $isVisible?: boolean }>`
+	color: ${props => props.theme.colors.light[100]};
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-align: center;
+	max-width: 120px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+	position: relative;
+	z-index: 1;
+	pointer-events: none;
+
+	@media (max-width: 767px) {
+		font-size: 0.7rem;
+		max-width: 100px;
 	}
 `

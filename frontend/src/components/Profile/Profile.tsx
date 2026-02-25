@@ -1,6 +1,7 @@
+import { useMemo } from 'react'
 import { ProfileProps } from './types'
 import { SectionMarker } from '@/components/SectionMarker'
-import { useGetStatsQuery } from '@/store/api/userApi'
+import { useGetStatsQuery, useGetUserAchievementsByUsernameQuery } from '@/store/api/userApi'
 import { PinnedAchievementsModal } from './PinnedAchievementsModal'
 import { PriorityAchievementsModal } from './PriorityAchievementsModal'
 import { usePinnedAchievements } from './hooks/usePinnedAchievements'
@@ -51,6 +52,17 @@ export const Profile = ({
   const pinnedAchievementsHook = usePinnedAchievements(user, isOwnProfile)
   const priorityAchievementsHook = usePriorityAchievements(user, isOwnProfile)
 
+  // Получаем главное достижение
+  const { data: userAchievements } = useGetUserAchievementsByUsernameQuery(
+    { username: user.username, status: 'all' },
+    { skip: !user.username }
+  )
+
+  const mainAchievement = useMemo(() => {
+    if (!userAchievements) return null
+    return userAchievements.find((achievement) => achievement.is_main === true) || null
+  }, [userAchievements])
+
   return (
     <ProfileContainer
       initial={{ opacity: 0, y: 20 }}
@@ -75,6 +87,7 @@ export const Profile = ({
           progress={progress}
           xpToNextLevel={xpToNextLevel}
           currentXP={currentXP}
+          mainAchievement={mainAchievement}
         />
         <div>
           <PriorityAchievements
