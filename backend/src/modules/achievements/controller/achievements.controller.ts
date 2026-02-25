@@ -49,9 +49,10 @@ export class AchievementsController {
   /**
    * GET /api/achievements/categories - Получение всех категорий
    */
-  async getCategories(req: Request, res: Response, next: NextFunction) {
+  async getCategories(req: Request | AuthRequest, res: Response, next: NextFunction) {
     try {
-      const categories = await achievementsService.getCategories()
+      const viewerId = (req as AuthRequest).user?.userId
+      const categories = await achievementsService.getCategories(viewerId)
       res.json(categories)
     } catch (error) {
       next(error)
@@ -274,11 +275,39 @@ export class AchievementsController {
         throw ApiError.unauthorized('User not authenticated')
       }
 
-      const dto = plainToInstance(CreateCategoryDto, req.body)
+      // Обрабатываем FormData
+      const body: any = { ...req.body }
+      if (body.allowed_user_ids && typeof body.allowed_user_ids === 'string') {
+        try {
+          body.allowed_user_ids = JSON.parse(body.allowed_user_ids)
+        } catch {
+          body.allowed_user_ids = []
+        }
+      }
+      if (body.is_public !== undefined && typeof body.is_public === 'string') {
+        body.is_public = body.is_public === 'true'
+      }
+
+      const dto = plainToInstance(CreateCategoryDto, body)
       const isValid = await validateDto(dto, res, next)
       if (!isValid) return
 
+      // Создаем категорию сначала
       const category = await achievementsService.createCategory(dto, userId, false)
+
+      // Если есть загруженное изображение, сохраняем его
+      if (req.file) {
+        const { saveCategoryImage } = await import('../../../shared/utils/fileUpload')
+        const uploaded = await saveCategoryImage(
+          req.file.buffer,
+          req.file.mimetype,
+          category.id
+        )
+        // Обновляем категорию с URL изображения
+        const updatedCategory = await achievementsService.updateCategoryIcon(category.id, uploaded.url)
+        return res.status(201).json(updatedCategory)
+      }
+
       res.status(201).json(category)
     } catch (error) {
       next(error)
@@ -329,11 +358,42 @@ export class AchievementsController {
         throw ApiError.unauthorized('User not authenticated')
       }
 
-      const dto = plainToInstance(CreateAchievementDto, req.body)
+      // Обрабатываем FormData
+      const body: any = { ...req.body }
+      if (body.allowed_user_ids && typeof body.allowed_user_ids === 'string') {
+        try {
+          body.allowed_user_ids = JSON.parse(body.allowed_user_ids)
+        } catch {
+          body.allowed_user_ids = []
+        }
+      }
+      if (body.is_public !== undefined && typeof body.is_public === 'string') {
+        body.is_public = body.is_public === 'true'
+      }
+      if (body.xp_reward !== undefined && typeof body.xp_reward === 'string') {
+        body.xp_reward = parseInt(body.xp_reward, 10)
+      }
+
+      const dto = plainToInstance(CreateAchievementDto, body)
       const isValid = await validateDto(dto, res, next)
       if (!isValid) return
 
+      // Создаем достижение сначала
       const achievement = await achievementsService.createAchievement(dto, userId, false)
+
+      // Если есть загруженное изображение, сохраняем его
+      if (req.file) {
+        const { saveCustomAchievementImage } = await import('../../../shared/utils/fileUpload')
+        const uploaded = await saveCustomAchievementImage(
+          req.file.buffer,
+          req.file.mimetype,
+          achievement.id
+        )
+        // Обновляем достижение с URL изображения
+        const updatedAchievement = await achievementsService.updateAchievementIcon(achievement.id, uploaded.url)
+        return res.status(201).json(updatedAchievement)
+      }
+
       res.status(201).json(achievement)
     } catch (error) {
       next(error)

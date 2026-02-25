@@ -18,10 +18,9 @@ const baseQuery = fetchBaseQuery({
     if (token) {
       headers.set('authorization', `Bearer ${token}`)
     }
-    // Добавляем content-type только если есть body
-    if (!headers.has('content-type')) {
-      headers.set('content-type', 'application/json')
-    }
+    // Не устанавливаем content-type здесь - он будет установлен автоматически
+    // Для FormData браузер установит multipart/form-data с boundary
+    // Для обычных запросов RTK Query установит application/json
     return headers
   },
 })

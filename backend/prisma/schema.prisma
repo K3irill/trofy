@@ -47,9 +47,10 @@ model User {
   achievementComments  AchievementComment[]
   achievementLikes     AchievementLike[]
   achievementFavorites AchievementFavorite[]
-  journalEntries      JournalEntry[]
-  journalFolders      JournalFolder[]
-  journalTags         JournalTag[]
+  createdAchievements  Achievement[]         @relation("AchievementCreator")
+  journalEntries       JournalEntry[]
+  journalFolders       JournalFolder[]
+  journalTags          JournalTag[]
 
   @@index([email])
   @@index([phone])
@@ -57,30 +58,37 @@ model User {
 }
 
 model Achievement {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  icon_url    String?
-  rarity      Rarity   @default(COMMON)
-  category_id String
-  xp_reward   Int      @default(100)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id               String   @id @default(uuid())
+  title            String
+  description      String
+  icon_url         String?
+  rarity           Rarity   @default(COMMON)
+  category_id      String
+  xp_reward        Int      @default(100)
+  creator_id       String?
+  is_public        Boolean  @default(true)
+  allowed_user_ids Json     @default("[]")
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
   category         Category          @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  creator          User?             @relation("AchievementCreator", fields: [creator_id], references: [id], onDelete: SetNull)
   userAchievements UserAchievement[]
 
   @@index([category_id])
+  @@index([creator_id])
 }
 
 model Category {
-  id         String   @id @default(uuid())
-  name       String
-  icon_url   String?
-  is_custom  Boolean  @default(false)
-  creator_id String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id               String   @id @default(uuid())
+  name             String
+  icon_url         String?
+  is_custom        Boolean  @default(false)
+  creator_id       String?
+  is_public        Boolean  @default(true)
+  allowed_user_ids Json     @default("[]")
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
   creator      User?         @relation(fields: [creator_id], references: [id], onDelete: SetNull)
   achievements Achievement[]
@@ -256,16 +264,16 @@ enum JournalEntryType {
 }
 
 model JournalEntry {
-  id          String            @id @default(uuid())
+  id          String           @id @default(uuid())
   user_id     String
   title       String
-  content     Json              // Rich text content from TipTap (JSON format)
-  type        JournalEntryType  @default(NOTE)
+  content     Json // Rich text content from TipTap (JSON format)
+  type        JournalEntryType @default(NOTE)
   folder_id   String?
-  is_pinned   Boolean           @default(false)
-  is_archived Boolean           @default(false)
-  created_at  DateTime          @default(now())
-  updated_at  DateTime          @updatedAt
+  is_pinned   Boolean          @default(false)
+  is_archived Boolean          @default(false)
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
 
   user   User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   folder JournalFolder?    @relation(fields: [folder_id], references: [id], onDelete: SetNull)
@@ -280,32 +288,32 @@ model JournalEntry {
 }
 
 model JournalFolder {
-  id         String         @id @default(uuid())
+  id         String   @id @default(uuid())
   user_id    String
   name       String
-  color      String?        // Hex color code
-  icon       String?        // Icon name or emoji
-  parent_id  String?       // For nested folders
-  created_at DateTime       @default(now())
-  updated_at DateTime       @updatedAt
+  color      String? // Hex color code
+  icon       String? // Icon name or emoji
+  parent_id  String? // For nested folders
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  user       User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  parent     JournalFolder?  @relation("FolderHierarchy", fields: [parent_id], references: [id], onDelete: Cascade)
-  children   JournalFolder[]  @relation("FolderHierarchy")
-  entries    JournalEntry[]
+  user     User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  parent   JournalFolder?  @relation("FolderHierarchy", fields: [parent_id], references: [id], onDelete: Cascade)
+  children JournalFolder[] @relation("FolderHierarchy")
+  entries  JournalEntry[]
 
   @@index([user_id])
   @@index([parent_id])
 }
 
 model JournalTag {
-  id         String          @id @default(uuid())
+  id         String   @id @default(uuid())
   user_id    String
   name       String
-  color      String?         // Hex color code
-  created_at DateTime        @default(now())
+  color      String? // Hex color code
+  created_at DateTime @default(now())
 
-  user   User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user    User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   entries JournalEntryTag[]
 
   @@unique([user_id, name])
@@ -313,9 +321,9 @@ model JournalTag {
 }
 
 model JournalEntryTag {
-  id             String        @id @default(uuid())
+  id               String @id @default(uuid())
   journal_entry_id String
-  journal_tag_id String
+  journal_tag_id   String
 
   entry JournalEntry @relation(fields: [journal_entry_id], references: [id], onDelete: Cascade)
   tag   JournalTag   @relation(fields: [journal_tag_id], references: [id], onDelete: Cascade)
@@ -328,7 +336,7 @@ model JournalEntryTag {
 model Roadmap {
   id                  String   @id @default(uuid())
   user_achievement_id String   @unique
-  data                Json     // React Flow nodes and edges
+  data                Json // React Flow nodes and edges
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 

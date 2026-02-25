@@ -437,12 +437,47 @@ export const AchievementCount = styled.span`
 `
 export const PageHeaderWrap = styled.div`
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (max-width: 768px) {
+    gap: 0.75rem;
+  }
+`
+
+export const PageHeaderTop = styled.div`
+  display: flex;
   justify-content: space-between;
-  gap: 20px;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 
   @media (max-width: 768px) {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
+`
+
+export const PageHeaderControls = styled.div`
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+`
+
+export const ControlsWrap = styled.div`
+  display: flex;
+  flex-direction: column; 
+  gap: 1rem;
+  align-items: end;
 `
 
 
@@ -481,6 +516,81 @@ export const TumblerThumb = styled.div<{ position: number }>`
   border-radius: 50%;
   transition: left 0.3s ease;
   box-shadow: ${(props) => props.theme.shadows.glow.primary};
+`
+
+export const FilterTumblerContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: ${(props) => props.theme.colors.dark[700]}80;
+  padding: 0.25rem;
+  border-radius: 12px;
+  border: 1px solid ${(props) => props.theme.colors.dark[600]}80;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    gap: 0.25rem;
+    padding: 0.2rem;
+  }
+`
+
+export const FilterButton = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: ${(props) => props.$active
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}33 100%)`
+    : 'transparent'};
+  border: 1px solid ${(props) => props.$active
+    ? `${props.theme.colors.primary}80`
+    : 'transparent'};
+  border-radius: 8px;
+  color: ${(props) => props.$active ? props.theme.colors.primary : props.theme.colors.light[300]};
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: ${(props) => props.$active ? 600 : 500};
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  svg {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    color: ${(props) => props.theme.colors.primary};
+    background: ${(props) => props.$active
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}33 100%)`
+    : `${props.theme.colors.primary}1a`};
+    border-color: ${(props) => props.$active
+    ? `${props.theme.colors.primary}80`
+    : `${props.theme.colors.primary}40`};
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+    gap: 0.375rem;
+
+    svg {
+      font-size: 0.875rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    padding: 0.35rem 0.625rem;
+    font-size: 0.75rem;
+    gap: 0.25rem;
+
+    span {
+      display: none;
+    }
+
+    svg {
+      font-size: 1rem;
+    }
+  }
 `
 
 export const ViewLabel = styled.span`

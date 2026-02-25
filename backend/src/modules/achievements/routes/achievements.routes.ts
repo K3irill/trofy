@@ -16,7 +16,7 @@ const router = Router()
 
 // Публичные роуты (с опциональной аутентификацией для получения userId если токен передан)
 router.get('/rarities', achievementsController.getRarities.bind(achievementsController))
-router.get('/categories', achievementsController.getCategories.bind(achievementsController))
+router.get('/categories', optionalAuthenticate, achievementsController.getCategories.bind(achievementsController))
 router.get(
   '/categories/with-stats',
   authenticate,
@@ -58,11 +58,13 @@ router.post(
 router.post(
   '/categories/custom',
   authenticate,
+  upload.single('image'),
   achievementsController.createCustomCategory.bind(achievementsController)
 )
 router.post(
   '/custom',
   authenticate,
+  upload.single('image'),
   achievementsController.createCustomAchievement.bind(achievementsController)
 )
 

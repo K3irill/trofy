@@ -19,9 +19,9 @@ export class AchievementsService {
   }
 
   /**
-   * Получение всех категорий
+   * Получение всех категорий (с учетом прав доступа)
    */
-  async getCategories() {
+  async getCategories(viewerId?: string) {
     const categories = await prisma.category.findMany({
       include: {
         _count: {
@@ -35,11 +35,30 @@ export class AchievementsService {
       },
     })
 
-    return categories.map((category) => ({
+    // Фильтруем категории по правам доступа
+    const filteredCategories = categories.filter((category) => {
+      const isPublic = (category as any).is_public !== false
+      const allowedUserIds = (category as any).allowed_user_ids || []
+      const creatorId = category.creator_id
+
+      // Если публичная - доступна всем
+      if (isPublic) return true
+
+      // Если приватная - доступна только создателю и пользователям из allowed_user_ids
+      if (viewerId) {
+        return creatorId === viewerId || allowedUserIds.includes(viewerId)
+      }
+
+      // Неавторизованные пользователи не видят приватные категории
+      return false
+    })
+
+    return filteredCategories.map((category) => ({
       id: category.id,
       name: category.name,
       icon_url: category.icon_url,
       is_custom: category.is_custom,
+      creator_id: category.creator_id,
       achievements_count: category._count.achievements,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
@@ -65,12 +84,33 @@ export class AchievementsService {
           select: {
             id: true,
             icon_url: true,
+            is_public: true,
+            allowed_user_ids: true,
+            creator_id: true,
           },
         },
       },
       orderBy: {
         created_at: 'asc',
       },
+    })
+
+    // Фильтруем категории по правам доступа
+    const filteredCategories = categories.filter((category) => {
+      const isPublic = (category as any).is_public !== false
+      const allowedUserIds = (category as any).allowed_user_ids || []
+      const creatorId = category.creator_id
+
+      // Если публичная - доступна всем
+      if (isPublic) return true
+
+      // Если приватная - доступна только создателю и пользователям из allowed_user_ids
+      if (userId) {
+        return creatorId === userId || allowedUserIds.includes(userId)
+      }
+
+      // Неавторизованные пользователи не видят приватные категории
+      return false
     })
 
     // Если userId передан, получаем статистику разблокированных достижений
@@ -117,12 +157,25 @@ export class AchievementsService {
       })
     }
 
-    return categories.map((category) => {
+    return filteredCategories.map((category) => {
       const unlockedCount = userId && categoryUnlockedCounts
         ? categoryUnlockedCounts.get(category.id) || 0
         : 0
 
-      const achievementsPreview = category.achievements.map((achievement) => {
+      // Фильтруем достижения по правам доступа
+      const accessibleAchievements = category.achievements.filter((achievement: any) => {
+        const isPublic = achievement.is_public !== false
+        const allowedUserIds = achievement.allowed_user_ids || []
+        const creatorId = achievement.creator_id
+
+        if (isPublic) return true
+        if (userId) {
+          return creatorId === userId || allowedUserIds.includes(userId)
+        }
+        return false
+      })
+
+      const achievementsPreview = accessibleAchievements.map((achievement: any) => {
         const isUnlocked = userId && userAchievementsSet
           ? userAchievementsSet.has(achievement.id)
           : false
@@ -146,6 +199,7 @@ export class AchievementsService {
         name: category.name,
         icon_url: category.icon_url,
         is_custom: category.is_custom,
+        creator_id: category.creator_id || undefined,
         total: category._count.achievements,
         unlocked: unlockedCount,
         achievements_preview: achievementsPreview,
@@ -179,6 +233,7 @@ export class AchievementsService {
       name: category.name,
       icon_url: category.icon_url,
       is_custom: category.is_custom,
+      creator_id: category.creator_id || undefined,
       achievements_count: category._count.achievements,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
@@ -225,6 +280,7 @@ export class AchievementsService {
       name: category.name,
       icon_url: category.icon_url,
       is_custom: category.is_custom,
+      creator_id: category.creator_id || undefined,
       total: category._count.achievements,
       unlocked: unlockedCount,
       created_at: category.created_at.toISOString(),
@@ -240,13 +296,28 @@ export class AchievementsService {
     userId?: string,
     dto?: GetAchievementsDto
   ) {
-    // Проверяем существование категории
+    // Проверяем существование категории и права доступа
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
     })
 
     if (!category) {
       throw ApiError.notFound('Category not found')
+    }
+
+    // Проверяем права доступа к категории
+    const isPublic = (category as any).is_public !== false
+    const allowedUserIds = (category as any).allowed_user_ids || []
+    const creatorId = category.creator_id
+
+    // Если категория приватная, проверяем доступ
+    if (!isPublic) {
+      if (!userId) {
+        throw ApiError.forbidden('Category is private')
+      }
+      if (creatorId !== userId && !allowedUserIds.includes(userId)) {
+        throw ApiError.forbidden('You do not have access to this category')
+      }
     }
 
     return this.getAchievements(userId, { ...dto, categoryId })
@@ -379,36 +450,55 @@ export class AchievementsService {
       skip: dto?.offset || 0,
     })
 
-    // Форматируем результат
-    let formatted = achievements.map((achievement) => {
-      const userAchievement = userId && achievement.userAchievements
-        ? achievement.userAchievements.find((ua) => ua.user_id === userId)
-        : null
+    // Форматируем результат и фильтруем по правам доступа
+    let formatted = achievements
+      .filter((achievement) => {
+        const isPublic = (achievement as any).is_public !== false
+        const allowedUserIds = (achievement as any).allowed_user_ids || []
+        const creatorId = (achievement as any).creator_id
 
-      return {
-        id: achievement.id,
-        title: achievement.title,
-        description: achievement.description,
-        icon_url: achievement.icon_url,
-        rarity: achievement.rarity.toLowerCase() as 'common' | 'rare' | 'epic' | 'legendary',
-        category: {
-          id: achievement.category.id,
-          name: achievement.category.name,
-          icon_url: achievement.category.icon_url,
-        },
-        xp_reward: achievement.xp_reward,
-        unlocked: !!userAchievement,
-        unlocked_at: userAchievement?.unlocked_at.toISOString(),
-        is_public: userAchievement?.is_public ?? true,
-        created_at: achievement.created_at.toISOString(),
-        progress: userAchievement ? (userAchievement as any).progress || 0 : undefined,
-        completion_date: userAchievement?.completion_date?.toISOString(),
-        is_hidden: userAchievement?.is_hidden || false,
-        user_achievement: userAchievement ? {
-          is_hidden: userAchievement.is_hidden,
-        } : undefined,
-      }
-    })
+        // Если публичное - доступно всем
+        if (isPublic) return true
+
+        // Если приватное - доступно только создателю и пользователям из allowed_user_ids
+        if (userId) {
+          return creatorId === userId || allowedUserIds.includes(userId)
+        }
+
+        // Неавторизованные пользователи не видят приватные достижения
+        return false
+      })
+      .map((achievement) => {
+        const userAchievement = userId && achievement.userAchievements
+          ? achievement.userAchievements.find((ua) => ua.user_id === userId)
+          : null
+
+        return {
+          id: achievement.id,
+          title: achievement.title,
+          description: achievement.description,
+          icon_url: achievement.icon_url,
+          rarity: achievement.rarity.toLowerCase() as 'common' | 'rare' | 'epic' | 'legendary',
+          category: {
+            id: achievement.category.id,
+            name: achievement.category.name,
+            icon_url: achievement.category.icon_url,
+          },
+          xp_reward: achievement.xp_reward,
+          unlocked: !!userAchievement,
+          unlocked_at: userAchievement?.unlocked_at.toISOString(),
+          is_public: userAchievement?.is_public ?? true,
+          is_custom: !!achievement.creator_id, // Пользовательское достижение определяется по наличию creator_id
+          creator_id: achievement.creator_id || undefined,
+          created_at: achievement.created_at.toISOString(),
+          progress: userAchievement ? (userAchievement as any).progress || 0 : undefined,
+          completion_date: userAchievement?.completion_date?.toISOString(),
+          is_hidden: userAchievement?.is_hidden || false,
+          user_achievement: userAchievement ? {
+            is_hidden: userAchievement.is_hidden,
+          } : undefined,
+        }
+      })
 
     // Не фильтруем скрытые достижения - владелец должен видеть все свои достижения
     // Скрытие работает только для других пользователей (в других запросах)
@@ -549,6 +639,8 @@ export class AchievementsService {
         icon_url: dto.icon_url || null,
         is_custom: !isAdmin, // Для админов is_custom = false, для пользователей = true
         creator_id: !isAdmin ? userId : null, // Для пользователей сохраняем creator_id
+        is_public: dto.is_public !== undefined ? dto.is_public : true,
+        allowed_user_ids: dto.allowed_user_ids ? dto.allowed_user_ids : [],
       },
     })
 
@@ -557,6 +649,8 @@ export class AchievementsService {
       name: category.name,
       icon_url: category.icon_url,
       is_custom: category.is_custom,
+      is_public: (category as any).is_public,
+      allowed_user_ids: (category as any).allowed_user_ids || [],
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
     }
@@ -590,6 +684,9 @@ export class AchievementsService {
         rarity: dto.rarity || Rarity.COMMON,
         category_id: dto.category_id,
         xp_reward: dto.xp_reward || 100,
+        creator_id: !isAdmin ? userId : null,
+        is_public: dto.is_public !== undefined ? dto.is_public : true,
+        allowed_user_ids: dto.allowed_user_ids ? dto.allowed_user_ids : [],
       },
       include: {
         category: {
@@ -614,6 +711,67 @@ export class AchievementsService {
         icon_url: achievement.category.icon_url,
       },
       xp_reward: achievement.xp_reward,
+      is_public: (achievement as any).is_public,
+      allowed_user_ids: (achievement as any).allowed_user_ids || [],
+      created_at: achievement.created_at.toISOString(),
+      updated_at: achievement.updated_at.toISOString(),
+    }
+  }
+
+  /**
+   * Обновление иконки категории
+   */
+  async updateCategoryIcon(categoryId: string, iconUrl: string) {
+    const category = await prisma.category.update({
+      where: { id: categoryId },
+      data: { icon_url: iconUrl },
+    })
+
+    return {
+      id: category.id,
+      name: category.name,
+      icon_url: category.icon_url,
+      is_custom: category.is_custom,
+      creator_id: category.creator_id || undefined,
+      is_public: (category as any).is_public,
+      allowed_user_ids: (category as any).allowed_user_ids || [],
+      created_at: category.created_at.toISOString(),
+      updated_at: category.updated_at.toISOString(),
+    }
+  }
+
+  /**
+   * Обновление иконки достижения
+   */
+  async updateAchievementIcon(achievementId: string, iconUrl: string) {
+    const achievement = await prisma.achievement.update({
+      where: { id: achievementId },
+      data: { icon_url: iconUrl },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            icon_url: true,
+          },
+        },
+      },
+    })
+
+    return {
+      id: achievement.id,
+      title: achievement.title,
+      description: achievement.description,
+      icon_url: achievement.icon_url,
+      rarity: achievement.rarity,
+      category: {
+        id: achievement.category.id,
+        name: achievement.category.name,
+        icon_url: achievement.category.icon_url,
+      },
+      xp_reward: achievement.xp_reward,
+      is_public: (achievement as any).is_public,
+      allowed_user_ids: (achievement as any).allowed_user_ids || [],
       created_at: achievement.created_at.toISOString(),
       updated_at: achievement.updated_at.toISOString(),
     }

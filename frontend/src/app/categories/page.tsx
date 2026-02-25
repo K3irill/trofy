@@ -3,13 +3,16 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { IoFolder, IoTrophy, IoCloseCircle, IoSearch } from 'react-icons/io5'
+import { IoFolder, IoTrophy, IoCloseCircle, IoSearch, IoAdd } from 'react-icons/io5'
 import { useAppSelector } from '@/store/hooks'
+import { useGetMeQuery } from '@/store/api/userApi'
+import { CreateCategoryModal } from '@/components/CreateCategoryModal/CreateCategoryModal'
+import { CreateAchievementModal } from '@/components/CreateAchievementModal/CreateAchievementModal'
 import {
   useGetCategoriesQuery,
   useGetCategoriesWithStatsQuery,
   useGetAchievementsQuery,
-  type Achievement as ApiAchievement,
+  type Achievement as ApiAchievementType,
 } from '@/store/api/achievementsApi'
 
 import {
@@ -28,9 +31,13 @@ import {
   StatLabel,
   StatValue,
   PageHeaderWrap,
+  PageHeaderTop,
+  PageHeaderControls,
+  ControlsWrap,
 } from './page.styled'
 import { CategoryCardComponent } from './CategoryCard'
 import { Tumbler } from './Tumbler'
+import { FilterTumbler } from './FilterTumbler'
 import { ViewModeSelector, type AchievementViewMode } from './ViewModeSelector'
 import { SearchAndFilters } from './SearchAndFilters'
 import { AchievementCard } from './AchievementCard'
@@ -42,7 +49,7 @@ import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
 
 // Преобразование достижения из API формата в формат компонента
-const transformAchievement = (apiAchievement: ApiAchievement): Achievement => {
+const transformAchievement = (apiAchievement: ApiAchievementType): Achievement => {
   return {
     id: apiAchievement.id,
     name: apiAchievement.title,
@@ -61,7 +68,9 @@ const transformAchievement = (apiAchievement: ApiAchievement): Achievement => {
 export default function CategoriesPage() {
   const router = useRouter()
   const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const { data: currentUser } = useGetMeQuery(undefined, { skip: !isAuthenticated })
   const [mode, setMode] = useState<'categories' | 'achievements'>('categories')
+  const [filterMode, setFilterMode] = useState<'all' | 'my' | 'global' | 'custom'>('all')
   const [viewMode, setViewMode] = useState<AchievementViewMode>('grid3')
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
@@ -69,6 +78,8 @@ export default function CategoriesPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
+  const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
+  const [isCreateAchievementModalOpen, setIsCreateAchievementModalOpen] = useState(false)
 
   // Debounce для поискового запроса
   useEffect(() => {
@@ -100,14 +111,35 @@ export default function CategoriesPage() {
   const categories = useMemo(() => {
     if (mode !== 'categories') return []
 
+    interface CategoryItem {
+      id: string
+      name: string
+      icon: string
+      total: number
+      unlocked: number
+      is_custom: boolean
+      creator_id?: string
+      achievements: Array<{
+        id: string
+        icon: string
+        unlocked: boolean
+        progress?: number
+        completion_date?: string
+      }>
+    }
+
+    let allCategories: CategoryItem[] = []
+
     if (isAuthenticated) {
       if (categoriesWithStatsData) {
-        return categoriesWithStatsData.map((cat) => ({
+        allCategories = categoriesWithStatsData.map((cat) => ({
           id: cat.id,
           name: cat.name,
           icon: cat.icon_url || '📁',
           total: cat.total,
           unlocked: cat.unlocked,
+          is_custom: cat.is_custom,
+          creator_id: cat.creator_id,
           achievements: cat.achievements_preview.map((ach) => ({
             id: ach.id,
             icon: ach.icon_url || '',
@@ -117,22 +149,40 @@ export default function CategoriesPage() {
           })),
         }))
       }
-      return []
     } else {
       // Для неавторизованных пользователей
       if (categoriesData && Array.isArray(categoriesData)) {
-        return categoriesData.map((cat) => ({
+        allCategories = categoriesData.map((cat) => ({
           id: cat.id,
           name: cat.name,
           icon: cat.icon_url || '📁',
           total: cat.achievements_count,
           unlocked: 0,
+          is_custom: cat.is_custom,
+          creator_id: cat.creator_id,
           achievements: [],
         }))
       }
-      return []
     }
-  }, [categoriesData, categoriesWithStatsData, isAuthenticated, mode])
+
+    // Фильтрация по filterMode
+    if (filterMode === 'my' && currentUser) {
+      // Только мои пользовательские категории
+      return allCategories.filter((cat) => {
+        const isMyCategory = cat.is_custom && cat.creator_id === currentUser.id
+        return isMyCategory
+      })
+    } else if (filterMode === 'global') {
+      // Только глобальные категории
+      return allCategories.filter((cat) => !cat.is_custom)
+    } else if (filterMode === 'custom') {
+      // Все пользовательские категории (не приватные - фильтрация уже на бэкенде)
+      return allCategories.filter((cat) => cat.is_custom)
+    }
+
+    // 'all' - все категории
+    return allCategories
+  }, [categoriesData, categoriesWithStatsData, isAuthenticated, mode, filterMode, currentUser])
 
   // Параметры для запроса достижений
   const achievementsParams = useMemo(() => {
@@ -184,6 +234,27 @@ export default function CategoriesPage() {
     if (!achievementsData) return []
 
     let filtered = achievementsData.achievements.map(transformAchievement)
+
+    // Фильтрация по filterMode (пользовательские/глобальные)
+    if (filterMode === 'my' && currentUser) {
+      // Только мои пользовательские достижения
+      filtered = filtered.filter((achievement) => {
+        const apiAchievement: ApiAchievementType | undefined = achievementsData.achievements.find((a) => a.id === achievement.id)
+        return apiAchievement?.is_custom && apiAchievement?.creator_id === currentUser.id
+      })
+    } else if (filterMode === 'global') {
+      // Только глобальные достижения
+      filtered = filtered.filter((achievement) => {
+        const apiAchievement: ApiAchievementType | undefined = achievementsData.achievements.find((a) => a.id === achievement.id)
+        return !apiAchievement?.is_custom
+      })
+    } else if (filterMode === 'custom') {
+      // Все пользовательские достижения (не приватные - фильтрация уже на бэкенде)
+      filtered = filtered.filter((achievement) => {
+        const apiAchievement: ApiAchievementType | undefined = achievementsData.achievements.find((a) => a.id === achievement.id)
+        return apiAchievement?.is_custom
+      })
+    }
 
     // Фильтрация по статусу на фронтенде (только для авторизованных)
     if (isAuthenticated && statusFilter) {
@@ -245,7 +316,7 @@ export default function CategoriesPage() {
     }
 
     return filtered
-  }, [achievementsData, statusFilter, sortBy, isAuthenticated])
+  }, [achievementsData, statusFilter, sortBy, isAuthenticated, filterMode, currentUser])
 
   const hasError = mode === 'categories'
     ? (isAuthenticated ? categoriesWithStatsError : categoriesError)
@@ -273,25 +344,84 @@ export default function CategoriesPage() {
       <Container>
         <PageHeader>
           <PageHeaderWrap>
-            <Title>
-              {mode === 'categories' ? (
+            <PageHeaderTop>
+              <Title>
+                {mode === 'categories' ? (
+                  <>
+                    <TitleIcon as={IoFolder} />
+                    Категории достижений
+                  </>
+                ) : (
+                  <>
+                    <TitleIcon as={IoTrophy} />
+                    Все достижения
+                  </>
+                )}
+              </Title>
+              {isAuthenticated && (
                 <>
-                  <TitleIcon as={IoFolder} />
-                  Категории достижений
-                </>
-              ) : (
-                <>
-                  <TitleIcon as={IoTrophy} />
-                  Все достижения
+                  {mode === 'categories' ? (
+                    <motion.button
+                      onClick={() => setIsCreateCategoryModalOpen(true)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: 'rgba(0, 212, 255, 0.1)',
+                        border: '1px solid rgba(0, 212, 255, 0.3)',
+                        borderRadius: '12px',
+                        color: '#00d4ff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <IoAdd size={18} />
+                      Создать категорию
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      onClick={() => setIsCreateAchievementModalOpen(true)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: 'rgba(0, 212, 255, 0.1)',
+                        border: '1px solid rgba(0, 212, 255, 0.3)',
+                        borderRadius: '12px',
+                        color: '#00d4ff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <IoAdd size={18} />
+                      Создать достижение
+                    </motion.button>
+                  )}
                 </>
               )}
-            </Title>
-            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-              {mode === 'achievements' && (
-                <ViewModeSelector mode={viewMode} onChange={setViewMode} />
-              )}
-              <Tumbler mode={mode} onChange={setMode} />
-            </div>
+            </PageHeaderTop>
+            <PageHeaderControls>
+            
+                <FilterTumbler isAuth={isAuthenticated} mode={filterMode} onChange={setFilterMode} />
+             
+              <ControlsWrap>
+
+                <Tumbler mode={mode} onChange={setMode} />
+                {mode === 'achievements' && (
+                  <ViewModeSelector mode={viewMode} onChange={setViewMode} />
+                )}
+              </ControlsWrap>
+            </PageHeaderControls>
           </PageHeaderWrap>
         </PageHeader>
 
@@ -484,6 +614,25 @@ export default function CategoriesPage() {
           )}
         </AnimatePresence>
       </Container>
+
+      {isAuthenticated && (
+        <>
+          <CreateCategoryModal
+            isOpen={isCreateCategoryModalOpen}
+            onClose={() => setIsCreateCategoryModalOpen(false)}
+            onSuccess={() => {
+              // Категории обновятся автоматически через RTK Query
+            }}
+          />
+          <CreateAchievementModal
+            isOpen={isCreateAchievementModalOpen}
+            onClose={() => setIsCreateAchievementModalOpen(false)}
+            onSuccess={() => {
+              // Достижения обновятся автоматически через RTK Query
+            }}
+          />
+        </>
+      )}
     </>
   )
 }

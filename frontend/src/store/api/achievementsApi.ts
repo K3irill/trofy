@@ -15,6 +15,8 @@ export interface Achievement {
   unlocked: boolean
   unlocked_at: string | null
   is_public: boolean
+  is_custom?: boolean
+  creator_id?: string
   created_at: string
   progress?: number
   completion_date?: string
@@ -51,6 +53,7 @@ export interface Category {
   name: string
   icon_url: string | null
   is_custom: boolean
+  creator_id?: string
   achievements_count: number
   created_at: string
   updated_at: string
@@ -61,6 +64,7 @@ export interface CategoryWithStats {
   name: string
   icon_url: string | null
   is_custom: boolean
+  creator_id?: string
   total: number
   unlocked: number
   achievements_preview: Array<{
@@ -146,6 +150,66 @@ export const achievementsApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Achievement'],
     }),
+    createCustomCategory: builder.mutation<
+      Category,
+      { name: string; icon_url?: string; is_public?: boolean; allowed_user_ids?: string[]; image?: File }
+    >({
+      query: (data) => {
+        const formData = new FormData()
+        formData.append('name', data.name)
+        if (data.icon_url) formData.append('icon_url', data.icon_url)
+        if (data.is_public !== undefined) formData.append('is_public', String(data.is_public))
+        if (data.allowed_user_ids && data.allowed_user_ids.length > 0) {
+          formData.append('allowed_user_ids', JSON.stringify(data.allowed_user_ids))
+        }
+        if (data.image) {
+          formData.append('image', data.image)
+        }
+        return {
+          url: '/achievements/categories/custom',
+          method: 'POST',
+          body: formData,
+        }
+      },
+      invalidatesTags: [{ type: 'Category', id: 'LIST' }],
+    }),
+    createCustomAchievement: builder.mutation<
+      Achievement,
+      {
+        title: string
+        description: string
+        icon_url?: string
+        rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
+        category_id: string
+        xp_reward?: number
+        is_public?: boolean
+        allowed_user_ids?: string[]
+        image?: File
+      }
+    >({
+      query: (data) => {
+        const formData = new FormData()
+        formData.append('title', String(data.title))
+        formData.append('description', String(data.description))
+        formData.append('category_id', String(data.category_id))
+        if (data.icon_url) formData.append('icon_url', String(data.icon_url))
+        if (data.rarity) formData.append('rarity', String(data.rarity))
+        if (data.xp_reward !== undefined) formData.append('xp_reward', String(data.xp_reward))
+        if (data.is_public !== undefined) formData.append('is_public', String(data.is_public))
+        if (data.allowed_user_ids && data.allowed_user_ids.length > 0) {
+          formData.append('allowed_user_ids', JSON.stringify(data.allowed_user_ids))
+        }
+        if (data.image) {
+          formData.append('image', data.image)
+        }
+        return {
+          url: '/achievements/custom',
+          method: 'POST',
+          body: formData,
+        }
+      },
+      invalidatesTags: ['Achievement', 'Category'],
+    }),
   }),
 })
 
@@ -159,4 +223,6 @@ export const {
   useGetAchievementsByCategoryQuery,
   useGetAchievementByIdQuery,
   useGetShowcaseAchievementsQuery,
+  useCreateCustomCategoryMutation,
+  useCreateCustomAchievementMutation,
 } = achievementsApi

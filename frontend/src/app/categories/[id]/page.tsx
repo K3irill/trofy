@@ -3,8 +3,10 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { IoSearchOutline, IoDocumentTextOutline } from 'react-icons/io5'
+import { IoSearchOutline, IoDocumentTextOutline, IoAdd } from 'react-icons/io5'
 import { useAppSelector } from '@/store/hooks'
+import { useGetMeQuery } from '@/store/api/userApi'
+import { CreateAchievementModal } from '@/components/CreateAchievementModal/CreateAchievementModal'
 import {
   useGetCategoryByIdWithStatsQuery,
   useGetCategoryByIdQuery,
@@ -56,7 +58,9 @@ export default function CategoryPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
+  const [isCreateAchievementModalOpen, setIsCreateAchievementModalOpen] = useState(false)
   const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const { data: currentUser } = useGetMeQuery(undefined, { skip: !isAuthenticated })
 
   const categoryId = params?.id as string
 
@@ -123,6 +127,12 @@ export default function CategoryPage() {
   const isLoading = isLoadingCategoryWithStats || isLoadingCategory
   const hasCategoryData = !!activeCategory
   const achievements = achievementsData?.achievements || []
+
+  // Проверяем, является ли текущий пользователь создателем категории
+  const isCategoryOwner = useMemo(() => {
+    if (!activeCategory || !currentUser) return false
+    return activeCategory.is_custom && activeCategory.creator_id === currentUser.id
+  }, [activeCategory, currentUser])
 
   // Фильтрация и сортировка достижений (должен быть до условных return)
   const filteredAndSortedAchievements = useMemo(() => {
@@ -315,11 +325,37 @@ export default function CategoryPage() {
     <>
       <Container>
         <PageHeader>
-          <PageHeaderWrap>
+            <PageHeaderWrap>
             <BackButton onClick={() => router.back()} initial={{ x: -20 }} animate={{ x: 0 }}>
               ← Назад
             </BackButton>
-            <ViewModeSelector mode={viewMode} onChange={setViewMode} />
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              {isAuthenticated && isCategoryOwner && (
+                <motion.button
+                  onClick={() => setIsCreateAchievementModalOpen(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: 'rgba(0, 212, 255, 0.1)',
+                    border: '1px solid rgba(0, 212, 255, 0.3)',
+                    borderRadius: '12px',
+                    color: '#00d4ff',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <IoAdd size={18} />
+                  Создать достижение
+                </motion.button>
+              )}
+              <ViewModeSelector mode={viewMode} onChange={setViewMode} />
+            </div>
           </PageHeaderWrap>
         </PageHeader>
 
@@ -382,6 +418,15 @@ export default function CategoryPage() {
           </motion.div>
         </AnimatePresence>
       </Container>
+
+      <CreateAchievementModal
+        isOpen={isCreateAchievementModalOpen}
+        onClose={() => setIsCreateAchievementModalOpen(false)}
+        onSuccess={() => {
+          // Достижения обновятся автоматически через RTK Query
+        }}
+        defaultCategoryId={categoryId}
+      />
     </>
   )
 }

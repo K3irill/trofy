@@ -74,6 +74,16 @@ export class CreateCategoryDto {
   @IsString()
   @IsOptional()
   icon_url?: string
+
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  is_public?: boolean
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  allowed_user_ids?: string[]
 }
 
 export class CreateAchievementDto {
@@ -103,6 +113,16 @@ export class CreateAchievementDto {
   @IsOptional()
   @Type(() => Number)
   xp_reward?: number
+
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  is_public?: boolean
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  allowed_user_ids?: string[]
 }
 
 export class CreateAchievementsDto {

@@ -17,6 +17,8 @@ function getUploadsBasePath() {
 const UPLOADS_BASE = getUploadsBasePath()
 const UPLOAD_DIR = path.join(UPLOADS_BASE, 'achievements')
 const AVATAR_DIR = path.join(UPLOADS_BASE, 'avatars')
+const CATEGORY_DIR = path.join(UPLOADS_BASE, 'categories')
+const CUSTOM_ACHIEVEMENT_DIR = path.join(UPLOADS_BASE, 'achievements', 'custom')
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 
@@ -26,6 +28,12 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 }
 if (!fs.existsSync(AVATAR_DIR)) {
   fs.mkdirSync(AVATAR_DIR, { recursive: true })
+}
+if (!fs.existsSync(CATEGORY_DIR)) {
+  fs.mkdirSync(CATEGORY_DIR, { recursive: true })
+}
+if (!fs.existsSync(CUSTOM_ACHIEVEMENT_DIR)) {
+  fs.mkdirSync(CUSTOM_ACHIEVEMENT_DIR, { recursive: true })
 }
 
 export interface UploadedFile {
@@ -175,5 +183,101 @@ export async function saveAvatar(
 export function deleteAvatar(avatarPath: string): void {
   if (avatarPath && fs.existsSync(avatarPath)) {
     fs.unlinkSync(avatarPath)
+  }
+}
+
+/**
+ * Сохранение изображения категории
+ */
+export async function saveCategoryImage(
+  buffer: Buffer,
+  mimetype: string,
+  categoryId: string
+): Promise<UploadedFile> {
+  // Валидация размера
+  if (buffer.length > MAX_FILE_SIZE) {
+    throw new Error(`Размер файла превышает ${MAX_FILE_SIZE / 1024 / 1024}MB`)
+  }
+
+  // Валидация типа
+  if (!ALLOWED_MIME_TYPES.includes(mimetype)) {
+    throw new Error('Неподдерживаемый тип файла. Разрешены: JPEG, PNG, WebP, GIF')
+  }
+
+  // Удаляем старое изображение если есть
+  const files = fs.readdirSync(CATEGORY_DIR).filter((file) => file.startsWith(`${categoryId}_`))
+  files.forEach((file) => {
+    const filePath = path.join(CATEGORY_DIR, file)
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath)
+    }
+  })
+
+  // Генерируем уникальное имя файла
+  const ext = mimetype === 'image/jpeg' ? '.jpg' : mimetype === 'image/png' ? '.png' : mimetype === 'image/webp' ? '.webp' : '.jpg'
+  const filename = `${categoryId}_${uuidv4()}${ext}`
+  const filePath = path.join(CATEGORY_DIR, filename)
+
+  // Сохраняем файл
+  fs.writeFileSync(filePath, buffer)
+
+  // Генерируем URL для доступа к файлу
+  const url = `/uploads/categories/${filename}`
+
+  return {
+    originalName: 'category',
+    filename,
+    path: filePath,
+    url,
+    size: buffer.length,
+    mimeType: mimetype,
+  }
+}
+
+/**
+ * Сохранение изображения кастомного достижения
+ */
+export async function saveCustomAchievementImage(
+  buffer: Buffer,
+  mimetype: string,
+  achievementId: string
+): Promise<UploadedFile> {
+  // Валидация размера
+  if (buffer.length > MAX_FILE_SIZE) {
+    throw new Error(`Размер файла превышает ${MAX_FILE_SIZE / 1024 / 1024}MB`)
+  }
+
+  // Валидация типа
+  if (!ALLOWED_MIME_TYPES.includes(mimetype)) {
+    throw new Error('Неподдерживаемый тип файла. Разрешены: JPEG, PNG, WebP, GIF')
+  }
+
+  // Удаляем старое изображение если есть
+  const files = fs.readdirSync(CUSTOM_ACHIEVEMENT_DIR).filter((file) => file.startsWith(`${achievementId}_`))
+  files.forEach((file) => {
+    const filePath = path.join(CUSTOM_ACHIEVEMENT_DIR, file)
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath)
+    }
+  })
+
+  // Генерируем уникальное имя файла
+  const ext = mimetype === 'image/jpeg' ? '.jpg' : mimetype === 'image/png' ? '.png' : mimetype === 'image/webp' ? '.webp' : '.jpg'
+  const filename = `${achievementId}_${uuidv4()}${ext}`
+  const filePath = path.join(CUSTOM_ACHIEVEMENT_DIR, filename)
+
+  // Сохраняем файл
+  fs.writeFileSync(filePath, buffer)
+
+  // Генерируем URL для доступа к файлу
+  const url = `/uploads/achievements/custom/${filename}`
+
+  return {
+    originalName: 'achievement',
+    filename,
+    path: filePath,
+    url,
+    size: buffer.length,
+    mimeType: mimetype,
   }
 }
