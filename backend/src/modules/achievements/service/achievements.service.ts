@@ -1132,6 +1132,9 @@ export class AchievementsService {
     userId: string,
     dto: UpdateAchievementSettingsDto
   ) {
+    // Максимальное количество главных достижений (в будущем можно увеличить до 3)
+    const MAX_MAIN_ACHIEVEMENTS = 1
+
     // Проверяем права доступа
     const userAchievement = await prisma.userAchievement.findUnique({
       where: { id: userAchievementId },
@@ -1143,6 +1146,38 @@ export class AchievementsService {
 
     if (userAchievement.user_id !== userId) {
       throw ApiError.forbidden('You can only update your own achievements')
+    }
+
+    // Если устанавливается is_main = true, нужно снять статус с других главных достижений
+    if (dto.is_main === true && !userAchievement.is_main) {
+      // Находим все другие главные достижения этого пользователя
+      const otherMainAchievements = await prisma.userAchievement.findMany({
+        where: {
+          user_id: userId,
+          is_main: true,
+          id: { not: userAchievementId },
+        },
+      })
+
+      // Если уже достигнут лимит главных достижений, снимаем статус с других
+      // Сейчас MAX_MAIN_ACHIEVEMENTS = 1, поэтому снимаем со всех
+      // В будущем, когда будет 3, снимаем только если уже есть 3 главных
+      if (otherMainAchievements.length >= MAX_MAIN_ACHIEVEMENTS) {
+        // Снимаем статус со всех других главных достижений
+        // В будущем, когда MAX_MAIN_ACHIEVEMENTS = 3, нужно будет снимать только с лишних
+        const achievementsToUnset = otherMainAchievements.slice(0, otherMainAchievements.length - (MAX_MAIN_ACHIEVEMENTS - 1))
+
+        if (achievementsToUnset.length > 0) {
+          await prisma.userAchievement.updateMany({
+            where: {
+              id: { in: achievementsToUnset.map(a => a.id) },
+            },
+            data: {
+              is_main: false,
+            },
+          })
+        }
+      }
     }
 
     // Обновляем настройки
