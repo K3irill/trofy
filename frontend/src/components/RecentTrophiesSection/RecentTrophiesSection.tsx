@@ -21,7 +21,7 @@ import { renderIcon } from '@/lib/utils/iconUtils'
 
 interface RecentTrophiesSectionProps {
   username?: string
-  isOwnProfile?: boolean
+  isOwnProfile?: boolean | null
 }
 
 export const RecentTrophiesSection = ({ username, isOwnProfile = false }: RecentTrophiesSectionProps) => {
@@ -47,7 +47,7 @@ export const RecentTrophiesSection = ({ username, isOwnProfile = false }: Recent
       achievement.is_achieved && 
       !achievement.is_hidden && 
       !achievement.user_achievement?.is_hidden
-  ) || []
+  ).slice(0, 3) || []
 
   return (
     <Container

@@ -298,6 +298,9 @@ export const SelectLabel = styled.label`
 `
 
 export const EntryInfoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 0.75rem;
   padding: 0.875rem;
   background: ${(props) => props.theme.colors.dark[700]};
@@ -314,7 +317,6 @@ export const InfoRow = styled.div`
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  margin-bottom: 0.5rem;
   
   &:last-child {
     margin-bottom: 0;
@@ -332,7 +334,6 @@ export const InfoLabel = styled.span`
   color: ${(props) => props.theme.colors.light[300]};
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  min-width: 50px;
 `
 
 export const InfoValue = styled.span<{ $color?: string }>`

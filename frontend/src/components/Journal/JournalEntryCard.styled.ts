@@ -79,6 +79,7 @@ export const EntryActions = styled.div`
 
   @media (max-width: 640px) {
     gap: 0.375rem;
+    flex-direction: column;
   }
 `
 
@@ -134,7 +135,7 @@ export const EntryBadges = styled.div`
   gap: 0.5rem;
   margin-top: 1rem;
 
-  @media (max-width: 640px) {
+  @media (max-width: 1024px) {
     gap: 0.375rem;
     margin-top: 0.75rem;
   }
@@ -151,7 +152,7 @@ export const Badge = styled.div<{ $color?: string }>`
   color: ${(props) => (props.$color ? props.$color : props.theme.colors.light[300])};
   font-weight: 500;
 
-  @media (max-width: 640px) {
+  @media (max-width: 1024px) {
     padding: 0.1875rem 0.625rem;
     font-size: 0.6875rem;
     border-radius: 10px;

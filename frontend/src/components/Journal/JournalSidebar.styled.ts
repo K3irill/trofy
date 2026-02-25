@@ -20,15 +20,6 @@ export const SidebarContainer = styled.div`
     width: 100%;
     padding: 1rem;
     border-radius: 12px;
-  }
-
-  @media (max-width: 640px) {
-    padding: 0;
-    border-radius: 0;
-    width: 100%;
-    background: transparent;
-    border: none;
-    position: static;
 
     .desktop-view {
       display: none;
@@ -40,6 +31,15 @@ export const SidebarContainer = styled.div`
       gap: 0.75rem;
       width: 100%;
     }
+  }
+
+  @media (max-width: 640px) {
+    padding: 0;
+    border-radius: 0;
+    width: 100%;
+    background: transparent;
+    border: none;
+    position: static;
   }
 `
 
@@ -172,12 +172,7 @@ export const AddButton = styled.button<{ $small?: boolean }>`
     transform: scale(1.1);
   }
 
-  @media (max-width: 640px) {
-    padding: ${(props) => (props.$small ? '0.25rem' : '0.375rem')};
-    font-size: ${(props) => (props.$small ? '0.75rem' : '0.875rem')};
-    border-radius: 20px;
-    flex-shrink: 0;
-
+  @media (max-width: 1024px) {
     &.desktop-add-btn {
       display: none;
     }
@@ -189,7 +184,16 @@ export const AddButton = styled.button<{ $small?: boolean }>`
       border: 1px solid ${(props) => props.theme.colors.primary}80;
       width: 32px;
       height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
+  }
+
+  @media (max-width: 640px) {
+    padding: ${(props) => (props.$small ? '0.25rem' : '0.375rem')};
+    font-size: ${(props) => (props.$small ? '0.75rem' : '0.875rem')};
+    border-radius: 20px;
+    flex-shrink: 0;
   }
 `
 
@@ -202,7 +206,7 @@ export const AddForm = styled.div`
   border-radius: 8px;
   margin-top: 0.5rem;
 
-  @media (max-width: 640px) {
+  @media (max-width: 1024px) {
     position: fixed;
     top: 50%;
     left: 50%;

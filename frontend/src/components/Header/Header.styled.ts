@@ -264,39 +264,10 @@ export const NotificationBadge = styled.div`
   z-index: 1;
 `
 
+
+
 export const CreateButton = styled(motion.button)`
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
-  border: 1px solid ${(props) => `${props.theme.colors.primary}4d`};
-  border-radius: 12px;
-  color: ${(props) => props.theme.colors.dark.bg};
-  font-weight: 700;
-  font-size: 0.875rem;
-  cursor: pointer;
-  box-shadow: ${(props) => props.theme.shadows.glow.primary};
-  transition: all 0.3s ease;
-  white-space: nowrap;
-
-  svg {
-    font-size: 1.125rem;
-    flex-shrink: 0;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: ${(props) => props.theme.shadows.glow.primary};
-  }
-
-  @media (max-width: 1024px) {
-    display: none;
-  }
-`
-
-export const MobileCreateButton = styled(motion.button)`
-  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -331,9 +302,6 @@ export const MobileCreateButton = styled(motion.button)`
     }
   }
 
-  @media (max-width: 1024px) {
-    display: flex;
-  }
 
   @media (max-width: 640px) {
     padding: 0.375rem;

@@ -197,17 +197,17 @@ export const FiltersRow = styled.div`
 export const FilterButton = styled.button<{ $active?: boolean }>`
 	padding: 0.625rem 1rem;
 	background: ${props =>
-		props.$active
-			? `${props.theme.colors.primary}33`
-			: `linear-gradient(145deg, ${props.theme.colors.dark[700]}e6 0%, ${props.theme.colors.dark[800]}f2 100%)`};
+    props.$active
+      ? `${props.theme.colors.primary}33`
+      : `linear-gradient(145deg, ${props.theme.colors.dark[700]}e6 0%, ${props.theme.colors.dark[800]}f2 100%)`};
 	border: 2px solid
 		${props =>
-			props.$active
-				? props.theme.colors.primary + '80'
-				: props.theme.colors.dark[600] + '80'};
+    props.$active
+      ? props.theme.colors.primary + '80'
+      : props.theme.colors.dark[600] + '80'};
 	border-radius: 8px;
 	color: ${props =>
-		props.$active ? props.theme.colors.primary : props.theme.colors.light[300]};
+    props.$active ? props.theme.colors.primary : props.theme.colors.light[300]};
 	font-size: 0.875rem;
 	font-weight: 600;
 	cursor: pointer;
@@ -236,12 +236,12 @@ export const FilterButton = styled.button<{ $active?: boolean }>`
 `
 
 export const EntriesList = styled.div`
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
 	gap: 1rem;
 
 	@media (max-width: 640px) {
-		gap: 0.75rem;
+    grid-template-columns: 1fr;
 	}
 `
 

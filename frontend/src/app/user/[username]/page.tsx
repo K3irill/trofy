@@ -8,8 +8,6 @@ import { useGetUserByUsernameQuery, useGetUserStatsByUsernameQuery } from '@/sto
 import { Profile } from '@/components/Profile'
 import { ShowcaseAside } from '@/components/ShowcaseAside'
 import { RecentTrophiesSection } from '@/components/RecentTrophiesSection'
-import { InviteFriendSection } from '@/components/InviteFriendSection'
-import { DailyMissionSection } from '@/components/DailyMissionSection'
 import Container from '@/components/Container/Container'
 import {
   Content,

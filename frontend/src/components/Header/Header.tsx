@@ -38,7 +38,6 @@ import {
   MobileMenuActions,
   MobileMenuActionButton,
   MobileMenuActionButtonWrapper,
-  MobileCreateButton,
   MobileMenuDivider,
   MobileMenuLogoutButton,
   MobileMenuNavLink,
@@ -151,13 +150,9 @@ export const Header = () => {
           <HeaderRight>
             {isAuthenticated && (
               <>
-                <MobileCreateButton onClick={() => setIsQuickNoteOpen(true)} title="Быстрая запись в дневник (Ctrl+K)">
+                <CreateButton onClick={() => setIsQuickNoteOpen(true)} title="Быстрая запись в дневник">
                   <IoCreateOutline />
                   <span>Заметка</span>
-                </MobileCreateButton>
-                <CreateButton onClick={() => setIsQuickNoteOpen(true)} title="Быстрая запись в дневник (Ctrl+K)">
-                  <IoCreateOutline />
-                  Создать Заметку
                 </CreateButton>
               </>
             )}

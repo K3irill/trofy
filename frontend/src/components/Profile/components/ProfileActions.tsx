@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { IoTrophy, IoList, IoDiamond, IoDocumentText, } from 'react-icons/io5'
 import {
   QuickActionsSection,
@@ -13,7 +12,7 @@ import {
 interface ProfileActionsProps {
   isAuthenticated: boolean
   username?: string
-  isOwnProfile?: boolean
+  isOwnProfile?: boolean | null
 }
 
 export function ProfileActions({ isAuthenticated, username, isOwnProfile = false }: ProfileActionsProps) {

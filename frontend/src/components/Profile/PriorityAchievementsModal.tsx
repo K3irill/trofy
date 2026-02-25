@@ -166,7 +166,6 @@ const AchievementIcon = styled.div<{ rarity: string }>`
     return colors[props.rarity] || props.theme.colors.rarity.base
   }};
   border-radius: 12px;
-  opacity: 0.2;
 `
 
 const AchievementInfo = styled.div`
