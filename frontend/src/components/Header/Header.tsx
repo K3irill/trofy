@@ -133,12 +133,12 @@ export const Header = () => {
                   Дневник
                 </NavLink>
               )}
-              <NavLink
+              {/* <NavLink
                 href="/"
                 $active={pathname === '/' || pathname === '/'}
               >
                 Лента
-              </NavLink>
+              </NavLink> */}
               {/* <NavLink
                 href="/communities"
                 $active={pathname === '/communities'}
@@ -366,13 +366,7 @@ export const Header = () => {
                 Мои достижения
               </MobileMenuNavLink>
             )}
-            <MobileMenuNavLink
-              href="/users"
-              $active={pathname === '/users' || pathname?.startsWith('/users/')}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Люди
-            </MobileMenuNavLink>
+          
             {isAuthenticated && (
               <MobileMenuNavLink
                 href="/journal"
@@ -382,13 +376,13 @@ export const Header = () => {
                 Дневник
               </MobileMenuNavLink>
             )}
-            <MobileMenuNavLink
+            {/* <MobileMenuNavLink
               href="/"
               $active={pathname === '/' || pathname === '/'}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Лента
-            </MobileMenuNavLink>
+            </MobileMenuNavLink> */}
             <MobileMenuNavLink
               href="/users"
               $active={pathname === '/users'}

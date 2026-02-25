@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { motion } from 'framer-motion'
-import { IoGridOutline, IoListOutline } from 'react-icons/io5'
+import { IoAlbumsOutline , IoGridOutline, IoListOutline } from 'react-icons/io5'
 
 export type AchievementViewMode = 'grid3' | 'grid2' | 'list'
 
@@ -86,7 +86,7 @@ export const ViewModeSelector = ({
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
+      setIsMobile(window.innerWidth <= 767)
     }
 
     checkMobile()
@@ -103,7 +103,7 @@ export const ViewModeSelector = ({
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        {isMobile ? '2' : '3'}
+        {isMobile ? <IoGridOutline /> : '3'}
       </SelectorButton>
       <SelectorButton
         active={mode === 'grid2'}
@@ -111,7 +111,7 @@ export const ViewModeSelector = ({
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        {isMobile ? <IoGridOutline /> : '2'}
+        {isMobile ? <IoAlbumsOutline /> : '2'}
       </SelectorButton>
       <SelectorButton
         active={mode === 'list'}

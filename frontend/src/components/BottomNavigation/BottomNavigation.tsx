@@ -19,9 +19,9 @@ export const BottomNavigation = () => {
   const profileHref = isAuthenticated && user ? `/user/${user.username}` : '/auth/login'
 
   const navItems = [
-    { name: 'Лента', href: '/', icon: HiNewspaper },
-    { name: 'Достижения', href: '/categories', icon: GiAchievement },
+    // { name: 'Лента', href: '/', icon: HiNewspaper },
     { name: 'Дневник', href: '/journal', icon: HiBookmark },
+    { name: 'Достижения', href: '/categories', icon: GiAchievement },
     { name: 'Профиль', href: profileHref, icon: HiSparkles },
   ]
 

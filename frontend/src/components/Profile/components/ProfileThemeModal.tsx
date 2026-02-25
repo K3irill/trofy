@@ -299,62 +299,63 @@ const IconCheck = styled.div<{ $isSelected: boolean }>`
 const themes: Array<{ value: ProfileThemeType; gradient: string; name: string }> = [
   {
     value: 'midnight',
-    gradient: 'linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
+    gradient: 'linear-gradient(145deg, #0f172ab3 0%, #1e293bb3 50%, #334155b3 100%)',
     name: 'Полночь',
   },
   {
     value: 'deepBlue',
-    gradient: 'linear-gradient(145deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%)',
+    gradient: 'linear-gradient(145deg, #1e3a8ab3 0%, #3b82f6b3 50%, #60a5fab3 100%)',
     name: 'Глубокий синий',
   },
   {
     value: 'velvetPurple',
-    gradient: 'linear-gradient(145deg, #4c1d95 0%, #7c3aed 50%, #a78bfa 100%)',
+    gradient: 'linear-gradient(145deg, #4c1d95b3 0%, #7c3aedb3 50%, #a78bfab3 100%)',
     name: 'Бархатный фиолет',
   },
   {
     value: 'forest',
-    gradient: 'linear-gradient(145deg, #064e3b 0%, #059669 50%, #34d399 100%)',
+    gradient: 'linear-gradient(145deg, #064e3bb3 0%, #059669b3 50%, #34d399b3 100%)',
     name: 'Лес',
   },
   {
     value: 'cosmic',
-    gradient: 'linear-gradient(145deg, #1e1b4b 0%, #3730a3 50%, #818cf8 100%)',
+    gradient: 'linear-gradient(145deg, #1e1b4bb3 0%, #3730a3b3 50%, #818cf8b3 100%)',
     name: 'Космос',
   },
   {
     value: 'sunset',
-    gradient: 'linear-gradient(145deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%)',
+    gradient: 'linear-gradient(145deg, #7c2d12b3 0%, #ea580cb3 50%, #fb923cb3 100%)',
     name: 'Закат',
   },
   {
     value: 'nebula',
-    gradient: 'linear-gradient(145deg, #500724 0%, #be185d 50%, #f472b6 100%)',
+    gradient: 'linear-gradient(145deg, #500724b3 0%, #be185db3 50%, #f472b6b3 100%)',
     name: 'Туманность',
   },
   {
     value: 'aurora',
-    gradient: 'linear-gradient(145deg, #064e3b 0%, #0d9488 50%, #22d3ee 100%)',
+    gradient: 'linear-gradient(145deg, #064e3bb3 0%, #0d9488b3 50%, #22d3eeb3 100%)',
     name: 'Северное сияние',
   },
   {
     value: 'gold',
-    gradient: 'linear-gradient(145deg, #78350f 0%, #d97706 50%, #fbbf24 100%)',
+    gradient: 'linear-gradient(145deg, #78350fb3 0%, #d97706b3 50%, #fbbf24b3 100%)',
     name: 'Золото',
   },
   {
     value: 'platinum',
-    gradient: 'linear-gradient(145deg, #374151 0%, #9ca3af 50%, #d1d5db 100%)',
+    gradient: 'linear-gradient(145deg, #374151b3 0%, #9ca3afb3 50%, #d1d5dbb3 100%)',
     name: 'Платина',
   },
   {
     value: 'dragonScale',
-    gradient: 'linear-gradient(145deg, #064e3b 0%, #0891b2 50%, #7dd3fc 100%)',
+    gradient: 'linear-gradient(145deg, #064e3bb3 0%, #0891b2b3 50%, #7dd3fcb3 100%)',
     name: 'Чешуя дракона',
   },
   {
     value: 'frostedGlass',
-    gradient: 'linear-gradient(145deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%)',
+    gradient:
+      'linear-gradient(145deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%)',
     name: 'Матовое стекло',
   },
 ]

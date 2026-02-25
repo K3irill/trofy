@@ -411,13 +411,16 @@ export const AchievementGrid = styled.div<{ mode?: 'grid6' | 'grid3' | 'grid2' |
     } else if (props.mode === 'grid3') {
       return `
         grid-template-columns: repeat(3, 1fr);
+
         @media (max-width: 1200px) {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        @media (max-width: 600px) {
-          grid-template-columns: 1fr;
           gap: 1rem;
         }
+
+        @media (max-width: 767px) {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.5rem;
+        }
+        
       `
     } else if (props.mode === 'grid2') {
       return `

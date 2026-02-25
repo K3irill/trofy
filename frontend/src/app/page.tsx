@@ -58,56 +58,75 @@ const AsideSection = styled.aside`
 `
 
 const FeedHeader = styled(motion.div)`
-  background: ${(props) => props.theme.colors.dark.neomorphDark};
-  border: 1px solid ${(props) => props.theme.colors.dark.neomorphLight};
-  border-radius: 16px;
-  padding: 1.5rem;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.dark.neomorphDark} 0%, ${(props) => props.theme.colors.dark[800]} 100%);
+  border: 2px solid ${(props) => props.theme.colors.primary}40;
+  border-radius: 20px;
+  padding: 2.5rem;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, ${(props) => props.theme.colors.primary}, ${(props) => props.theme.colors.primary}80, ${(props) => props.theme.colors.primary});
+    opacity: 0.6;
+  }
 
   @media (max-width: 1024px) {
-    padding: 1.25rem;
-    margin-bottom: 0;
-    border-radius: 12px;
+    padding: 2rem;
+    border-radius: 16px;
     width: 100%;
   }
 
   @media (max-width: 640px) {
-    padding: 0.875rem;
-    border-radius: 10px;
+    padding: 1.5rem;
+    border-radius: 12px;
     width: 100%;
   }
 `
 
 const FeedTitle = styled.h1`
   color: ${(props) => props.theme.colors.light[100]};
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0 0 0.5rem 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.light[100]} 0%, ${(props) => props.theme.colors.primary} 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 
   @media (max-width: 1024px) {
-    font-size: 1.5rem;
+    font-size: 1.875rem;
+    gap: 0.75rem;
   }
 
   @media (max-width: 640px) {
-    font-size: 1.125rem;
-    gap: 0.375rem;
+    font-size: 1.5rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
-    margin-bottom: 0.375rem;
+    margin-bottom: 0.75rem;
   }
 `
 
 const FeedSubtitle = styled.p`
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.125rem;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.7;
+  max-width: 800px;
 
   @media (max-width: 640px) {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
   }
 `
 
@@ -510,21 +529,21 @@ export default function FeedPage() {
   const feedItems = [
     {
       icon: IoPeople,
-      title: 'Сообщество растет!',
+      title: 'С чего начать',
       description:
-        'На этой неделе к нам присоединилось более 100 новых пользователей. Добро пожаловать в Trofy!',
+        'Заполните профиль, выберите интересующие категории и поставьте первые цели — так вы получите персональные рекомендации и более точную статистику.',
     },
     {
       icon: IoTime,
-      title: 'Новые достижения',
+      title: 'Следите за прогрессом',
       description:
-        'Добавлены новые категории достижений. Исследуйте новые возможности и получайте награды!',
+        'Открывайте достижения, отслеживайте прогресс по категориям и возвращайтесь каждый день, чтобы двигаться к своим целям маленькими шагами.',
     },
     {
       icon: IoTrophy,
-      title: 'Топ достижения недели',
+      title: 'Откройте для себя сообщество',
       description:
-        'Посмотрите самые впечатляющие достижения этой недели. Вдохновляйтесь и достигайте большего!',
+        'Смотрите профили других пользователей, вдохновляйтесь их достижениями и находите новые идеи для собственных целей.',
     },
   ]
 
@@ -584,9 +603,23 @@ export default function FeedPage() {
           >
             <FeedTitle>
               <IoFlame />
-              Добро пожаловать в Trofy
+              {isAuthenticated && user ? `Привет, ${user.username}! 👋` : 'Добро пожаловать в Trofy! 🎉'}
             </FeedTitle>
-            <FeedSubtitle>Отслеживайте свои достижения, соревнуйтесь с друзьями и достигайте новых высот!</FeedSubtitle>
+            <FeedSubtitle>
+              {isAuthenticated ? (
+                <>
+                  Trofy — это платформа для отслеживания ваших достижений и прогресса. 
+                  Выполняйте задания, получайте награды и следите за своим развитием. 
+                  Исследуйте категории, ставьте цели и делитесь успехами с сообществом!
+                </>
+              ) : (
+                <>
+                  Trofy — это платформа для отслеживания достижений и личного прогресса. 
+                  Создавайте цели, выполняйте задания, получайте награды и соревнуйтесь с друзьями. 
+                  Присоединяйтесь к сообществу и начните свой путь к новым высотам уже сегодня!
+                </>
+              )}
+            </FeedSubtitle>
           </FeedHeader>
 
 
@@ -615,7 +648,7 @@ export default function FeedPage() {
 
           <SectionTitle>
             <IoTime />
-            Новости и обновления
+            Что нового и с чего начать
           </SectionTitle>
 
           <FeedContent>
