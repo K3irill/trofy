@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 
 
@@ -104,13 +105,14 @@ export const CategoryIcon = styled.div`
 `
 
 export const CategoryName = styled.h3`
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 
   @media (max-width: 768px) {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
   }
 `
 
@@ -286,14 +288,15 @@ export const CategoryInfo = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
+    flex-direction: column;
     padding: 1.5rem;
     gap: 1rem;
   }
 `
 
 export const CategoryIconLarge = styled.div`
-  width: 120px;
-  height: 120px;
+  width: 220px;
+  height: 220px;
   border-radius: 20px;
   background: linear-gradient(135deg, ${(props) => props.theme.colors.dark[600]} 0%, ${(props) => props.theme.colors.dark[700]} 100%);
   display: flex;
@@ -308,9 +311,8 @@ export const CategoryIconLarge = styled.div`
     object-fit: contain;
   }
 
-  @media (max-width: 768px) {
-    width: 96px;
-    height: 96px;
+  @media (max-width: 767px) {
+
     font-size: 3rem;
   }
 `
@@ -599,4 +601,24 @@ export const EmptyIcon = styled.div`
 export const StatLabelText = styled.div`
   color: ${(props) => props.theme.colors.light[300]};
   font-size: 0.875rem;
+`
+
+export const CreatorInfo = styled.div`
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+`
+
+export const CreatorLink = styled(Link)`
+  color: rgba(0, 212, 255, 0.9);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: rgba(0, 212, 255, 1);
+  }
 `

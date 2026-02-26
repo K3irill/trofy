@@ -2,7 +2,6 @@ import styled from 'styled-components'
 import { motion } from 'framer-motion'
 
 export const SettingsButton = styled.button<{ $isOpen: boolean }>`
-  position: absolute;
   top: 1.5rem;
   right: 1.5rem;
   width: 44px;
@@ -81,11 +80,11 @@ export const MenuItem = styled.div<{ $active?: boolean; $danger?: boolean; $warn
 
   &:hover {
     background: ${(props) => {
-      if (props.$danger) return `${props.theme.colors.danger}20`
-      if (props.$warning) return `${props.theme.colors.danger}20`
-      if (props.$active) return `${props.theme.colors.primary}20`
-      return `${props.theme.colors.primary}15`
-    }};
+    if (props.$danger) return `${props.theme.colors.danger}20`
+    if (props.$warning) return `${props.theme.colors.danger}20`
+    if (props.$active) return `${props.theme.colors.primary}20`
+    return `${props.theme.colors.primary}15`
+  }};
     transform: translateX(4px);
   }
 

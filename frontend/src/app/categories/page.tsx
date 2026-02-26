@@ -40,6 +40,7 @@ import { Tumbler } from './Tumbler'
 import { FilterTumbler } from './FilterTumbler'
 import { ViewModeSelector, type AchievementViewMode } from './ViewModeSelector'
 import { SearchAndFilters } from './SearchAndFilters'
+import { CategorySearchAndFilters } from './CategorySearchAndFilters'
 import { AchievementCard } from './AchievementCard'
 import { AchievementGrid } from './AchievementGrid.styled'
 import { type Achievement } from './api'
@@ -62,6 +63,10 @@ const transformAchievement = (apiAchievement: ApiAchievementType): Achievement =
     completionDate: apiAchievement.unlocked_at || undefined,
     progress: apiAchievement.progress,
     completion_date: apiAchievement.completion_date,
+    is_custom: apiAchievement.is_custom,
+    creator_id: apiAchievement.creator_id,
+    creator_username: apiAchievement.creator_username,
+    is_public: apiAchievement.is_public,
   }
 }
 
@@ -78,8 +83,11 @@ export default function CategoriesPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
+  const [privacyFilter, setPrivacyFilter] = useState('')
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
   const [isCreateAchievementModalOpen, setIsCreateAchievementModalOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<{ id: string; name: string; icon_url: string | null; is_custom: boolean; creator_id?: string; is_public?: boolean; allowed_user_ids?: string[] } | null>(null)
+  const [editingAchievement, setEditingAchievement] = useState<Partial<ApiAchievementType> | null>(null)
 
   // Debounce для поискового запроса
   useEffect(() => {
@@ -103,6 +111,7 @@ export default function CategoriesPage() {
     data: categoriesWithStatsData,
     isLoading: categoriesWithStatsLoading,
     error: categoriesWithStatsError,
+    refetch: refetchCategoriesWithStats,
   } = useGetCategoriesWithStatsQuery(undefined, {
     skip: mode === 'achievements' || !isAuthenticated,
   })
@@ -119,6 +128,7 @@ export default function CategoriesPage() {
       unlocked: number
       is_custom: boolean
       creator_id?: string
+      is_public?: boolean
       achievements: Array<{
         id: string
         icon: string
@@ -140,6 +150,8 @@ export default function CategoriesPage() {
           unlocked: cat.unlocked,
           is_custom: cat.is_custom,
           creator_id: cat.creator_id,
+          creator_username: cat.creator_username,
+          is_public: cat.is_public,
           achievements: cat.achievements_preview.map((ach) => ({
             id: ach.id,
             icon: ach.icon_url || '',
@@ -160,29 +172,70 @@ export default function CategoriesPage() {
           unlocked: 0,
           is_custom: cat.is_custom,
           creator_id: cat.creator_id,
+          creator_username: cat.creator_username,
+          is_public: cat.is_public,
           achievements: [],
         }))
       }
     }
 
     // Фильтрация по filterMode
+    let filtered = allCategories
     if (filterMode === 'my' && currentUser) {
       // Только мои пользовательские категории
-      return allCategories.filter((cat) => {
+      filtered = filtered.filter((cat) => {
         const isMyCategory = cat.is_custom && cat.creator_id === currentUser.id
         return isMyCategory
       })
     } else if (filterMode === 'global') {
       // Только глобальные категории
-      return allCategories.filter((cat) => !cat.is_custom)
+      filtered = filtered.filter((cat) => !cat.is_custom)
     } else if (filterMode === 'custom') {
       // Все пользовательские категории (не приватные - фильтрация уже на бэкенде)
-      return allCategories.filter((cat) => cat.is_custom)
+      filtered = filtered.filter((cat) => cat.is_custom)
     }
 
-    // 'all' - все категории
-    return allCategories
-  }, [categoriesData, categoriesWithStatsData, isAuthenticated, mode, filterMode, currentUser])
+    // Фильтрация по поисковому запросу
+    if (debouncedSearchQuery) {
+      const query = debouncedSearchQuery.toLowerCase()
+      filtered = filtered.filter((cat) =>
+        cat.name.toLowerCase().includes(query)
+      )
+    }
+
+    // Фильтрация по приватности
+    if (privacyFilter === 'public') {
+      filtered = filtered.filter((cat) => cat.is_public !== false)
+    } else if (privacyFilter === 'private') {
+      filtered = filtered.filter((cat) => cat.is_public === false)
+    }
+
+    // Сортировка категорий
+    const sorted = [...filtered]
+    if (sortBy === 'name-asc') {
+      sorted.sort((a, b) => a.name.localeCompare(b.name, 'ru'))
+    } else if (sortBy === 'name-desc') {
+      sorted.sort((a, b) => b.name.localeCompare(a.name, 'ru'))
+    } else if (sortBy === 'total-asc') {
+      sorted.sort((a, b) => a.total - b.total)
+    } else if (sortBy === 'total-desc') {
+      sorted.sort((a, b) => b.total - a.total)
+    } else if (sortBy === 'progress-asc') {
+      sorted.sort((a, b) => {
+        const progressA = a.total > 0 ? (a.unlocked / a.total) * 100 : 0
+        const progressB = b.total > 0 ? (b.unlocked / b.total) * 100 : 0
+        return progressA - progressB
+      })
+    } else if (sortBy === 'progress-desc') {
+      sorted.sort((a, b) => {
+        const progressA = a.total > 0 ? (a.unlocked / a.total) * 100 : 0
+        const progressB = b.total > 0 ? (b.unlocked / b.total) * 100 : 0
+        return progressB - progressA
+      })
+    }
+
+    return sorted
+  }, [categoriesData, categoriesWithStatsData, isAuthenticated, mode, filterMode, currentUser, debouncedSearchQuery, sortBy, privacyFilter])
 
   // Параметры для запроса достижений
   const achievementsParams = useMemo(() => {
@@ -225,6 +278,7 @@ export default function CategoriesPage() {
     data: achievementsData,
     isLoading: achievementsLoading,
     error: achievementsError,
+    refetch: refetchAchievements,
   } = useGetAchievementsQuery(mode === 'achievements' ? achievementsParams : undefined, {
     skip: mode === 'categories',
   })
@@ -434,6 +488,14 @@ export default function CategoriesPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
+              <CategorySearchAndFilters
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                privacyFilter={privacyFilter}
+                onPrivacyFilterChange={setPrivacyFilter}
+              />
               {showLoader ? (
                 <BlockLoader text="Загрузка категорий..." />
               ) : hasError ? (
@@ -466,6 +528,23 @@ export default function CategoriesPage() {
                       category={category}
                       onClick={() => router.push(`/categories/${category.id}`)}
                       isAuthenticated={isAuthenticated}
+                      currentUserId={currentUser?.id}
+                      onEdit={(cat) => {
+                        // Преобразуем CategoryItem в формат Category для модалки
+                        // Минимальные данные, полные данные загрузятся через useGetCategoryByIdQuery
+                        const categoryForEdit = {
+                          id: cat.id,
+                          name: cat.name,
+                          icon_url: cat.icon || null,
+                          is_custom: cat.is_custom || false,
+                          creator_id: cat.creator_id,
+          creator_username: cat.creator_username,
+                          achievements_count: cat.total,
+                          created_at: new Date().toISOString(),
+                          updated_at: new Date().toISOString(),
+                        }
+                        setEditingCategory(categoryForEdit)
+                      }}
                     />
                   ))}
                 </Grid>
@@ -606,6 +685,31 @@ export default function CategoriesPage() {
                       onClick={() =>
                         router.push(`/categories/${achievement.categoryId}/${achievement.id}`)
                       }
+                      currentUserId={currentUser?.id}
+                      onEdit={(ach) => {
+                        // Преобразуем Achievement из ./api в формат для модалки
+                        const rarityMap: Record<string, 'common' | 'rare' | 'epic' | 'legendary'> = {
+                          'common': 'common',
+                          'rare': 'rare',
+                          'epic': 'epic',
+                          'legendary': 'legendary',
+                        }
+                        const achievementForEdit: Partial<ApiAchievementType> = {
+                          id: ach.id,
+                          title: ach.name,
+                          description: ach.description || '',
+                          icon_url: ach.icon || null,
+                          rarity: (ach.rarity && rarityMap[ach.rarity]) || 'common',
+                          category: {
+                            id: ach.categoryId,
+                            name: ach.categoryName,
+                            icon_url: null,
+                          },
+                          xp_reward: 100, // Будет загружено из API
+                          is_public: true, // Будет загружено из API
+                        }
+                        setEditingAchievement(achievementForEdit)
+                      }}
                     />
                   ))}
                 </AchievementGrid>
@@ -621,16 +725,48 @@ export default function CategoriesPage() {
             isOpen={isCreateCategoryModalOpen}
             onClose={() => setIsCreateCategoryModalOpen(false)}
             onSuccess={() => {
-              // Категории обновятся автоматически через RTK Query
+              // Явно обновляем данные категорий
+              if (isAuthenticated && mode === 'categories') {
+                refetchCategoriesWithStats()
+              }
             }}
           />
           <CreateAchievementModal
             isOpen={isCreateAchievementModalOpen}
             onClose={() => setIsCreateAchievementModalOpen(false)}
             onSuccess={() => {
-              // Достижения обновятся автоматически через RTK Query
+              // Явно обновляем данные достижений
+              if (mode === 'achievements') {
+                refetchAchievements()
+              }
             }}
           />
+          {editingCategory && (
+            <CreateCategoryModal
+              isOpen={!!editingCategory}
+              category={editingCategory}
+              onClose={() => setEditingCategory(null)}
+              onSuccess={() => {
+                setEditingCategory(null)
+                if (isAuthenticated && mode === 'categories') {
+                  refetchCategoriesWithStats()
+                }
+              }}
+            />
+          )}
+          {editingAchievement && (
+            <CreateAchievementModal
+              isOpen={!!editingAchievement}
+              achievement={editingAchievement}
+              onClose={() => setEditingAchievement(null)}
+              onSuccess={() => {
+                setEditingAchievement(null)
+                if (mode === 'achievements') {
+                  refetchAchievements()
+                }
+              }}
+            />
+          )}
         </>
       )}
     </>

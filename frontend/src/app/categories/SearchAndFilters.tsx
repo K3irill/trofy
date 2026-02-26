@@ -135,6 +135,9 @@ interface SearchAndFiltersProps {
   favoriteFilter?: string
   onFavoriteFilterChange?: (value: string) => void
   isOwnProfile?: boolean
+  privacyFilter?: string
+  onPrivacyFilterChange?: (value: string) => void
+  showPrivacyFilter?: boolean
 }
 
 export const SearchAndFilters = ({
@@ -153,6 +156,9 @@ export const SearchAndFilters = ({
   favoriteFilter = '',
   onFavoriteFilterChange,
   isOwnProfile = false,
+  privacyFilter = '',
+  onPrivacyFilterChange,
+  showPrivacyFilter = false,
 }: SearchAndFiltersProps) => {
   const { data: categoriesData = [] } = useGetCategoriesQuery()
 
@@ -197,6 +203,12 @@ export const SearchAndFilters = ({
     { value: 'favorite', label: 'Только избранные' },
   ]
 
+  const privacyOptions: ThemedSelectOption[] = [
+    { value: '', label: 'Все достижения' },
+    { value: 'public', label: 'Публичные' },
+    { value: 'private', label: 'Приватные' },
+  ]
+
   return (
     <SearchFiltersContainer>
       <SearchInputWrapper>
@@ -237,6 +249,17 @@ export const SearchAndFilters = ({
               options={favoriteOptions}
               value={favoriteOptions.find((opt) => opt.value === favoriteFilter)}
               onChange={(option) => onFavoriteFilterChange(option?.value || '')}
+              isClearable
+              placeholder="Все достижения"
+            />
+          </FilterSelectWrapper>
+        )}
+        {showPrivacyFilter && onPrivacyFilterChange && (
+          <FilterSelectWrapper>
+            <ThemedSelect
+              options={privacyOptions}
+              value={privacyOptions.find((opt) => opt.value === privacyFilter)}
+              onChange={(option) => onPrivacyFilterChange(option?.value || '')}
               isClearable
               placeholder="Все достижения"
             />

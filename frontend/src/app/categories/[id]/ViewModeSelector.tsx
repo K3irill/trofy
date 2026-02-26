@@ -31,13 +31,13 @@ export const ViewModeSelector = ({ mode, onChange }: ViewModeSelectorProps) => {
   if (isMobile) {
     return (
       <ViewModeSelectorWrapper>
-        <ModeButton active={mode === 'grid3'} onClick={() => onChange('grid3')}>
+        <ModeButton $active={mode === 'grid3'} onClick={() => onChange('grid3')}>
           <IoGridOutline />
         </ModeButton>
-        <ModeButton active={mode === 'grid2'} onClick={() => onChange('grid2')}>
+        <ModeButton $active={mode === 'grid2'} onClick={() => onChange('grid2')}>
           <IoAlbumsOutline />
         </ModeButton>
-        <ModeButton active={mode === 'list'} onClick={() => onChange('list')}>
+        <ModeButton $active={mode === 'list'} onClick={() => onChange('list')}>
           <IoListOutline />
         </ModeButton>
       </ViewModeSelectorWrapper>
@@ -48,13 +48,13 @@ export const ViewModeSelector = ({ mode, onChange }: ViewModeSelectorProps) => {
   if (isTablet) {
     return (
       <ViewModeSelectorWrapper>
-        <ModeButton active={mode === 'grid3'} onClick={() => onChange('grid3')}>
+        <ModeButton $active={mode === 'grid3'} onClick={() => onChange('grid3')}>
           3
         </ModeButton>
-        <ModeButton active={mode === 'grid2'} onClick={() => onChange('grid2')}>
+        <ModeButton $active={mode === 'grid2'} onClick={() => onChange('grid2')}>
           2
         </ModeButton>
-        <ModeButton active={mode === 'list'} onClick={() => onChange('list')}>
+        <ModeButton $active={mode === 'list'} onClick={() => onChange('list')}>
           <IoListOutline />
         </ModeButton>
       </ViewModeSelectorWrapper>
@@ -64,13 +64,13 @@ export const ViewModeSelector = ({ mode, onChange }: ViewModeSelectorProps) => {
   // На десктопе: 6, 3 и список
   return (
     <ViewModeSelectorWrapper>
-      <ModeButton active={mode === 'grid6'} onClick={() => onChange('grid6')}>
+      <ModeButton $active={mode === 'grid6'} onClick={() => onChange('grid6')}>
         6
       </ModeButton>
-      <ModeButton active={mode === 'grid3'} onClick={() => onChange('grid3')}>
+      <ModeButton $active={mode === 'grid3'} onClick={() => onChange('grid3')}>
         3
       </ModeButton>
-      <ModeButton active={mode === 'list'} onClick={() => onChange('list')}>
+      <ModeButton $active={mode === 'list'} onClick={() => onChange('list')}>
         <IoListOutline />
       </ModeButton>
     </ViewModeSelectorWrapper>

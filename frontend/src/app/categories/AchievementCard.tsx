@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import styled, { DefaultTheme } from 'styled-components'
-import { IoTimeOutline, IoCheckmarkCircle, IoHeart } from 'react-icons/io5'
+import { IoTimeOutline, IoCheckmarkCircle, IoHeart, IoPerson, IoGlobe, IoCreateOutline, IoPeople, IoLockClosed } from 'react-icons/io5'
 import { Achievement } from './api'
 import { renderIcon } from '@/lib/utils/iconUtils'
 
@@ -104,6 +105,7 @@ const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   width: 80px;
   height: 80px;
   border-radius: 16px;
+  overflow: visible;
   background: ${(props) => {
     if (props.$status === 'achieved') return `linear-gradient(135deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
     if (props.$status === 'in_progress') return `linear-gradient(135deg, #ffa50033 0%, #ff8c001a 100%)`
@@ -129,6 +131,8 @@ const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
     width: 100%;
     height: 100%;
     object-fit: contain;
+    border-radius: 14px;
+    overflow: hidden;
   }
 
   @media (max-width: 768px) {
@@ -136,6 +140,24 @@ const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
     height: 64px;
     font-size: 2rem;
     border-radius: 12px;
+
+    img {
+      border-radius: 10px;
+    }
+  }
+`
+
+const IconImageWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    border-radius: 10px;
   }
 `
 
@@ -197,8 +219,10 @@ const AchievementName = styled.h3`
   color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
   margin-bottom: 0.5rem;
+  word-break: break-all;
 
   @media (max-width: 768px) {
+    max-width: 80%;
     font-size: 1rem;
   }
 `
@@ -318,15 +342,99 @@ const IconWrapper = styled.div<{ $transform: string }>`
   transform: ${(props) => props.$transform};
   transform-style: preserve-3d;
   flex-shrink: 0;
+  position: relative;
+  overflow: visible;
 
   @media (max-width: 768px) {
     align-self: center;
   }
 `
 
-const FavoriteBadge = styled.div`
+const AchievementTypeBadge = styled.div<{ $isCustom: boolean }>`
   position: absolute;
   top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: ${(props) => props.$isCustom 
+    ? `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}33 100%)`
+    : `linear-gradient(135deg, ${props.theme.colors.dark[700]}e6 0%, ${props.theme.colors.dark[800]}f2 100%)`};
+  border: 1px solid ${(props) => props.$isCustom 
+    ? `${props.theme.colors.primary}80`
+    : `${props.theme.colors.dark[600]}80`};
+  border-radius: 8px;
+  color: ${(props) => props.$isCustom 
+    ? props.theme.colors.primary
+    : props.theme.colors.light[300]};
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  svg {
+    font-size: 0.875rem;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6875rem;
+    gap: 0.25rem;
+
+    span{
+      display: none;
+    }
+
+    svg {
+      font-size: 0.75rem;
+    }
+  }
+`
+
+const AchievementEditButton = styled(motion.button)`
+  position: absolute;
+  top: 3.25rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${(props) => `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.secondary}33 100%)`};
+  border: 1px solid ${(props) => `${props.theme.colors.primary}80`};
+  border-radius: 8px;
+  color: ${(props) => props.theme.colors.primary};
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+
+  svg {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    background: ${(props) => `linear-gradient(135deg, ${props.theme.colors.primary}4d 0%, ${props.theme.colors.secondary}4d 100%)`};
+    border-color: ${(props) => props.theme.colors.primary};
+  }
+
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+
+    svg {
+      font-size: 0.875rem;
+    }
+  }
+`
+
+const FavoriteBadge = styled.div`
+  position: absolute;
+  top: 3.5rem;
   right: 1rem;
   width: 32px;
   height: 32px;
@@ -362,6 +470,25 @@ const FavoriteBadge = styled.div`
   }
 `
 
+const CreatorInfo = styled.div`
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+`
+
+const CreatorLink = styled(Link)`
+  color: rgba(0, 212, 255, 0.9);
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: rgba(0, 212, 255, 1);
+  }
+`
+
 const getRarityLabel = (rarity?: string) => {
   switch (rarity) {
     case 'common':
@@ -380,9 +507,11 @@ const getRarityLabel = (rarity?: string) => {
 interface AchievementCardProps {
   achievement: Achievement
   onClick?: () => void
+  currentUserId?: string
+  onEdit?: (achievement: Achievement) => void
 }
 
-export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) => {
+export const AchievementCard = ({ achievement, onClick, currentUserId, onEdit }: AchievementCardProps) => {
   const [iconTransform, setIconTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
 
   // Определяем статус достижения
@@ -395,6 +524,13 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
     : isInProgress
       ? 'in_progress'
       : 'not_achieved'
+  
+  const isCustom = achievement.is_custom || false
+  const isOwner = currentUserId && achievement.creator_id === currentUserId
+  // "Мои" - только если это кастомное и создано текущим пользователем
+  // "Пользовательские" - если это кастомное, но создано другим пользователем
+  const isMyCustom = isCustom && isOwner
+  const isOtherCustom = isCustom && !isOwner
 
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -450,12 +586,58 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
+      {(isMyCustom || isOtherCustom || !isCustom) && (
+        <AchievementTypeBadge $isCustom={isMyCustom || isOtherCustom}>
+          {isMyCustom ? <IoPerson /> : isOtherCustom ? <IoPeople /> : <IoGlobe />}
+          {isMyCustom && <span>Моя</span>}
+          {isOtherCustom && <span>Пользовательская</span>}
+          {!isCustom && <span>Глобальная</span>}
+        </AchievementTypeBadge>
+      )}
+      {isOwner && onEdit && (
+        <AchievementEditButton
+          onClick={(e) => {
+            e.stopPropagation()
+            onEdit(achievement)
+          }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <IoCreateOutline />
+        </AchievementEditButton>
+      )}
       {achievement.is_favorite && (
         <FavoriteBadge>
           <IoHeart />
         </FavoriteBadge>
       )}
+      {achievement.is_public === false && (
+        <AchievementTypeBadge $isCustom={false} style={{ 
+          top: achievement.is_favorite ? '5.5rem' : '3.5rem', 
+          right: '1rem', 
+          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%)', 
+          border: '1px solid rgba(239, 68, 68, 0.4)', 
+          color: '#ef4444',
+          pointerEvents: 'none',
+          userSelect: 'none',
+          opacity: 0.9
+        }}>
+          <IoLockClosed />
+          <span>Приватное</span>
+        </AchievementTypeBadge>
+      )}
       <AchievementName>{achievement.name}</AchievementName>
+      {achievement.creator_username && !isOwner && (
+        <CreatorInfo>
+          <span>Создатель:</span>
+          <CreatorLink 
+            href={`/user/${achievement.creator_username}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {achievement.creator_username}
+          </CreatorLink>
+        </CreatorInfo>
+      )}
       {achievement.description && (
         <AchievementDescription>{achievement.description}</AchievementDescription>
       )}
@@ -470,7 +652,9 @@ export const AchievementCard = ({ achievement, onClick }: AchievementCardProps) 
             onTouchMove={handleIconTouchMove}
             onTouchEnd={handleIconTouchEnd}
           >
-            {renderIcon(achievement.icon, 'trophy')}
+            <IconImageWrapper>
+              {renderIcon(achievement.icon, 'trophy')}
+            </IconImageWrapper>
             {isAchieved && (
               <StatusBadge $status="achieved">
                 <IoCheckmarkCircle />

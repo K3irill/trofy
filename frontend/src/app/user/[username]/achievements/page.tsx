@@ -22,6 +22,12 @@ import { AchievementCard } from '@/app/categories/AchievementCard'
 import { AchievementGrid } from '@/app/categories/AchievementGrid.styled'
 import { type Achievement } from '@/app/categories/api'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
+import { CreateCategoryModal } from '@/components/CreateCategoryModal/CreateCategoryModal'
+import { DeleteCategoryModal } from '@/components/DeleteCategoryModal/DeleteCategoryModal'
+import { CreateAchievementModal } from '@/components/CreateAchievementModal/CreateAchievementModal'
+import { DeleteAchievementModal } from '@/components/DeleteAchievementModal/DeleteAchievementModal'
+import { useGetMeQuery } from '@/store/api/userApi'
+import { useGetCategoryByIdQuery } from '@/store/api/achievementsApi'
 
 
 type ViewMode = 'categories' | 'achievements'
@@ -43,6 +49,11 @@ export default function UserAchievementsPage() {
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
   const [favoriteFilter, setFavoriteFilter] = useState('')
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null)
+  const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] = useState(false)
+  const [isDeleteAchievementModalOpen, setIsDeleteAchievementModalOpen] = useState(false)
+  const { data: currentUserData } = useGetMeQuery(undefined, { skip: !isAuthenticated })
 
   // Debounce для поискового запроса
   useEffect(() => {
@@ -256,6 +267,24 @@ export default function UserAchievementsPage() {
     router.push(`/user/${username}/achievements/${category.id}`)
   }
 
+  const handleCategoryEdit = (category: Category) => {
+    setEditingCategory(category)
+  }
+
+  const handleCategoryDelete = (category: Category) => {
+    setEditingCategory(category)
+    setIsDeleteCategoryModalOpen(true)
+  }
+
+  const handleAchievementEdit = (achievement: Achievement) => {
+    setEditingAchievement(achievement)
+  }
+
+  const handleAchievementDelete = (achievement: Achievement) => {
+    setEditingAchievement(achievement)
+    setIsDeleteAchievementModalOpen(true)
+  }
+
   const hasError = error !== undefined
   const showLoader = isLoading && (!achievements || achievements.length === 0)
   const hasData = viewMode === 'categories' 
@@ -329,6 +358,8 @@ export default function UserAchievementsPage() {
                     category={category}
                     onClick={() => handleCategoryClick(category)}
                     isAuthenticated={isAuthenticated}
+                    currentUserId={currentUserData?.id}
+                    onEdit={handleCategoryEdit}
                   />
                 ))}
               </Grid>
@@ -399,6 +430,8 @@ export default function UserAchievementsPage() {
                     key={achievement.id}
                     achievement={achievement}
                     onClick={() => handleAchievementClick(achievement)}
+                    currentUserId={currentUserData?.id}
+                    onEdit={handleAchievementEdit}
                   />
                 ))}
               </AchievementGrid>
@@ -406,6 +439,61 @@ export default function UserAchievementsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {isAuthenticated && currentUserData && (
+        <>
+          {editingCategory && (
+            <>
+              <CreateCategoryModal
+                isOpen={!!editingCategory && !isDeleteCategoryModalOpen}
+                category={editingCategory}
+                onClose={() => setEditingCategory(null)}
+                onSuccess={() => {
+                  setEditingCategory(null)
+                }}
+              />
+              <DeleteCategoryModal
+                isOpen={isDeleteCategoryModalOpen}
+                onClose={() => {
+                  setIsDeleteCategoryModalOpen(false)
+                  setEditingCategory(null)
+                }}
+                categoryName={editingCategory.name}
+                categoryId={editingCategory.id}
+                onSuccess={() => {
+                  setIsDeleteCategoryModalOpen(false)
+                  setEditingCategory(null)
+                }}
+              />
+            </>
+          )}
+          {editingAchievement && (
+            <>
+              <CreateAchievementModal
+                isOpen={!!editingAchievement && !isDeleteAchievementModalOpen}
+                achievement={editingAchievement}
+                onClose={() => setEditingAchievement(null)}
+                onSuccess={() => {
+                  setEditingAchievement(null)
+                }}
+              />
+              <DeleteAchievementModal
+                isOpen={isDeleteAchievementModalOpen}
+                onClose={() => {
+                  setIsDeleteAchievementModalOpen(false)
+                  setEditingAchievement(null)
+                }}
+                achievementName={editingAchievement.name}
+                achievementId={editingAchievement.id}
+                onSuccess={() => {
+                  setIsDeleteAchievementModalOpen(false)
+                  setEditingAchievement(null)
+                }}
+              />
+            </>
+          )}
+        </>
+      )}
     </Container>
   )
 }

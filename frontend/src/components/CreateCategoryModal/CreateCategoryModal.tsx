@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import styled from 'styled-components'
 import { IoClose, IoLockClosed, IoLockOpen, IoPersonAdd, IoPersonRemove, IoImageOutline, IoCloseCircle } from 'react-icons/io5'
-import { useCreateCustomCategoryMutation } from '@/store/api/achievementsApi'
+import { useCreateCustomCategoryMutation, useUpdateCategoryMutation, useGetCategoryByIdQuery, type Category } from '@/store/api/achievementsApi'
 import { useSearchUsersQuery } from '@/store/api/userApi'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
@@ -420,9 +420,12 @@ interface CreateCategoryModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess?: () => void
+  category?: Partial<Category> | null
 }
 
-export function CreateCategoryModal({ isOpen, onClose, onSuccess }: CreateCategoryModalProps) {
+export function CreateCategoryModal({ isOpen, onClose, onSuccess, category }: CreateCategoryModalProps) {
+  const isEditMode = !!category
+  
   const [name, setName] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -431,8 +434,45 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess }: CreateCatego
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
 
-  const [createCategory, { isLoading }] = useCreateCustomCategoryMutation()
+  const [createCategory, { isLoading: isCreating }] = useCreateCustomCategoryMutation()
+  const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation()
   const { showToast, ToastComponent } = useToast()
+  
+  // Загружаем полные данные категории при редактировании
+  const { data: categoryData } = useGetCategoryByIdQuery(category?.id || '', {
+    skip: !category?.id || !isOpen,
+  })
+  
+  const isLoading = isCreating || isUpdating
+
+  // Заполняем форму при редактировании
+  useEffect(() => {
+    if (isEditMode && categoryData) {
+      // Используем загруженные данные из API
+      setName(categoryData.name)
+      setIsPublic(categoryData.is_public ?? true)
+      setAllowedUserIds(categoryData.allowed_user_ids || [])
+      if (categoryData.icon_url) {
+        setImagePreview(categoryData.icon_url.startsWith('http') ? categoryData.icon_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${categoryData.icon_url}`)
+      }
+    } else if (category && !categoryData) {
+      // Если данные еще не загружены, используем переданные данные
+      setName(category.name)
+      setIsPublic(category.is_public ?? true)
+      setAllowedUserIds(category.allowed_user_ids || [])
+      if (category.icon_url) {
+        setImagePreview(category.icon_url.startsWith('http') ? category.icon_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${category.icon_url}`)
+      }
+    } else if (!isEditMode) {
+      // Сброс формы при создании
+      setName('')
+      setImageFile(null)
+      setImagePreview(null)
+      setIsPublic(true)
+      setAllowedUserIds([])
+      setUserSearchQuery('')
+    }
+  }, [category, categoryData, isEditMode, isOpen])
 
   const { data: searchResults } = useSearchUsersQuery(
     { query: debouncedSearchQuery, limit: 10 },
@@ -459,20 +499,39 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess }: CreateCatego
       return
     }
 
-    if (!imageFile) {
+    if (!isEditMode && !imageFile) {
       showToast('Загрузите изображение категории', 'error')
       return
     }
 
     try {
-      await createCategory({
-        name: name.trim(),
-        is_public: isPublic,
-        allowed_user_ids: isPublic ? undefined : allowedUserIds,
-        image: imageFile || undefined,
-      }).unwrap()
+      if (isEditMode && (category || categoryData)) {
+        const categoryId = category?.id || categoryData?.id
+        if (!categoryId) {
+          showToast('Ошибка: ID категории не найден', 'error')
+          return
+        }
+        
+        await updateCategory({
+          id: categoryId,
+          name: name.trim(),
+          is_public: isPublic,
+          allowed_user_ids: isPublic ? undefined : allowedUserIds,
+          image: imageFile || undefined,
+        }).unwrap()
 
-      showToast('Категория успешно создана', 'success')
+        showToast('Категория успешно обновлена', 'success')
+      } else {
+        await createCategory({
+          name: name.trim(),
+          is_public: isPublic,
+          allowed_user_ids: isPublic ? undefined : allowedUserIds,
+          image: imageFile || undefined,
+        }).unwrap()
+
+        showToast('Категория успешно создана', 'success')
+      }
+      
       setName('')
       setImageFile(null)
       setImagePreview(null)
@@ -482,7 +541,7 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess }: CreateCatego
       onSuccess?.()
       onClose()
     } catch (error: any) {
-      showToast(error?.data?.message || 'Ошибка при создании категории', 'error')
+      showToast(error?.data?.message || (isEditMode ? 'Ошибка при обновлении категории' : 'Ошибка при создании категории'), 'error')
     }
   }
 
@@ -508,17 +567,15 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess }: CreateCatego
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onClose}
           >
             <ModalContainer
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
             >
               <ModalHeader>
-                <ModalTitle>Создать категорию</ModalTitle>
+                <ModalTitle>{isEditMode ? 'Редактировать категорию' : 'Создать категорию'}</ModalTitle>
                 <CloseButton onClick={onClose}>
                   <IoClose />
                 </CloseButton>
@@ -689,10 +746,21 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess }: CreateCatego
                     type="submit"
                     variant="primary"
                     size="md"
-                    disabled={isLoading || !name.trim() || name.trim().length < 3 || !imageFile}
+                  disabled={
+                    isLoading ||
+                    !name.trim() ||
+                    name.trim().length < 3 ||
+                    (!isEditMode && !imageFile)
+                  }
                     style={{ flex: 1 }}
                   >
-                    {isLoading ? 'Создание...' : 'Создать'}
+                  {isLoading
+                    ? isEditMode
+                      ? 'Сохранение...'
+                      : 'Создание...'
+                    : isEditMode
+                      ? 'Сохранить'
+                      : 'Создать'}
                   </Button>
                 </ModalActions>
               </form>

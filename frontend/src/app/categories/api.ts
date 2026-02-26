@@ -22,6 +22,10 @@ export interface Achievement {
   progress?: number
   completion_date?: string
   is_favorite?: boolean
+  is_custom?: boolean
+  creator_id?: string
+  creator_username?: string
+  is_public?: boolean
 }
 
 export interface SearchAchievementsResponse {

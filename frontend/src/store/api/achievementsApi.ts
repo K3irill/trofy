@@ -17,6 +17,7 @@ export interface Achievement {
   is_public: boolean
   is_custom?: boolean
   creator_id?: string
+  creator_username?: string
   created_at: string
   progress?: number
   completion_date?: string
@@ -54,6 +55,9 @@ export interface Category {
   icon_url: string | null
   is_custom: boolean
   creator_id?: string
+  creator_username?: string
+  is_public?: boolean
+  allowed_user_ids?: string[]
   achievements_count: number
   created_at: string
   updated_at: string
@@ -65,6 +69,9 @@ export interface CategoryWithStats {
   icon_url: string | null
   is_custom: boolean
   creator_id?: string
+  creator_username?: string
+  is_public?: boolean
+  allowed_user_ids?: string[]
   total: number
   unlocked: number
   achievements_preview: Array<{
@@ -171,7 +178,7 @@ export const achievementsApi = baseApi.injectEndpoints({
           body: formData,
         }
       },
-      invalidatesTags: [{ type: 'Category', id: 'LIST' }],
+      invalidatesTags: ['Category', { type: 'Category', id: 'LIST' }],
     }),
     createCustomAchievement: builder.mutation<
       Achievement,
@@ -210,6 +217,85 @@ export const achievementsApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ['Achievement', 'Category'],
     }),
+    updateCategory: builder.mutation<
+      Category,
+      { id: string; name?: string; is_public?: boolean; allowed_user_ids?: string[]; image?: File }
+    >({
+      query: ({ id, image, ...data }) => {
+        const formData = new FormData()
+        if (data.name !== undefined) formData.append('name', data.name)
+        if (data.is_public !== undefined) formData.append('is_public', String(data.is_public))
+        // Отправляем allowed_user_ids если он определен (даже если пустой массив)
+        if (data.allowed_user_ids !== undefined) {
+          formData.append('allowed_user_ids', JSON.stringify(data.allowed_user_ids))
+        }
+        if (image) {
+          formData.append('image', image)
+        }
+        return {
+          url: `/achievements/categories/${id}`,
+          method: 'PATCH',
+          body: formData,
+        }
+      },
+      invalidatesTags: ['Category', { type: 'Category', id: 'LIST' }],
+    }),
+    updateCustomAchievement: builder.mutation<
+      Achievement,
+      {
+        id: string
+        title?: string
+        description?: string
+        rarity?: 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
+        category_id?: string
+        xp_reward?: number
+        is_public?: boolean
+        allowed_user_ids?: string[]
+        image?: File
+      }
+    >({
+      query: ({ id, image, ...data }) => {
+        const formData = new FormData()
+        if (data.title !== undefined) formData.append('title', data.title)
+        if (data.description !== undefined) formData.append('description', data.description)
+        if (data.rarity !== undefined) formData.append('rarity', data.rarity)
+        if (data.category_id !== undefined) formData.append('category_id', data.category_id)
+        if (data.xp_reward !== undefined) formData.append('xp_reward', String(data.xp_reward))
+        if (data.is_public !== undefined) formData.append('is_public', String(data.is_public))
+        if (data.allowed_user_ids && data.allowed_user_ids.length > 0) {
+          formData.append('allowed_user_ids', JSON.stringify(data.allowed_user_ids))
+        }
+        if (image) {
+          formData.append('image', image)
+        }
+        return {
+          url: `/achievements/custom/${id}`,
+          method: 'PATCH',
+          body: formData,
+        }
+      },
+      invalidatesTags: ['Achievement', 'Category'],
+    }),
+    deleteCustomCategory: builder.mutation<
+      { success: boolean; message: string },
+      { id: string }
+    >({
+      query: ({ id }) => ({
+        url: `/achievements/categories/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Category', { type: 'Category', id: 'LIST' }],
+    }),
+    deleteCustomAchievement: builder.mutation<
+      { success: boolean; message: string },
+      { id: string }
+    >({
+      query: ({ id }) => ({
+        url: `/achievements/custom/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Achievement', 'Category'],
+    }),
   }),
 })
 
@@ -225,4 +311,8 @@ export const {
   useGetShowcaseAchievementsQuery,
   useCreateCustomCategoryMutation,
   useCreateCustomAchievementMutation,
+  useUpdateCategoryMutation,
+  useUpdateCustomAchievementMutation,
+  useDeleteCustomCategoryMutation,
+  useDeleteCustomAchievementMutation,
 } = achievementsApi

@@ -68,6 +68,32 @@ router.post(
   achievementsController.createCustomAchievement.bind(achievementsController)
 )
 
+// Роуты для обновления кастомных категорий и достижений (для создателей)
+router.patch(
+  '/categories/:id',
+  authenticate,
+  upload.single('image'),
+  achievementsController.updateCategory.bind(achievementsController)
+)
+router.patch(
+  '/custom/:id',
+  authenticate,
+  upload.single('image'),
+  achievementsController.updateCustomAchievement.bind(achievementsController)
+)
+
+// Роуты для удаления кастомных категорий и достижений (для создателей)
+router.delete(
+  '/categories/:id',
+  authenticate,
+  achievementsController.deleteCustomCategory.bind(achievementsController)
+)
+router.delete(
+  '/custom/:id',
+  authenticate,
+  achievementsController.deleteCustomAchievement.bind(achievementsController)
+)
+
 // Детальная информация о достижении
 router.get(
   '/:id/detail',

@@ -63,8 +63,8 @@ export const AchievementCardContainer = styled.div<{ $status: AchievementStatus 
 `
 
 export const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 16px;
   background: ${(props) => {
     if (props.$status === 'achieved') return `linear-gradient(135deg, ${props.theme.colors.success}33 0%, ${props.theme.colors.success}1a 100%)`
@@ -95,8 +95,8 @@ export const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   }
 
   @media (max-width: 768px) {
-    width: 64px;
-    height: 64px;
+    width: 100px;
+    height: 100x;
     font-size: 2rem;
   }
 `
@@ -154,6 +154,7 @@ export const AchievementName = styled.h3`
   color: ${(props) => props.theme.colors.light[100]};
   font-weight: 600;
   margin: 0;
+  word-break: break-all;
 
   @media (max-width: 768px) {
     font-size: 0.875rem;

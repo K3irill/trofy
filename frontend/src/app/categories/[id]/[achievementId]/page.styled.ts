@@ -1,4 +1,5 @@
 import styled from 'styled-components'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 
 export const PageContainer = styled.div`
@@ -248,6 +249,7 @@ export const AchievementTitle = styled.h1`
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 1.2;
+  word-break: break-all;
 
   @media (max-width: 768px) {
     font-size: 2.25rem;

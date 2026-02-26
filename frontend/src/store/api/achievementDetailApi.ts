@@ -16,6 +16,9 @@ export interface AchievementDetail {
   unlocked: boolean
   unlocked_at?: string
   is_public: boolean
+  creator_id?: string
+  creator_username?: string
+  is_custom?: boolean
   created_at: string
   updated_at: string
   userAchievement?: {

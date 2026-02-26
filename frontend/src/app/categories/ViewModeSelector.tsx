@@ -17,7 +17,7 @@ const SelectorContainer = styled.div`
   border: 1px solid ${(props) => props.theme.colors.dark[600]}80;
 `
 
-const SelectorButton = styled(motion.button) <{ active: boolean }>`
+const SelectorButton = styled(motion.button) <{ $active: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,17 +25,17 @@ const SelectorButton = styled(motion.button) <{ active: boolean }>`
   height: 40px;
   padding: 0.5rem 1rem;
   background: ${(props) =>
-    props.active
+    props.$active
       ? `linear-gradient(135deg, ${props.theme.colors.primary}4d 0%, ${props.theme.colors.secondary}33 100%)`
       : 'transparent'};
   border: 2px solid
     ${(props) =>
-    props.active
+    props.$active
       ? props.theme.colors.primary
       : 'transparent'};
   border-radius: 8px;
   color: ${(props) =>
-    props.active
+    props.$active
       ? props.theme.colors.primary
       : props.theme.colors.light[300]};
   font-size: 1rem;
@@ -45,21 +45,21 @@ const SelectorButton = styled(motion.button) <{ active: boolean }>`
 
   &:hover {
     background: ${(props) =>
-    props.active
+    props.$active
       ? `linear-gradient(135deg, ${props.theme.colors.primary}66 0%, ${props.theme.colors.secondary}4d 100%)`
       : `${props.theme.colors.primary}1a`};
     border-color: ${(props) =>
-    props.active
+    props.$active
       ? props.theme.colors.primary
       : props.theme.colors.dark[600]};
     color: ${(props) =>
-    props.active
+    props.$active
       ? props.theme.colors.primary
       : props.theme.colors.light[200]};
   }
 
   ${(props) =>
-    props.active &&
+    props.$active &&
     `
     box-shadow: ${props.theme.shadows.glow.primary};
   `}
@@ -98,7 +98,7 @@ export const ViewModeSelector = ({
   return (
     <SelectorContainer>
       <SelectorButton
-        active={mode === 'grid3'}
+        $active={mode === 'grid3'}
         onClick={() => onChange('grid3')}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -106,7 +106,7 @@ export const ViewModeSelector = ({
         {isMobile ? <IoGridOutline /> : '3'}
       </SelectorButton>
       <SelectorButton
-        active={mode === 'grid2'}
+        $active={mode === 'grid2'}
         onClick={() => onChange('grid2')}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -114,7 +114,7 @@ export const ViewModeSelector = ({
         {isMobile ? <IoAlbumsOutline /> : '2'}
       </SelectorButton>
       <SelectorButton
-        active={mode === 'list'}
+        $active={mode === 'list'}
         onClick={() => onChange('list')}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}

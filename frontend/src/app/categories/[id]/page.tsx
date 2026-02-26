@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { IoSearchOutline, IoDocumentTextOutline, IoAdd } from 'react-icons/io5'
+import { IoSearchOutline, IoDocumentTextOutline, IoAdd, IoCreateOutline, IoTrash, IoLockClosed } from 'react-icons/io5'
 import { useAppSelector } from '@/store/hooks'
 import { useGetMeQuery } from '@/store/api/userApi'
 import { CreateAchievementModal } from '@/components/CreateAchievementModal/CreateAchievementModal'
+import { CreateCategoryModal } from '@/components/CreateCategoryModal/CreateCategoryModal'
+import { DeleteCategoryModal } from '@/components/DeleteCategoryModal/DeleteCategoryModal'
 import {
   useGetCategoryByIdWithStatsQuery,
   useGetCategoryByIdQuery,
@@ -34,6 +37,8 @@ import {
   AchievementListName,
   AchievementListStatus,
   PageHeaderWrap,
+  CreatorInfo,
+  CreatorLink,
 } from './page.styled'
 import { AchievementCard } from './AchievementCard'
 import { ViewModeSelector, AchievementViewMode } from './ViewModeSelector'
@@ -58,7 +63,10 @@ export default function CategoryPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
+  const [privacyFilter, setPrivacyFilter] = useState('')
   const [isCreateAchievementModalOpen, setIsCreateAchievementModalOpen] = useState(false)
+  const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false)
+  const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] = useState(false)
   const { isAuthenticated } = useAppSelector((state) => state.auth)
   const { data: currentUser } = useGetMeQuery(undefined, { skip: !isAuthenticated })
 
@@ -174,6 +182,13 @@ export default function CategoryPage() {
       filtered = filtered.filter((achievement) => achievement.rarity === rarityFilter)
     }
 
+    // Фильтрация по приватности (только для кастомных категорий)
+    if (privacyFilter === 'public') {
+      filtered = filtered.filter((achievement) => achievement.is_public !== false)
+    } else if (privacyFilter === 'private') {
+      filtered = filtered.filter((achievement) => achievement.is_public === false)
+    }
+
     // Сортировка
     if (sortBy && sortBy !== 'default') {
       filtered.sort((a, b) => {
@@ -213,7 +228,7 @@ export default function CategoryPage() {
     }
 
     return filtered
-  }, [achievements, debouncedSearchQuery, statusFilter, rarityFilter, sortBy, isAuthenticated])
+  }, [achievements, debouncedSearchQuery, statusFilter, rarityFilter, sortBy, isAuthenticated, privacyFilter])
 
   // Показываем лоадер только если действительно загружаем и данных еще нет
   if (isLoading && !hasCategoryData) {
@@ -365,6 +380,88 @@ export default function CategoryPage() {
           </CategoryIconLarge>
           <CategoryDetails>
             <CategoryName>{activeCategory.name}</CategoryName>
+            {activeCategory.creator_username && !isCategoryOwner && (
+              <CreatorInfo>
+                <span>Создатель:</span>
+                <CreatorLink href={`/user/${activeCategory.creator_username}`}>
+                  {activeCategory.creator_username}
+                </CreatorLink>
+              </CreatorInfo>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              {activeCategory.is_public === false && (
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
+                  padding: '0.375rem 0.75rem',
+                  background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%)',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  borderRadius: '8px',
+                  color: '#ef4444',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                  opacity: 0.9
+                }}>
+                  <IoLockClosed size={16} />
+                  <span>Приватная</span>
+                </div>
+              )}
+              {isAuthenticated && isCategoryOwner && (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <motion.button
+                    onClick={() => setIsEditCategoryModalOpen(true)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%)',
+                      border: '1px solid rgba(0, 212, 255, 0.3)',
+                      color: '#00d4ff',
+                      cursor: 'pointer',
+                      padding: '0.5rem 0.75rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.375rem',
+                      borderRadius: '8px',
+                      transition: 'all 0.2s ease',
+                      fontSize: '0.875rem',
+                      fontWeight: 600
+                    }}
+                    title="Редактировать категорию"
+                  >
+                    <IoCreateOutline size={18} />
+                    <span>Редактировать</span>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setIsDeleteCategoryModalOpen(true)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%)',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      padding: '0.5rem 0.75rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.375rem',
+                      borderRadius: '8px',
+                      transition: 'all 0.2s ease',
+                      fontSize: '0.875rem',
+                      fontWeight: 600
+                    }}
+                    title="Удалить категорию"
+                  >
+                    <IoTrash size={18} />
+                    <span>Удалить</span>
+                  </motion.button>
+                </div>
+              )}
+            </div>
             <CategoryStats>
               {isAuthenticated && categoryWithStats ? (
                 <>
@@ -404,6 +501,9 @@ export default function CategoryPage() {
           onSortChange={setSortBy}
           isAuthenticated={isAuthenticated}
           hideCategoryFilter={true}
+          privacyFilter={privacyFilter}
+          onPrivacyFilterChange={setPrivacyFilter}
+          showPrivacyFilter={activeCategory?.is_custom === true}
         />
 
         <AnimatePresence mode="wait">
@@ -419,14 +519,40 @@ export default function CategoryPage() {
         </AnimatePresence>
       </Container>
 
-      <CreateAchievementModal
-        isOpen={isCreateAchievementModalOpen}
-        onClose={() => setIsCreateAchievementModalOpen(false)}
-        onSuccess={() => {
-          // Достижения обновятся автоматически через RTK Query
-        }}
-        defaultCategoryId={categoryId}
-      />
+      {isAuthenticated && (
+        <>
+          <CreateAchievementModal
+            isOpen={isCreateAchievementModalOpen}
+            onClose={() => setIsCreateAchievementModalOpen(false)}
+            onSuccess={() => {
+              // Достижения обновятся автоматически через RTK Query
+            }}
+            defaultCategoryId={categoryId}
+          />
+          {isCategoryOwner && activeCategory && (
+            <>
+              <CreateCategoryModal
+                isOpen={isEditCategoryModalOpen}
+                category={activeCategory}
+                onClose={() => setIsEditCategoryModalOpen(false)}
+                onSuccess={() => {
+                  setIsEditCategoryModalOpen(false)
+                }}
+              />
+              <DeleteCategoryModal
+                isOpen={isDeleteCategoryModalOpen}
+                onClose={() => setIsDeleteCategoryModalOpen(false)}
+                categoryName={activeCategory.name}
+                categoryId={activeCategory.id}
+                onSuccess={() => {
+                  setIsDeleteCategoryModalOpen(false)
+                  router.push('/categories')
+                }}
+              />
+            </>
+          )}
+        </>
+      )}
     </>
   )
 }

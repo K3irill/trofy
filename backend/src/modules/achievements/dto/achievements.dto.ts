@@ -255,3 +255,53 @@ export class CreateOrUpdateRoadmapDto {
   @Type(() => RoadmapEdgeDto)
   edges: RoadmapEdgeDto[]
 }
+
+export class UpdateCategoryDto {
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  name?: string
+
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  is_public?: boolean
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  allowed_user_ids?: string[]
+}
+
+export class UpdateCustomAchievementDto {
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  title?: string
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  description?: string
+
+  @IsEnum(Rarity)
+  @IsOptional()
+  rarity?: Rarity
+
+  @IsInt()
+  @Min(1)
+  @Max(10000)
+  @IsOptional()
+  @Type(() => Number)
+  xp_reward?: number
+
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  is_public?: boolean
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  allowed_user_ids?: string[]
+}

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import styled from 'styled-components'
 import { IoClose, IoLockClosed, IoLockOpen, IoPersonAdd, IoPersonRemove, IoImageOutline, IoCloseCircle, IoAdd } from 'react-icons/io5'
-import { useCreateCustomAchievementMutation, useGetCategoriesQuery, useGetRaritiesQuery } from '@/store/api/achievementsApi'
+import { useCreateCustomAchievementMutation, useUpdateCustomAchievementMutation, useGetCategoriesQuery, useGetRaritiesQuery, useGetAchievementByIdQuery, type Achievement } from '@/store/api/achievementsApi'
 import { useSearchUsersQuery, useGetMeQuery } from '@/store/api/userApi'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
@@ -453,9 +453,10 @@ interface CreateAchievementModalProps {
   onClose: () => void
   onSuccess?: () => void
   defaultCategoryId?: string
+  achievement?: Partial<Achievement> | null
 }
 
-export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCategoryId }: CreateAchievementModalProps) {
+export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCategoryId, achievement }: CreateAchievementModalProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -469,11 +470,22 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
   const [userSearchQuery, setUserSearchQuery] = useState('')
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
 
-  const [createAchievement, { isLoading }] = useCreateCustomAchievementMutation()
+  const isEditMode = !!achievement
+  
+  const [createAchievement, { isLoading: isCreating }] = useCreateCustomAchievementMutation()
+  const [updateAchievement, { isLoading: isUpdating }] = useUpdateCustomAchievementMutation()
   const { data: categories } = useGetCategoriesQuery()
   const { data: rarities } = useGetRaritiesQuery()
   const { data: currentUser } = useGetMeQuery()
   const { showToast, ToastComponent } = useToast()
+  
+  // Загружаем полные данные достижения при редактировании
+  const { data: achievementData } = useGetAchievementByIdQuery(
+    { id: achievement?.id || '' },
+    { skip: !achievement?.id || !isOpen }
+  )
+  
+  const isLoading = isCreating || isUpdating
 
   const { data: searchResults } = useSearchUsersQuery(
     { query: debouncedSearchQuery, limit: 10 },
@@ -487,11 +499,58 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
     return () => clearTimeout(timer)
   }, [userSearchQuery])
 
+  // Заполняем форму при редактировании
   useEffect(() => {
-    if (defaultCategoryId) {
+    if (isEditMode && achievementData) {
+      // Используем загруженные данные из API
+      setTitle(achievementData.title)
+      setDescription(achievementData.description)
+      setCategoryId(achievementData.category.id)
+      // Преобразуем rarity в верхний регистр
+      setRarity(achievementData.rarity.toUpperCase() as 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY')
+      setXpReward(achievementData.xp_reward)
+      setIsPublic(achievementData.is_public ?? true)
+      setAllowedUserIds(achievementData.allowed_user_ids || [])
+      if (achievementData.icon_url) {
+        setImagePreview(achievementData.icon_url.startsWith('http') ? achievementData.icon_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${achievementData.icon_url}`)
+      }
+    } else if (achievement && !achievementData) {
+      // Если данные еще не загружены, используем переданные данные
+      if (achievement.title) setTitle(achievement.title)
+      if (achievement.description) setDescription(achievement.description)
+      if (achievement.category?.id) setCategoryId(achievement.category.id)
+      if (achievement.rarity) {
+        // Преобразуем rarity в верхний регистр
+        const rarityUpper = typeof achievement.rarity === 'string' 
+          ? achievement.rarity.toUpperCase() as 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
+          : 'COMMON'
+        setRarity(rarityUpper)
+      }
+      if (achievement.xp_reward) setXpReward(achievement.xp_reward)
+      if (achievement.is_public !== undefined) setIsPublic(achievement.is_public)
+      if (achievement.allowed_user_ids) setAllowedUserIds(achievement.allowed_user_ids)
+      if (achievement.icon_url) {
+        setImagePreview(achievement.icon_url.startsWith('http') ? achievement.icon_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${achievement.icon_url}`)
+      }
+    } else if (!isEditMode) {
+      // Сброс формы при создании
+      setTitle('')
+      setDescription('')
+      setImageFile(null)
+      setImagePreview(null)
+      setCategoryId(defaultCategoryId || '')
+      setRarity('COMMON')
+      setXpReward(100)
+      setIsPublic(true)
+      setAllowedUserIds([])
+    }
+  }, [achievement, achievementData, isEditMode, isOpen, defaultCategoryId])
+  
+  useEffect(() => {
+    if (defaultCategoryId && !isEditMode) {
       setCategoryId(defaultCategoryId)
     }
-  }, [defaultCategoryId])
+  }, [defaultCategoryId, isEditMode])
 
   // Обновляем список категорий после создания новой
   const { refetch: refetchCategories } = useGetCategoriesQuery(undefined, {
@@ -561,38 +620,62 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
       return
     }
 
-    if (!imageFile) {
+    if (!isEditMode && !imageFile) {
       showToast('Загрузите изображение достижения', 'error')
       return
     }
 
     try {
-      await createAchievement({
-        title: title.trim(),
-        description: description.trim(),
-        category_id: categoryId,
-        rarity,
-        xp_reward: xpReward,
-        is_public: isPublic,
-        allowed_user_ids: isPublic ? undefined : allowedUserIds,
-        image: imageFile || undefined,
-      }).unwrap()
+      if (isEditMode && (achievement || achievementData)) {
+        const achievementId = achievement?.id || achievementData?.id
+        if (!achievementId) {
+          showToast('Ошибка: ID достижения не найден', 'error')
+          return
+        }
+        
+        await updateAchievement({
+          id: achievementId,
+          title: title.trim(),
+          description: description.trim(),
+          rarity,
+          category_id: categoryId,
+          xp_reward: xpReward,
+          is_public: isPublic,
+          allowed_user_ids: isPublic ? undefined : allowedUserIds,
+          image: imageFile || undefined,
+        }).unwrap()
 
-      showToast('Достижение успешно создано', 'success')
-      setTitle('')
-      setDescription('')
-      setImageFile(null)
-      setImagePreview(null)
-      setCategoryId(defaultCategoryId || '')
-      setRarity('COMMON')
-      setXpReward(100)
-      setIsPublic(true)
-      setAllowedUserIds([])
+        showToast('Достижение успешно обновлено', 'success')
+        onSuccess?.()
+        onClose()
+      } else {
+        await createAchievement({
+          title: title.trim(),
+          description: description.trim(),
+          category_id: categoryId,
+          rarity,
+          xp_reward: xpReward,
+          is_public: isPublic,
+          allowed_user_ids: isPublic ? undefined : allowedUserIds,
+          image: imageFile || undefined,
+        }).unwrap()
+
+        showToast('Достижение успешно создано', 'success')
+        setTitle('')
+        setDescription('')
+        setImageFile(null)
+        setImagePreview(null)
+        setCategoryId(defaultCategoryId || '')
+        setRarity('COMMON')
+        setXpReward(100)
+        setIsPublic(true)
+        setAllowedUserIds([])
+      }
       setUserSearchQuery('')
       onSuccess?.()
       onClose()
     } catch (error: any) {
-      showToast(error?.data?.message || 'Ошибка при создании достижения', 'error')
+      showToast(error?.data?.message || (isEditMode ? 'Ошибка при редактировании достижения' : 'Ошибка при создании достижения'), 'error')
     }
   }
 
@@ -620,17 +703,15 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
         >
           <ModalContainer
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
-            onClick={(e) => e.stopPropagation()}
           >
               <ModalHeader>
-                <ModalTitle>Создать достижение</ModalTitle>
+                <ModalTitle>{isEditMode ? 'Редактировать достижение' : 'Создать достижение'}</ModalTitle>
                 <CloseButton onClick={onClose}>
                   <IoClose />
                 </CloseButton>
@@ -702,7 +783,15 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
                       <Label>Редкость</Label>
                       <ThemedSelect
                         value={rarityOptions.find(opt => opt.value === rarity)}
-                        onChange={(value) => setRarity((value?.value as typeof rarity) || 'COMMON')}
+                        onChange={(value) => {
+                          const rarityValue = value?.value
+                          if (rarityValue) {
+                            // Преобразуем в верхний регистр для соответствия типу и бэкенду
+                            setRarity(rarityValue.toUpperCase() as typeof rarity)
+                          } else {
+                            setRarity('COMMON')
+                          }
+                        }}
                         options={rarityOptions}
                         placeholder="Выберите редкость"
                       />
@@ -871,10 +960,22 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
                     type="submit"
                     variant="primary"
                     size="md"
-                    disabled={isLoading || !title.trim() || title.trim().length < 3 || !description.trim() || description.trim().length < 3 || !categoryId || myCategories.length === 0 || !imageFile}
+                    disabled={
+                      isLoading || 
+                      !title.trim() || 
+                      title.trim().length < 3 || 
+                      !description.trim() || 
+                      description.trim().length < 3 || 
+                      !categoryId || 
+                      myCategories.length === 0 || 
+                      (!isEditMode && !imageFile)
+                    }
                     style={{ flex: 1 }}
                   >
-                    {isLoading ? 'Создание...' : 'Создать'}
+                    {isLoading 
+                      ? (isEditMode ? 'Сохранение...' : 'Создание...')
+                      : (isEditMode ? 'Сохранить' : 'Создать')
+                    }
                   </Button>
                 </ModalActions>
               </form>

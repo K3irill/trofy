@@ -3,8 +3,10 @@ import { Request, Response, NextFunction } from 'express'
 import { validate } from 'class-validator'
 import { plainToInstance } from 'class-transformer'
 import multer from 'multer'
+import * as fs from 'fs'
+import * as path from 'path'
 import { achievementsService } from '../service/achievements.service'
-import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto, CreateAchievementsDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto, UpdateProgressDto } from '../dto/achievements.dto'
+import { GetAchievementsDto, CreateCategoryDto, CreateAchievementDto, CreateAchievementsDto, CompleteAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto, UpdateProgressDto, UpdateCategoryDto, UpdateCustomAchievementDto } from '../dto/achievements.dto'
 import { ApiError } from '../../../core/errors/ApiError'
 import { AuthRequest } from '../../auth/middleware/auth.middleware'
 import { userService } from '../../user/service/user.service'
@@ -396,6 +398,180 @@ export class AchievementsController {
 
       res.status(201).json(achievement)
     } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * PATCH /api/achievements/categories/:id - Обновление категории (только для создателя)
+   */
+  async updateCategory(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const categoryId = req.params.id
+      
+      // Парсим FormData поля
+      const bodyData: any = {}
+      if (req.body.name !== undefined) bodyData.name = req.body.name
+      if (req.body.is_public !== undefined) {
+        bodyData.is_public = req.body.is_public === 'true' || req.body.is_public === true
+      }
+      if (req.body.allowed_user_ids !== undefined) {
+        try {
+          bodyData.allowed_user_ids = typeof req.body.allowed_user_ids === 'string' 
+            ? JSON.parse(req.body.allowed_user_ids) 
+            : req.body.allowed_user_ids
+        } catch {
+          bodyData.allowed_user_ids = []
+        }
+      }
+      
+      const dto = plainToInstance(UpdateCategoryDto, bodyData)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      // Если есть загруженное изображение, сохраняем его
+      if (req.file) {
+        const { saveCategoryImage } = await import('../../../shared/utils/fileUpload')
+        const uploaded = await saveCategoryImage(
+          req.file.buffer,
+          req.file.mimetype,
+          categoryId
+        )
+        // Обновляем категорию с URL изображения
+        const updatedCategory = await achievementsService.updateCategory(categoryId, dto, userId)
+        const categoryWithIcon = await achievementsService.updateCategoryIcon(categoryId, uploaded.url)
+        return res.json(categoryWithIcon)
+      }
+
+      const category = await achievementsService.updateCategory(categoryId, dto, userId)
+      res.json(category)
+    } catch (error: any) {
+      if (error.message === 'Category not found') {
+        return next(ApiError.notFound('Category not found'))
+      }
+      if (error.message === 'You can only update your own custom categories') {
+        return next(ApiError.forbidden('You can only update your own custom categories'))
+      }
+      next(error)
+    }
+  }
+
+  /**
+   * PATCH /api/achievements/custom/:id - Обновление достижения (только для создателя)
+   */
+  async updateCustomAchievement(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const achievementId = req.params.id
+      
+      // Парсим FormData поля
+      const bodyData: any = {}
+      if (req.body.title !== undefined) bodyData.title = req.body.title
+      if (req.body.description !== undefined) bodyData.description = req.body.description
+      if (req.body.rarity !== undefined) bodyData.rarity = req.body.rarity
+      if (req.body.category_id !== undefined) bodyData.category_id = req.body.category_id
+      if (req.body.xp_reward !== undefined) {
+        bodyData.xp_reward = typeof req.body.xp_reward === 'string' 
+          ? parseInt(req.body.xp_reward, 10) 
+          : req.body.xp_reward
+      }
+      if (req.body.is_public !== undefined) {
+        bodyData.is_public = req.body.is_public === 'true' || req.body.is_public === true
+      }
+      if (req.body.allowed_user_ids !== undefined) {
+        try {
+          bodyData.allowed_user_ids = typeof req.body.allowed_user_ids === 'string' 
+            ? JSON.parse(req.body.allowed_user_ids) 
+            : req.body.allowed_user_ids
+        } catch {
+          bodyData.allowed_user_ids = []
+        }
+      }
+      
+      const dto = plainToInstance(UpdateCustomAchievementDto, bodyData)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      // Если есть загруженное изображение, сохраняем его (старое удаляется автоматически в saveCustomAchievementImage)
+      if (req.file) {
+        const { saveCustomAchievementImage } = await import('../../../shared/utils/fileUpload')
+        const uploaded = await saveCustomAchievementImage(
+          req.file.buffer,
+          req.file.mimetype,
+          achievementId
+        )
+        // Обновляем достижение с данными и URL изображения
+        const updatedAchievement = await achievementsService.updateCustomAchievement(achievementId, dto, userId)
+        const achievementWithIcon = await achievementsService.updateAchievementIcon(achievementId, uploaded.url)
+        return res.json(achievementWithIcon)
+      }
+
+      const achievement = await achievementsService.updateCustomAchievement(achievementId, dto, userId)
+      res.json(achievement)
+    } catch (error: any) {
+      if (error.message === 'Achievement not found') {
+        return next(ApiError.notFound('Achievement not found'))
+      }
+      if (error.message === 'You can only update your own custom achievements') {
+        return next(ApiError.forbidden('You can only update your own custom achievements'))
+      }
+      next(error)
+    }
+  }
+
+  /**
+   * DELETE /api/achievements/categories/:id - Удаление кастомной категории (только для создателя)
+   */
+  async deleteCustomCategory(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const categoryId = req.params.id
+      const result = await achievementsService.deleteCustomCategory(categoryId, userId)
+      res.json(result)
+    } catch (error: any) {
+      if (error.message === 'Category not found') {
+        return next(ApiError.notFound('Category not found'))
+      }
+      if (error.message === 'You can only delete your own custom categories') {
+        return next(ApiError.forbidden('You can only delete your own custom categories'))
+      }
+      next(error)
+    }
+  }
+
+  /**
+   * DELETE /api/achievements/custom/:id - Удаление кастомного достижения (только для создателя)
+   */
+  async deleteCustomAchievement(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.userId
+      if (!userId) {
+        throw ApiError.unauthorized('User not authenticated')
+      }
+
+      const achievementId = req.params.id
+      const result = await achievementsService.deleteCustomAchievement(achievementId, userId)
+      res.json(result)
+    } catch (error: any) {
+      if (error.message === 'Achievement not found') {
+        return next(ApiError.notFound('Achievement not found'))
+      }
+      if (error.message === 'You can only delete your own custom achievements') {
+        return next(ApiError.forbidden('You can only delete your own custom achievements'))
+      }
       next(error)
     }
   }

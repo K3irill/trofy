@@ -609,25 +609,25 @@ export const ViewLabel = styled.span`
   }
 `
 
-export const Label = styled.button<{ active: boolean }>`
-  background: ${props => props.active ? `${props.theme.colors.primary}33` : 'transparent'};
-  border: 2px solid ${props => props.active ? props.theme.colors.primary : 'transparent'};
+export const Label = styled.button<{ $active: boolean }>`
+  background: ${props => props.$active ? `${props.theme.colors.primary}33` : 'transparent'};
+  border: 2px solid ${props => props.$active ? props.theme.colors.primary : 'transparent'};
   border-radius: 12px;
   padding: 0.5rem 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
 
   ${ViewLabel} {
-    color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.light[300]};
+    color: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.light[300]};
     
     svg {
-      color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.light[300]};
+      color: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.light[300]};
     }
   }
 
   &:hover {
     background: ${props => `${props.theme.colors.primary}1a`};
-    border-color: ${props => props.active ? props.theme.colors.primary : props.theme.colors.dark[600]};
+    border-color: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.dark[600]};
     
     ${ViewLabel} {
       color: ${props => props.theme.colors.primary};

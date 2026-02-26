@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { useAppSelector } from '@/store/hooks'
 import { useGetMeQuery } from '@/store/api/userApi'
 import {
@@ -11,7 +12,7 @@ import { useToast } from '@/hooks/useToast'
 import { renderIcon } from '@/lib/utils/iconUtils'
 import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
-import { IoArrowBack, IoFolderOpen, IoLockClosed, IoSearch, IoEyeOff, IoStar, IoHeart, IoCloseCircle } from 'react-icons/io5'
+import { IoArrowBack, IoFolderOpen, IoLockClosed, IoSearch, IoEyeOff, IoStar, IoHeart, IoCloseCircle, IoCreateOutline, IoTrash } from 'react-icons/io5'
 import { AchievementDetailView } from './AchievementDetailView'
 import { AchievementActions } from './AchievementActions'
 import { AchievementProgress } from './AchievementProgress'
@@ -22,6 +23,8 @@ import { AchievementApplause } from './AchievementApplause'
 import { AchievementComments } from './AchievementComments'
 import { AchievementPreviewModal } from './AchievementPreviewModal'
 import { AchievementSettingsMenu } from './AchievementSettingsMenu'
+import { CreateAchievementModal } from '@/components/CreateAchievementModal/CreateAchievementModal'
+import { DeleteAchievementModal } from '@/components/DeleteAchievementModal/DeleteAchievementModal'
 import { StartWorkButton } from './StartWorkButton'
 import { RoadmapBlock } from './RoadmapBlock'
 import {
@@ -35,6 +38,8 @@ import {
   AchievementIndicators,
   IndicatorIcon,
   ContentSection,
+  CreatorInfo,
+  CreatorLink,
 } from './page.styled'
 
 export default function AchievementDetailPage() {
@@ -46,6 +51,8 @@ export default function AchievementDetailPage() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [iconTransform, setIconTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
   const [isEditing, setIsEditing] = useState(false)
+  const [isEditAchievementModalOpen, setIsEditAchievementModalOpen] = useState(false)
+  const [isDeleteAchievementModalOpen, setIsDeleteAchievementModalOpen] = useState(false)
   const detailViewRef = useRef<HTMLDivElement>(null)
   const [actionsRef, setActionsRef] = useState<{
     handleEdit: () => void
@@ -103,6 +110,7 @@ export default function AchievementDetailPage() {
     : null
 
   const isOwner = achievement?.ownerId === currentUser?.id
+  const isAchievementCreator = achievementDetail?.creator_id === currentUser?.id && achievementDetail?.is_custom
 
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!achievement) return
@@ -189,8 +197,53 @@ export default function AchievementDetailPage() {
         )}
 
         <AchievementHeader>
-          {isAuthenticated && (
-            <AchievementSettingsMenu
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
+            {isAuthenticated && isAchievementCreator && (
+              <>
+                <motion.button
+                  onClick={() => setIsEditAchievementModalOpen(true)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    background: 'transparent',
+                    border: '2px solid rgba(0, 212, 255, 0.3)',
+                    color: '#00d4ff',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s ease',
+                  }}
+                  title="Редактировать достижение"
+                >
+                  <IoCreateOutline size={20} />
+                </motion.button>
+                <motion.button
+                  onClick={() => setIsDeleteAchievementModalOpen(true)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    background: 'transparent',
+                    border: '2px solid rgba(239, 68, 68, 0.3)',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s ease',
+                  }}
+                  title="Удалить достижение"
+                >
+                  <IoTrash size={20} />
+                </motion.button>
+              </>
+            )}
+            {isAuthenticated && (
+              <AchievementSettingsMenu
               achievement={{
                 isMain: achievement.isMain,
                 isFavorite: achievement.isFavorite,
@@ -257,7 +310,8 @@ export default function AchievementDetailPage() {
                 }
               }}
             />
-          )}
+            )}
+          </div>
           <AchievementIcon
             $unlocked={achievement.unlocked}
             onClick={() => setIsPreviewOpen(true)}
@@ -273,9 +327,57 @@ export default function AchievementDetailPage() {
             {renderIcon(achievementDetail.icon_url, 'trophy')}
           </AchievementIcon>
           <div style={{ flex: 1 }}>
-            <AchievementTitle>{achievement.name}</AchievementTitle>
-            <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <IoFolderOpen /> {achievementDetail.category.name}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+              <AchievementTitle>{achievement.name}</AchievementTitle>
+              {achievementDetail.is_public === false && (
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.375rem',
+                  padding: '0.375rem 0.75rem',
+                  background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%)',
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  borderRadius: '8px',
+                  color: '#ef4444',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                  opacity: 0.9
+                }}>
+                  <IoLockClosed size={16} />
+                  <span>Приватное</span>
+                </div>
+              )}
+            </div>
+            <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <IoFolderOpen /> {achievementDetail.category.name}
+              </div>
+              {achievementDetail.creator_username && !isAchievementCreator && (
+                <>
+                  <span style={{ opacity: 0.5 }}>•</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                    <span>Создатель:</span>
+                    <Link 
+                      href={`/user/${achievementDetail.creator_username}`}
+                      style={{
+                        color: 'rgba(0, 212, 255, 0.9)',
+                        textDecoration: 'none',
+                        transition: 'color 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = 'rgba(0, 212, 255, 1)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = 'rgba(0, 212, 255, 0.9)'
+                      }}
+                    >
+                      {achievementDetail.creator_username}
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
             {isAuthenticated && achievement.unlocked && (
               <AchievementIndicators>
@@ -467,6 +569,39 @@ export default function AchievementDetailPage() {
           </ContentSection>
         )}
       </PageContainer>
+      
+      {isAuthenticated && isAchievementCreator && achievementDetail && (
+        <>
+          <CreateAchievementModal
+            isOpen={isEditAchievementModalOpen}
+            achievement={{
+              id: achievementDetail.id,
+              title: achievementDetail.title,
+              description: achievementDetail.description,
+              icon_url: achievementDetail.icon_url,
+              rarity: achievementDetail.rarity.toUpperCase() as 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY',
+              category: achievementDetail.category,
+              xp_reward: achievementDetail.xp_reward,
+              is_public: achievementDetail.is_public,
+            }}
+            onClose={() => setIsEditAchievementModalOpen(false)}
+            onSuccess={() => {
+              setIsEditAchievementModalOpen(false)
+              refetch()
+            }}
+          />
+          <DeleteAchievementModal
+            isOpen={isDeleteAchievementModalOpen}
+            onClose={() => setIsDeleteAchievementModalOpen(false)}
+            achievementName={achievementDetail.title}
+            achievementId={achievementDetail.id}
+            onSuccess={() => {
+              setIsDeleteAchievementModalOpen(false)
+              router.push(`/categories/${achievementDetail.category.id}`)
+            }}
+          />
+        </>
+      )}
       <ToastComponent />
     </Container>
   )

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { IoSearchOutline, IoDocumentTextOutline } from 'react-icons/io5'
+import { IoSearchOutline, IoDocumentTextOutline, IoCreateOutline, IoTrash } from 'react-icons/io5'
 import { useAppSelector } from '@/store/hooks'
 import {
   useGetCategoryByIdQuery,
@@ -37,6 +37,9 @@ import { SearchAndFilters } from '@/app/categories/SearchAndFilters'
 import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
 import { type Achievement } from '@/app/categories/api'
+import { CreateCategoryModal } from '@/components/CreateCategoryModal/CreateCategoryModal'
+import { DeleteCategoryModal } from '@/components/DeleteCategoryModal/DeleteCategoryModal'
+import { useGetMeQuery } from '@/store/api/userApi'
 
 export default function UserCategoryPage() {
   const router = useRouter()
@@ -48,7 +51,10 @@ export default function UserCategoryPage() {
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
   const [favoriteFilter, setFavoriteFilter] = useState('')
+  const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false)
+  const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] = useState(false)
   const { isAuthenticated, user: currentUser } = useAppSelector((state) => state.auth)
+  const { data: currentUserData } = useGetMeQuery(undefined, { skip: !isAuthenticated })
 
   const username = params?.username as string
   const categoryId = params?.categoryId as string
@@ -86,6 +92,12 @@ export default function UserCategoryPage() {
   const isOwnPage = useMemo(() => {
     return currentUser?.username === username
   }, [currentUser?.username, username])
+
+  // Проверяем, является ли текущий пользователь создателем категории
+  const isCategoryOwner = useMemo(() => {
+    if (!category || !currentUserData) return false
+    return category.is_custom && category.creator_id === currentUserData.id
+  }, [category, currentUserData])
 
   // Преобразуем в формат Achievement и применяем фильтры
   const transformedAchievements: Achievement[] = useMemo(() => {
@@ -312,7 +324,53 @@ export default function UserCategoryPage() {
             {renderIcon(category.icon_url, 'folder')}
           </CategoryIconLarge>
           <CategoryDetails>
-            <CategoryName>{category.name}</CategoryName>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+              <CategoryName>{category.name}</CategoryName>
+              {isAuthenticated && isCategoryOwner && (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <motion.button
+                    onClick={() => setIsEditCategoryModalOpen(true)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#00d4ff',
+                      cursor: 'pointer',
+                      padding: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '8px',
+                      transition: 'all 0.2s ease',
+                    }}
+                    title="Редактировать категорию"
+                  >
+                    <IoCreateOutline size={20} />
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setIsDeleteCategoryModalOpen(true)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      padding: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '8px',
+                      transition: 'all 0.2s ease',
+                    }}
+                    title="Удалить категорию"
+                  >
+                    <IoTrash size={20} />
+                  </motion.button>
+                </div>
+              )}
+            </div>
             <CategoryStats>
               {isAuthenticated && (
                 <>
@@ -364,6 +422,29 @@ export default function UserCategoryPage() {
           </motion.div>
         </AnimatePresence>
       </Container>
+
+      {isAuthenticated && isCategoryOwner && category && (
+        <>
+          <CreateCategoryModal
+            isOpen={isEditCategoryModalOpen}
+            category={category}
+            onClose={() => setIsEditCategoryModalOpen(false)}
+            onSuccess={() => {
+              setIsEditCategoryModalOpen(false)
+            }}
+          />
+          <DeleteCategoryModal
+            isOpen={isDeleteCategoryModalOpen}
+            onClose={() => setIsDeleteCategoryModalOpen(false)}
+            categoryName={category.name}
+            categoryId={category.id}
+            onSuccess={() => {
+              setIsDeleteCategoryModalOpen(false)
+              router.push(`/user/${username}/achievements`)
+            }}
+          />
+        </>
+      )}
     </>
   )
 }

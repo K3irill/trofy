@@ -11,7 +11,10 @@ export const AchievementGrid = styled.div<{ mode: AchievementViewMode }>`
     if (props.mode === 'grid3') {
       return `
         grid-template-columns: repeat(3, 1fr);
-        @media (max-width: 1200px) {
+        @media (max-width: 1024px) {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        @media (max-width: 767px) {
           grid-template-columns: repeat(2, 1fr);
         }
         @media (max-width: 600px) {
@@ -21,7 +24,7 @@ export const AchievementGrid = styled.div<{ mode: AchievementViewMode }>`
     } else if (props.mode === 'grid2') {
       return `
         grid-template-columns: repeat(2, 1fr);
-        @media (max-width: 768px) {
+        @media (max-width: 767px) {
           grid-template-columns: 1fr;
           gap: 1rem;
         }

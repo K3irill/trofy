@@ -9,7 +9,7 @@ interface TumblerProps {
 export const Tumbler = ({ mode, onChange }: TumblerProps) => {
   return (
     <TumblerWrapper>
-      <Label active={mode === 'categories'} onClick={() => onChange('categories')}>
+      <Label $active={mode === 'categories'} onClick={() => onChange('categories')}>
         <ViewLabel>
           <IoFolder />
         </ViewLabel>
@@ -20,7 +20,7 @@ export const Tumbler = ({ mode, onChange }: TumblerProps) => {
       }>
         <TumblerThumb position={mode === 'categories' ? 0 : 1} />
       </TumblerTrack>
-      <Label active={mode === 'achievements'} onClick={() => onChange('achievements')}>
+      <Label $active={mode === 'achievements'} onClick={() => onChange('achievements')}>
         <ViewLabel>
           <IoTrophy />
         </ViewLabel>

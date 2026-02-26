@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { prisma } from '../../../shared/database'
 import { ApiError } from '../../../core/errors/ApiError'
-import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto } from '../dto/achievements.dto'
+import { GetAchievementsDto, Rarity, SortBy, CreateCategoryDto, CreateAchievementDto, CompleteAchievementDto, UpdateAchievementDto, UpdateAchievementSettingsDto, CreateCommentDto, UpdateCategoryDto, UpdateCustomAchievementDto } from '../dto/achievements.dto'
 import { saveFileFromBuffer, deleteFile, deleteAchievementFiles } from '../../../shared/utils/fileUpload'
 import { calculateLevel } from '../../../shared/utils/levelCalculator'
 
@@ -27,6 +27,12 @@ export class AchievementsService {
         _count: {
           select: {
             achievements: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            username: true,
           },
         },
       },
@@ -59,6 +65,7 @@ export class AchievementsService {
       icon_url: category.icon_url,
       is_custom: category.is_custom,
       creator_id: category.creator_id,
+      creator_username: category.creator?.username || undefined,
       achievements_count: category._count.achievements,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
@@ -74,6 +81,12 @@ export class AchievementsService {
         _count: {
           select: {
             achievements: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            username: true,
           },
         },
         achievements: {
@@ -194,12 +207,25 @@ export class AchievementsService {
         }
       })
 
+      // Преобразуем JSON поле в массив, если это строка
+      let allowedUserIds: string[] = []
+      if ((category as any).allowed_user_ids) {
+        if (typeof (category as any).allowed_user_ids === 'string') {
+          allowedUserIds = JSON.parse((category as any).allowed_user_ids)
+        } else if (Array.isArray((category as any).allowed_user_ids)) {
+          allowedUserIds = (category as any).allowed_user_ids
+        }
+      }
+
       return {
         id: category.id,
         name: category.name,
         icon_url: category.icon_url,
         is_custom: category.is_custom,
         creator_id: category.creator_id || undefined,
+        creator_username: category.creator?.username || undefined,
+        is_public: (category as any).is_public,
+        allowed_user_ids: allowedUserIds,
         total: category._count.achievements,
         unlocked: unlockedCount,
         achievements_preview: achievementsPreview,
@@ -221,11 +247,27 @@ export class AchievementsService {
             achievements: true,
           },
         },
+        creator: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
       },
     })
 
     if (!category) {
       throw ApiError.notFound('Category not found')
+    }
+
+    // Преобразуем JSON поле в массив, если это строка
+    let allowedUserIds: string[] = []
+    if (category.allowed_user_ids) {
+      if (typeof category.allowed_user_ids === 'string') {
+        allowedUserIds = JSON.parse(category.allowed_user_ids)
+      } else if (Array.isArray(category.allowed_user_ids)) {
+        allowedUserIds = category.allowed_user_ids
+      }
     }
 
     return {
@@ -234,6 +276,9 @@ export class AchievementsService {
       icon_url: category.icon_url,
       is_custom: category.is_custom,
       creator_id: category.creator_id || undefined,
+      creator_username: category.creator?.username || undefined,
+      is_public: category.is_public,
+      allowed_user_ids: allowedUserIds,
       achievements_count: category._count.achievements,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
@@ -250,6 +295,12 @@ export class AchievementsService {
         _count: {
           select: {
             achievements: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            username: true,
           },
         },
       },
@@ -275,12 +326,25 @@ export class AchievementsService {
       unlockedCount = userAchievements.length
     }
 
+    // Преобразуем JSON поле в массив, если это строка
+    let allowedUserIds: string[] = []
+    if (category.allowed_user_ids) {
+      if (typeof category.allowed_user_ids === 'string') {
+        allowedUserIds = JSON.parse(category.allowed_user_ids)
+      } else if (Array.isArray(category.allowed_user_ids)) {
+        allowedUserIds = category.allowed_user_ids
+      }
+    }
+
     return {
       id: category.id,
       name: category.name,
       icon_url: category.icon_url,
       is_custom: category.is_custom,
       creator_id: category.creator_id || undefined,
+      creator_username: category.creator?.username || undefined,
+      is_public: (category as any).is_public,
+      allowed_user_ids: allowedUserIds,
       total: category._count.achievements,
       unlocked: unlockedCount,
       created_at: category.created_at.toISOString(),
@@ -490,6 +554,7 @@ export class AchievementsService {
           is_public: userAchievement?.is_public ?? true,
           is_custom: !!achievement.creator_id, // Пользовательское достижение определяется по наличию creator_id
           creator_id: achievement.creator_id || undefined,
+          creator_username: achievement.creator?.username || undefined,
           created_at: achievement.created_at.toISOString(),
           progress: userAchievement ? (userAchievement as any).progress || 0 : undefined,
           completion_date: userAchievement?.completion_date?.toISOString(),
@@ -585,6 +650,12 @@ export class AchievementsService {
               icon_url: true,
             },
           },
+          creator: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
         }
 
         if (userId) {
@@ -622,6 +693,9 @@ export class AchievementsService {
       unlocked: !!userAchievement,
       unlocked_at: userAchievement?.unlocked_at.toISOString(),
       is_public: userAchievement?.is_public ?? true,
+      creator_id: achievement.creator_id || undefined,
+      creator_username: achievement.creator?.username || undefined,
+      is_custom: !!achievement.creator_id,
       created_at: achievement.created_at.toISOString(),
       updated_at: achievement.updated_at.toISOString(),
       progress: userAchievement ? (userAchievement as any).progress || 0 : undefined,
@@ -741,6 +815,142 @@ export class AchievementsService {
   }
 
   /**
+   * Обновление категории (только для создателя)
+   */
+  async updateCategory(categoryId: string, dto: UpdateCategoryDto, userId: string) {
+    // Проверяем, что категория существует и пользователь является создателем
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    })
+
+    if (!category) {
+      throw new Error('Category not found')
+    }
+
+    if (!category.is_custom || category.creator_id !== userId) {
+      throw new Error('You can only update your own custom categories')
+    }
+
+    const updateData: any = {}
+    if (dto.name !== undefined) updateData.name = dto.name
+    if (dto.is_public !== undefined) updateData.is_public = dto.is_public
+    if (dto.allowed_user_ids !== undefined) {
+      // Prisma JSON поля принимают объекты напрямую
+      updateData.allowed_user_ids = dto.allowed_user_ids
+    }
+
+    const updated = await prisma.category.update({
+      where: { id: categoryId },
+      data: updateData,
+    })
+
+    // Преобразуем JSON поле в массив, если это строка
+    let allowedUserIds: string[] = []
+    if (updated.allowed_user_ids) {
+      if (typeof updated.allowed_user_ids === 'string') {
+        allowedUserIds = JSON.parse(updated.allowed_user_ids)
+      } else if (Array.isArray(updated.allowed_user_ids)) {
+        allowedUserIds = updated.allowed_user_ids
+      }
+    }
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      icon_url: updated.icon_url,
+      is_custom: updated.is_custom,
+      creator_id: updated.creator_id || undefined,
+      is_public: updated.is_public,
+      allowed_user_ids: allowedUserIds,
+      created_at: updated.created_at.toISOString(),
+      updated_at: updated.updated_at.toISOString(),
+    }
+  }
+
+  /**
+   * Обновление достижения (только для создателя)
+   */
+  async updateCustomAchievement(achievementId: string, dto: UpdateCustomAchievementDto, userId: string) {
+    // Проверяем, что достижение существует и пользователь является создателем
+    const achievement = await prisma.achievement.findUnique({
+      where: { id: achievementId },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            icon_url: true,
+          },
+        },
+      },
+    })
+
+    if (!achievement) {
+      throw new Error('Achievement not found')
+    }
+
+    if (!achievement.creator_id || achievement.creator_id !== userId) {
+      throw new Error('You can only update your own custom achievements')
+    }
+
+    const updateData: any = {}
+    if (dto.title !== undefined) updateData.title = dto.title
+    if (dto.description !== undefined) updateData.description = dto.description
+    if (dto.rarity !== undefined) updateData.rarity = dto.rarity
+    if (dto.category_id !== undefined) updateData.category_id = dto.category_id
+    if (dto.xp_reward !== undefined) updateData.xp_reward = dto.xp_reward
+    if (dto.is_public !== undefined) updateData.is_public = dto.is_public
+    if (dto.allowed_user_ids !== undefined) {
+      // Prisma JSON поля принимают объекты напрямую
+      updateData.allowed_user_ids = dto.allowed_user_ids
+    }
+
+    const updated = await prisma.achievement.update({
+      where: { id: achievementId },
+      data: updateData,
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            icon_url: true,
+          },
+        },
+      },
+    })
+
+    // Преобразуем JSON поле в массив, если это строка
+    let allowedUserIds: string[] = []
+    if (updated.allowed_user_ids) {
+      if (typeof updated.allowed_user_ids === 'string') {
+        allowedUserIds = JSON.parse(updated.allowed_user_ids)
+      } else if (Array.isArray(updated.allowed_user_ids)) {
+        allowedUserIds = updated.allowed_user_ids
+      }
+    }
+
+    return {
+      id: updated.id,
+      title: updated.title,
+      description: updated.description,
+      icon_url: updated.icon_url,
+      rarity: updated.rarity,
+      category: {
+        id: updated.category.id,
+        name: updated.category.name,
+        icon_url: updated.category.icon_url,
+      },
+      xp_reward: updated.xp_reward,
+      creator_id: updated.creator_id || undefined,
+      is_custom: !!updated.creator_id,
+      is_public: updated.is_public,
+      allowed_user_ids: allowedUserIds,
+      created_at: updated.created_at.toISOString(),
+      updated_at: updated.updated_at.toISOString(),
+    }
+  }
+
+  /**
    * Обновление иконки достижения
    */
   async updateAchievementIcon(achievementId: string, iconUrl: string) {
@@ -847,6 +1057,105 @@ export class AchievementsService {
       created_at: achievement.created_at.toISOString(),
       updated_at: achievement.updated_at.toISOString(),
     }))
+  }
+
+  /**
+   * Удаление кастомной категории (только для создателя)
+   */
+  async deleteCustomCategory(categoryId: string, userId: string) {
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+      include: {
+        achievements: true,
+      },
+    })
+
+    if (!category) {
+      throw new Error('Category not found')
+    }
+
+    if (!category.is_custom || category.creator_id !== userId) {
+      throw new Error('You can only delete your own custom categories')
+    }
+
+    // Удаляем все изображения категории
+    if (category.icon_url) {
+      const fs = require('fs')
+      const path = require('path')
+      const iconPath = category.icon_url.replace(/^\/uploads\//, '')
+      const uploadsBase = process.cwd().includes('backend')
+        ? path.join(process.cwd(), 'uploads')
+        : path.join(process.cwd(), 'backend', 'uploads')
+      const fullPath = path.join(uploadsBase, iconPath)
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath)
+      }
+    }
+
+    // Удаляем категорию (каскадно удалятся все достижения)
+    await prisma.category.delete({
+      where: { id: categoryId },
+    })
+
+    return { success: true, message: 'Category deleted successfully' }
+  }
+
+  /**
+   * Удаление кастомного достижения (только для создателя)
+   */
+  async deleteCustomAchievement(achievementId: string, userId: string) {
+    const achievement = await prisma.achievement.findUnique({
+      where: { id: achievementId },
+      include: {
+        category: true,
+        userAchievements: {
+          include: {
+            photos: true,
+          },
+        },
+      },
+    })
+
+    if (!achievement) {
+      throw new Error('Achievement not found')
+    }
+
+    if (!achievement.creator_id || achievement.creator_id !== userId) {
+      throw new Error('You can only delete your own custom achievements')
+    }
+
+    // Удаляем изображение достижения
+    if (achievement.icon_url) {
+      const fs = require('fs')
+      const path = require('path')
+      const iconPath = achievement.icon_url.replace(/^\/uploads\//, '')
+      const uploadsBase = process.cwd().includes('backend')
+        ? path.join(process.cwd(), 'uploads')
+        : path.join(process.cwd(), 'backend', 'uploads')
+      const fullPath = path.join(uploadsBase, iconPath)
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath)
+      }
+    }
+
+    // Удаляем все связанные фотографии
+    const fs = require('fs')
+    const path = require('path')
+    for (const userAchievement of achievement.userAchievements) {
+      for (const photo of userAchievement.photos) {
+        const filePath = path.join(process.cwd(), (photo as any).file_path)
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+        }
+      }
+    }
+
+    // Удаляем достижение (каскадно удалятся все связанные UserAchievement)
+    await prisma.achievement.delete({
+      where: { id: achievementId },
+    })
+
+    return { success: true, message: 'Achievement deleted successfully' }
   }
 
   /**
