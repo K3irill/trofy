@@ -198,3 +198,71 @@ export const CommentReplyButton = styled.button`
     color: ${(props) => props.theme.colors.primary};
   }
 `
+
+export const ReplyForm = styled.div`
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${(props) => props.theme.colors.dark[600]}4d;
+`
+
+export const ReplyFormActions = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+`
+
+export const RepliesContainer = styled.div`
+  margin-top: 0.75rem;
+  margin-left: 3rem;
+  padding-left: 1.5rem;
+  border-left: 2px solid ${(props) => props.theme.colors.dark[600]}66;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: ${(props) => props.theme.colors.dark[600]}66;
+  }
+`
+
+export const RepliesToggle = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  color: ${(props) => props.theme.colors.primary};
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
+
+  svg {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    color: ${(props) => props.theme.colors.secondary};
+  }
+`
+
+export const RepliesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`
+
+export const ReplyItem = styled.div`
+  padding: 0.875rem;
+  background: ${(props) => props.theme.colors.dark[700]}80;
+  border-radius: 10px;
+  border: 1px solid ${(props) => props.theme.colors.dark[600]}33;
+  position: relative;
+`

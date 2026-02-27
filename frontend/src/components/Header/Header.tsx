@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
-import { logout } from '@/store/slices/authSlice'
+import { logoutWithCacheReset } from '@/store/slices/authSlice'
 import { SettingsModal } from '@/components/SettingsModal'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { NotificationModal } from '@/components/NotificationModal'
@@ -246,7 +246,7 @@ export const Header = () => {
                     </UserProfileMenuItem>
                     <UserProfileMenuDivider />
                     <UserProfileMenuItem $danger onClick={() => {
-                      dispatch(logout())
+                      dispatch(logoutWithCacheReset())
                       setShowProfileMenu(false)
                       router.push('/')
                     }}>
@@ -406,7 +406,7 @@ export const Header = () => {
             )}
             {isAuthenticated && (
               <MobileMenuLogoutButton onClick={() => {
-                dispatch(logout())
+                dispatch(logoutWithCacheReset())
                 setIsMobileMenuOpen(false)
                 router.push('/')
               }}>

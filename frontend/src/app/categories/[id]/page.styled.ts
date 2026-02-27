@@ -305,6 +305,7 @@ export const CategoryIconLarge = styled.div`
   justify-content: center;
   font-size: 4rem;
   border: 2px solid ${(props) => props.theme.colors.dark[600]};
+  overflow: hidden;
 
   img {
     width: 100%;
@@ -523,6 +524,7 @@ export const AchievementListIcon = styled.div<{ $status: AchievementStatus }>`
   justify-content: center;
   font-size: 2rem;
   flex-shrink: 0;
+  overflow: hidden;
   filter: ${(props) => {
     if (props.$status === 'not_achieved') return 'grayscale(0.6) brightness(0.7)'
     return `drop-shadow(${props.theme.shadows.glow.primary})`

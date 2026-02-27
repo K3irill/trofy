@@ -1,6 +1,6 @@
 import { Middleware } from '@reduxjs/toolkit'
 import { isTokenExpired, getRefreshToken, getAccessToken, clearTokens } from '@/lib/auth/tokenStorage'
-import { logout } from '../slices/authSlice'
+import { logoutWithCacheReset } from '../slices/authSlice'
 
 /**
  * Middleware для проверки истечения токена и автоматического logout
@@ -13,7 +13,7 @@ export const authMiddleware: Middleware = (store) => (next) => (action) => {
   }
 
   // Пропускаем проверку для самого действия logout, чтобы избежать бесконечного цикла
-  if (action.type === logout.type) {
+  if (action.type === logoutWithCacheReset.typePrefix || action.type === logoutWithCacheReset.pending.type || action.type === logoutWithCacheReset.fulfilled.type || action.type === logoutWithCacheReset.rejected.type) {
     return next(action)
   }
 
@@ -37,11 +37,11 @@ export const authMiddleware: Middleware = (store) => (next) => (action) => {
     if (accessToken && isTokenExpired()) {
       const refreshToken = getRefreshToken()
 
-      // Если нет refresh токена, делаем logout
+      // Если нет refresh токена, делаем logout с сбросом кэша
       if (!refreshToken) {
         clearTokens()
         // Используем next вместо dispatch, чтобы избежать повторного прохождения через middleware
-        return next(logout())
+        return next(logoutWithCacheReset())
       }
       // Если есть refresh токен, RTK Query автоматически обновит токен через baseQueryWithReauth
     }

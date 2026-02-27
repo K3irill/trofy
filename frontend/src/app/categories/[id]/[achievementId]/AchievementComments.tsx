@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AchievementDetail, AchievementComment } from './types'
 import {
   useGetCommentsQuery,
@@ -10,7 +10,7 @@ import {
 import { useToast } from '@/hooks/useToast'
 import { useConfirm } from '@/hooks/useConfirm'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
-import { IoChatbubbleOutline, IoChatbubble } from 'react-icons/io5'
+import { IoChatbubbleOutline, IoChatbubble, IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import {
   CommentsContainer,
   CommentsHeader,
@@ -30,6 +30,12 @@ import {
   CommentDeleteButton,
   CommentCancelButton,
   CommentReplyButton,
+  ReplyForm,
+  ReplyFormActions,
+  RepliesContainer,
+  RepliesToggle,
+  RepliesList,
+  ReplyItem,
 } from './AchievementComments.styled'
 
 interface AchievementCommentsProps {
@@ -61,7 +67,8 @@ const mockComments: AchievementComment[] = [
 export const AchievementComments = ({ achievement, isOwner, currentUserId, userAchievementId }: AchievementCommentsProps) => {
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
-  const [replyText, setReplyText] = useState('')
+  const [replyText, setReplyText] = useState<Record<string, string>>({})
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set())
   const { showToast, ToastComponent } = useToast()
   const { confirm, ConfirmComponent } = useConfirm()
 
@@ -74,6 +81,19 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
   )
   const [createComment, { isLoading: isSubmitting }] = useCreateCommentMutation()
   const [deleteComment] = useDeleteCommentMutation()
+
+  // Разворачиваем ответы по умолчанию при загрузке комментариев
+  useEffect(() => {
+    if (comments.length > 0) {
+      const defaultExpanded = new Set<string>()
+      comments.forEach((comment) => {
+        if (comment.replies && comment.replies.length > 0) {
+          defaultExpanded.add(comment.id)
+        }
+      })
+      setExpandedReplies(defaultExpanded)
+    }
+  }, [comments])
 
   if (!hasUserAchievement) {
     return null
@@ -99,15 +119,38 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
         userAchievementId,
         data: {
           text: newComment,
-          parent_comment_id: replyingTo || undefined,
         },
       }).unwrap()
       setNewComment('')
-      setReplyingTo(null)
-      setReplyText('')
       showToast('Комментарий добавлен', 'success')
     } catch (error) {
       showToast('Ошибка при добавлении комментария', 'error')
+    }
+  }
+
+  const handleSubmitReply = async (commentId: string) => {
+    const text = replyText[commentId]?.trim()
+    if (!text || isSubmitting || !userAchievementId) return
+
+    try {
+      await createComment({
+        userAchievementId,
+        data: {
+          text,
+          parent_comment_id: commentId,
+        },
+      }).unwrap()
+      setReplyText((prev) => {
+        const newReplyText = { ...prev }
+        delete newReplyText[commentId]
+        return newReplyText
+      })
+      setReplyingTo(null)
+      // Разворачиваем ответы, если они были свернуты
+      setExpandedReplies((prev) => new Set(prev).add(commentId))
+      showToast('Ответ добавлен', 'success')
+    } catch (error) {
+      showToast('Ошибка при добавлении ответа', 'error')
     }
   }
 
@@ -134,11 +177,31 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
 
   const handleReply = (commentId: string) => {
     setReplyingTo(commentId)
+    // Разворачиваем ответы при начале ответа
+    setExpandedReplies((prev) => new Set(prev).add(commentId))
   }
 
-  const handleCancelReply = () => {
-    setReplyingTo(null)
-    setReplyText('')
+  const handleCancelReply = (commentId: string) => {
+    if (replyingTo === commentId) {
+      setReplyingTo(null)
+    }
+    setReplyText((prev) => {
+      const newReplyText = { ...prev }
+      delete newReplyText[commentId]
+      return newReplyText
+    })
+  }
+
+  const toggleReplies = (commentId: string) => {
+    setExpandedReplies((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId)
+      } else {
+        newSet.add(commentId)
+      }
+      return newSet
+    })
   }
 
   const formatDate = (dateString: string) => {
@@ -173,25 +236,14 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
 
       <CommentForm onSubmit={handleSubmitComment}>
         <CommentInput
-          value={replyingTo ? replyText : newComment}
-          onChange={(e) => {
-            if (replyingTo) {
-              setReplyText(e.target.value)
-            } else {
-              setNewComment(e.target.value)
-            }
-          }}
-          placeholder={replyingTo ? 'Написать ответ...' : 'Написать комментарий...'}
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Написать комментарий..."
           rows={3}
         />
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {replyingTo && (
-            <CommentCancelButton type="button" onClick={handleCancelReply}>
-              Отмена
-            </CommentCancelButton>
-          )}
-          <CommentSubmitButton type="submit" disabled={(!newComment.trim() && !replyText.trim()) || isSubmitting}>
-            {isSubmitting ? 'Отправка...' : replyingTo ? 'Ответить' : 'Отправить'}
+          <CommentSubmitButton type="submit" disabled={!newComment.trim() || isSubmitting}>
+            {isSubmitting ? 'Отправка...' : 'Отправить'}
           </CommentSubmitButton>
         </div>
       </CommentForm>
@@ -233,42 +285,76 @@ export const AchievementComments = ({ achievement, isOwner, currentUserId, userA
                   </CommentDeleteButton>
                 )}
               </CommentActions>
+              
+              {/* Форма ответа под комментарием */}
+              {replyingTo === comment.id && (
+                <ReplyForm>
+                  <CommentInput
+                    value={replyText[comment.id] || ''}
+                    onChange={(e) => setReplyText((prev) => ({ ...prev, [comment.id]: e.target.value }))}
+                    placeholder="Написать ответ..."
+                    rows={2}
+                  />
+                  <ReplyFormActions>
+                    <CommentCancelButton type="button" onClick={() => handleCancelReply(comment.id)}>
+                      Отмена
+                    </CommentCancelButton>
+                    <CommentSubmitButton
+                      type="button"
+                      onClick={() => handleSubmitReply(comment.id)}
+                      disabled={!replyText[comment.id]?.trim() || isSubmitting}
+                    >
+                      {isSubmitting ? 'Отправка...' : 'Ответить'}
+                    </CommentSubmitButton>
+                  </ReplyFormActions>
+                </ReplyForm>
+              )}
             </CommentItem>
+            
+            {/* Ответы на комментарий */}
             {comment.replies && comment.replies.length > 0 && (
-              <div style={{ marginLeft: '3rem', marginTop: '0.5rem' }}>
-                {comment.replies.map((reply) => (
-                  <CommentItem key={reply.id} style={{ marginBottom: '0.75rem' }}>
-                    <CommentHeader>
-                      <CommentAvatar>
-                        {reply.avatarUrl ? (
-                          <img
-                            src={reply.avatarUrl.startsWith('http') ? reply.avatarUrl : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${reply.avatarUrl}`}
-                            alt={reply.username}
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none'
-                              e.currentTarget.parentElement!.textContent = reply.username[0].toUpperCase()
-                            }}
-                          />
-                        ) : (
-                          reply.username[0].toUpperCase()
+              <RepliesContainer>
+                <RepliesToggle onClick={() => toggleReplies(comment.id)}>
+                  {expandedReplies.has(comment.id) ? <IoChevronUp /> : <IoChevronDown />}
+                  <span>{expandedReplies.has(comment.id) ? 'Скрыть' : 'Показать'} {comment.replies.length} {comment.replies.length === 1 ? 'ответ' : comment.replies.length < 5 ? 'ответа' : 'ответов'}</span>
+                </RepliesToggle>
+                {expandedReplies.has(comment.id) && (
+                  <RepliesList>
+                    {comment.replies.map((reply) => (
+                      <ReplyItem key={reply.id}>
+                        <CommentHeader>
+                          <CommentAvatar>
+                            {reply.avatarUrl ? (
+                              <img
+                                src={reply.avatarUrl.startsWith('http') ? reply.avatarUrl : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${reply.avatarUrl}`}
+                                alt={reply.username}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none'
+                                  e.currentTarget.parentElement!.textContent = reply.username[0].toUpperCase()
+                                }}
+                              />
+                            ) : (
+                              reply.username[0].toUpperCase()
+                            )}
+                          </CommentAvatar>
+                          <CommentInfo>
+                            <CommentAuthor>{reply.username}</CommentAuthor>
+                            <CommentDate>{formatDate(reply.createdAt)}</CommentDate>
+                          </CommentInfo>
+                        </CommentHeader>
+                        <CommentText>{reply.text}</CommentText>
+                        {(isOwner || reply.userId === currentUserId) && (
+                          <CommentActions>
+                            <CommentDeleteButton onClick={() => handleDeleteComment(reply.id)}>
+                              Удалить
+                            </CommentDeleteButton>
+                          </CommentActions>
                         )}
-                      </CommentAvatar>
-                      <CommentInfo>
-                        <CommentAuthor>{reply.username}</CommentAuthor>
-                        <CommentDate>{formatDate(reply.createdAt)}</CommentDate>
-                      </CommentInfo>
-                    </CommentHeader>
-                    <CommentText>{reply.text}</CommentText>
-                    {(isOwner || reply.userId === currentUserId) && (
-                      <CommentActions>
-                        <CommentDeleteButton onClick={() => handleDeleteComment(reply.id)}>
-                          Удалить
-                        </CommentDeleteButton>
-                      </CommentActions>
-                    )}
-                  </CommentItem>
-                ))}
-              </div>
+                      </ReplyItem>
+                    ))}
+                  </RepliesList>
+                )}
+              </RepliesContainer>
             )}
           </div>
         ))}

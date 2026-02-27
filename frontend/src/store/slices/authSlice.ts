@@ -1,8 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { AuthState, User } from '@/types'
 import { saveTokens, clearTokens } from '@/lib/auth/tokenStorage'
 import { authApi } from '../api/authApi'
 import { userApi } from '../api/userApi'
+import { baseApi } from '../api/baseApi'
 
 // Инициализация состояния - читаем пользователя из localStorage на клиенте
 const initialState: AuthState = {
@@ -14,6 +15,17 @@ const initialState: AuthState = {
   loading: false,
   error: null,
 }
+
+// Thunk для logout с сбросом кэша
+export const logoutWithCacheReset = createAsyncThunk(
+  'auth/logoutWithCacheReset',
+  async (_, { dispatch }) => {
+    // Сбрасываем кэш RTK Query
+    dispatch(baseApi.util.resetApiState())
+    // Возвращаем пустой результат
+    return null
+  }
+)
 
 const authSlice = createSlice({
   name: 'auth',
@@ -107,7 +119,7 @@ const authSlice = createSlice({
       })
 
     // Logout
-    builder.addMatcher(authApi.endpoints.logout.matchFulfilled, (state) => {
+    builder.addMatcher(authApi.endpoints.logout.matchFulfilled, () => {
       clearTokens()
       if (typeof window !== 'undefined') {
         localStorage.removeItem('user')
@@ -115,9 +127,38 @@ const authSlice = createSlice({
       return initialState
     })
 
+    // Logout with cache reset
+    builder
+      .addMatcher(
+        (action) => action.type === logoutWithCacheReset.pending.type,
+        (state) => {
+          state.loading = true
+        }
+      )
+      .addMatcher(
+        (action) => action.type === logoutWithCacheReset.fulfilled.type,
+        () => {
+          clearTokens()
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('user')
+          }
+          return initialState
+        }
+      )
+      .addMatcher(
+        (action) => action.type === logoutWithCacheReset.rejected.type,
+        () => {
+          clearTokens()
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('user')
+          }
+          return initialState
+        }
+      )
+
     // GetMe
     builder
-      .addMatcher(authApi.endpoints.getMe.matchPending, (state) => {
+      .addMatcher(userApi.endpoints.getMe.matchPending, (state) => {
         state.loading = true
       })
       .addMatcher(userApi.endpoints.getMe.matchFulfilled, (state, action) => {

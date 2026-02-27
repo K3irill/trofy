@@ -92,6 +92,7 @@ export const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 16px;
   }
 
   @media (max-width: 768px) {
