@@ -132,6 +132,8 @@ export function formatUser(
       privacy_settings: privacy,
       created_at: user.created_at.toISOString(),
       updated_at: user.updated_at.toISOString(),
+      bio: user.bio,
+      avatar_url: user.avatar_url || null,
     }
   }
 

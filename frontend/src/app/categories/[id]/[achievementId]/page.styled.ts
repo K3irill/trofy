@@ -332,3 +332,19 @@ export const ContentSection = styled.div`
   gap: 1rem;
   margin-bottom: 1rem;
 `
+
+export const NotFoundState = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
+`
+
+export const NotFoundIconWrap = styled.div`
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+`
+
+export const NotFoundText = styled.div`
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 1.125rem;
+`

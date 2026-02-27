@@ -40,6 +40,9 @@ import {
   ContentSection,
   CreatorInfo,
   CreatorLink,
+  NotFoundState,
+  NotFoundIconWrap,
+  NotFoundText,
 } from './page.styled'
 
 export default function AchievementDetailPage() {
@@ -170,14 +173,20 @@ export default function AchievementDetailPage() {
   }
 
   if (error || !achievementDetail || !achievement) {
+    const status = (error as any)?.status
+    const message =
+      status === 403 || status === 404
+        ? 'Достижение недоступно'
+        : 'Достижение не найдено'
+
     return (
       <Container>
-        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+        <NotFoundState>
+          <NotFoundIconWrap>
             <IoSearch style={{ color: '#9ca3af', fontSize: '4rem', width: '4rem', height: '4rem' }} />
-          </div>
-          <div style={{ color: '#9ca3af', fontSize: '1.125rem' }}>Достижение не найдено</div>
-        </div>
+          </NotFoundIconWrap>
+          <NotFoundText>{message}</NotFoundText>
+        </NotFoundState>
       </Container>
     )
   }

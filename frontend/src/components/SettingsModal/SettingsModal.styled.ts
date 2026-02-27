@@ -202,3 +202,61 @@ export const SettingsCategoryArrow = styled.span`
     transform: translateX(4px);
   }
 `
+
+export const SettingsSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+`
+
+export const SettingsRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+`
+
+export const SettingsRowText = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`
+
+export const SettingsRowTitle = styled.div`
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: ${(props) => props.theme.colors.light[100]};
+`
+
+export const SettingsRowDescription = styled.div`
+  font-size: 0.85rem;
+  color: ${(props) => props.theme.colors.secondary};
+`
+
+export const SettingsToggle = styled.button<{ $active?: boolean }>`
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 72px;
+  text-align: center;
+  transition: all 0.2s ease;
+  color: #fff;
+  background: ${(props) =>
+    props.$active ? props.theme.colors.success : props.theme.colors.dark.glassLight};
+  box-shadow: ${(props) => (props.$active ? props.theme.shadows.sm : 'none')};
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+  }
+`

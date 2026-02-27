@@ -46,6 +46,43 @@ export const ProfileTitleWrap = styled.div`
 	}
 `
 
+export const ProfileTitle = styled.h2`
+	color: ${props => props.theme.colors.light[100]};
+	font-size: 1.5rem;
+	font-weight: 700;
+	margin: 0;
+	text-align: left;
+
+	@media (max-width: 767px) {
+		font-size: 1.25rem;
+	}
+`
+
+export const ClosedProfileNotice = styled.p`
+	margin: 0.75rem 0 0;
+	color: ${props => props.theme.colors.light[300]};
+	font-size: 0.9rem;
+	text-align: center;
+	display: inline-flex;
+  flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+
+  svg{
+    width: 50px;
+    height: 50px;
+  }
+`
+
+export const ProfileSidePanel = styled.div<{ $centered?: boolean }>`
+	display: flex;
+	flex-direction: column;
+	align-items: ${props => (props.$centered ? 'center' : 'stretch')};
+	justify-content: ${props => (props.$centered ? 'center' : 'flex-start')};
+	gap: 1rem;
+`
+
 export const MainInfoWrap = styled.div`
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -286,9 +323,9 @@ export const Avatar = styled.div`
 	align-items: center;
 	justify-content: center;
 	font-size: 3.5rem;
-	border: 4px solid ${props => props.theme.colors.neomorphLight};
+	border: 4px solid ${props => props.theme.colors.dark.neomorphLight};
 	box-shadow: ${props => props.theme.shadows.glow.primary},
-		inset 0 0 20px ${props => props.theme.colors.neomorphLight};
+		inset 0 0 20px ${props => props.theme.colors.dark.neomorphLight};
 	position: relative;
 	z-index: 1;
 	overflow: hidden;
@@ -327,7 +364,8 @@ export const Username = styled.h2`
 `
 
 export const Level = styled.div`
-	display: inline-block;
+  display: inline-flex;
+  align-items: center;
 	background: linear-gradient(
 		135deg,
 		${props => props.theme.colors.gold} 0%,
@@ -387,12 +425,15 @@ export const XPProgress = styled(motion.div)`
 `
 
 export const XPText = styled.p`
+  display: flex;
+  align-items: center;
+  justify-content: center;
 	color: ${props => props.theme.colors.light[300]};
 	font-size: 0.875rem;
 	margin-bottom: 2rem;
 	position: relative;
 	z-index: 1;
-
+  
 	@media (max-width: 767px) {
 		margin-bottom: 1.5rem;
 	}
@@ -418,7 +459,7 @@ export const StatItem = styled.div`
 	background: ${props => props.theme.colors.dark.neomorphDark};
 	padding: 1.25rem;
 	border-radius: 16px;
-	border: 1px solid ${props => props.theme.colors.neomorphLight};
+	border: 1px solid ${props => props.theme.colors.dark.neomorphLight};
 	backdrop-filter: blur(10px);
 	box-shadow: ${props => props.theme.shadows.neomorph.dark};
 
@@ -580,7 +621,7 @@ export const TrophyCard = styled(motion.div) <{ isNew: boolean }>`
 	position: relative;
 	overflow: hidden;
 	transition: all 0.3s ease;
-	border: 1px solid ${props => props.theme.colors.neomorphLight};
+	border: 1px solid ${props => props.theme.colors.dark.neomorphLight};
 	min-height: 180px;
 	height: 180px;
 	display: flex;
@@ -784,7 +825,7 @@ export const GoalItem = styled(motion.div) <{ $isComplete?: boolean }>`
 	background: ${props => props.theme.colors.dark.neomorphDark};
 	border-radius: 12px;
 	padding: 1rem;
-	border: 1px solid ${props => props.theme.colors.neomorphLight};
+	border: 1px solid ${props => props.theme.colors.dark.neomorphLight};
 	transition: all 0.3s ease;
 	min-height: 100px;
 	height: 100px;
@@ -921,7 +962,7 @@ export const RemoveButton = styled(motion.button)`
 	align-items: center;
 	justify-content: center;
 	background: ${props => props.theme.colors.dark.glassLight};
-	border: 1px solid ${props => props.theme.colors.neomorphLight};
+	border: 1px solid ${props => props.theme.colors.dark.neomorphLight};
 	border-radius: 50%;
 	color: ${props => props.theme.colors.light[300]};
 	cursor: pointer;
@@ -987,7 +1028,7 @@ export const ShareButton = styled(motion.button)`
 	width: 100%;
 	padding: 0.875rem;
 	background: ${props => props.theme.colors.dark.neomorphDark};
-	border: 1px solid ${props => props.theme.colors.neomorphLight};
+	border: 1px solid ${props => props.theme.colors.dark.neomorphLight};
 	border-radius: 12px;
 	color: ${props => props.theme.colors.light[100]};
 	font-size: 0.875rem;

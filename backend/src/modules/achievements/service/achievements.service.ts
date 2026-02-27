@@ -6,6 +6,50 @@ import { saveFileFromBuffer, deleteFile, deleteAchievementFiles } from '../../..
 import { calculateLevel } from '../../../shared/utils/levelCalculator'
 
 export class AchievementsService {
+  private normalizeAllowedUserIds(value: any): string[] {
+    if (!value) return []
+    if (Array.isArray(value)) return value
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value)
+        return Array.isArray(parsed) ? parsed : []
+      } catch {
+        return []
+      }
+    }
+    return []
+  }
+
+  private canAccessByPrivacy(
+    entity: { is_public?: boolean | null; allowed_user_ids?: any; creator_id?: string | null },
+    viewerId?: string
+  ) {
+    const isPublic = (entity as any).is_public !== false
+    if (isPublic) return true
+    if (!viewerId) return false
+    const allowedUserIds = this.normalizeAllowedUserIds((entity as any).allowed_user_ids)
+    const creatorId = (entity as any).creator_id
+    return creatorId === viewerId || allowedUserIds.includes(viewerId)
+  }
+
+  private ensureCanAccessCategory(category: any, viewerId?: string) {
+    if (!this.canAccessByPrivacy(category, viewerId)) {
+      // Не светим существование приватной категории
+      throw ApiError.notFound('Category not found')
+    }
+  }
+
+  private ensureCanAccessAchievement(achievement: any, viewerId?: string) {
+    // Доступ к самому достижению
+    if (!this.canAccessByPrivacy(achievement, viewerId)) {
+      throw ApiError.notFound('Achievement not found')
+    }
+
+    // И доступ к категории тоже (важно, если категория приватная)
+    if (achievement.category && !this.canAccessByPrivacy(achievement.category, viewerId)) {
+      throw ApiError.notFound('Achievement not found')
+    }
+  }
   /**
    * Получение всех возможных редкостей
    */
@@ -238,7 +282,7 @@ export class AchievementsService {
   /**
    * Получение категории по ID
    */
-  async getCategoryById(categoryId: string) {
+  async getCategoryById(categoryId: string, viewerId?: string) {
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
       include: {
@@ -259,6 +303,8 @@ export class AchievementsService {
     if (!category) {
       throw ApiError.notFound('Category not found')
     }
+
+    this.ensureCanAccessCategory(category, viewerId)
 
     // Преобразуем JSON поле в массив, если это строка
     let allowedUserIds: string[] = []
@@ -309,6 +355,9 @@ export class AchievementsService {
     if (!category) {
       throw ApiError.notFound('Category not found')
     }
+
+    // Проверка доступа к категории (для приватных)
+    this.ensureCanAccessCategory(category, userId)
 
     let unlockedCount = 0
     if (userId) {
@@ -371,16 +420,17 @@ export class AchievementsService {
 
     // Проверяем права доступа к категории
     const isPublic = (category as any).is_public !== false
-    const allowedUserIds = (category as any).allowed_user_ids || []
+    const allowedUserIds = this.normalizeAllowedUserIds((category as any).allowed_user_ids)
     const creatorId = category.creator_id
 
     // Если категория приватная, проверяем доступ
     if (!isPublic) {
       if (!userId) {
-        throw ApiError.forbidden('Category is private')
+        // Не светим существование приватной категории
+        throw ApiError.notFound('Category not found')
       }
       if (creatorId !== userId && !allowedUserIds.includes(userId)) {
-        throw ApiError.forbidden('You do not have access to this category')
+        throw ApiError.notFound('Category not found')
       }
     }
 
@@ -495,6 +545,9 @@ export class AchievementsService {
           id: true,
           name: true,
           icon_url: true,
+          is_public: true,
+          allowed_user_ids: true,
+          creator_id: true,
         },
       },
     }
@@ -518,8 +571,13 @@ export class AchievementsService {
     let formatted = achievements
       .filter((achievement) => {
         const isPublic = (achievement as any).is_public !== false
-        const allowedUserIds = (achievement as any).allowed_user_ids || []
+        const allowedUserIds = this.normalizeAllowedUserIds((achievement as any).allowed_user_ids)
         const creatorId = (achievement as any).creator_id
+
+        // Категория тоже должна быть доступна
+        if (!this.canAccessByPrivacy((achievement as any).category, userId)) {
+          return false
+        }
 
         // Если публичное - доступно всем
         if (isPublic) return true
@@ -648,6 +706,9 @@ export class AchievementsService {
               id: true,
               name: true,
               icon_url: true,
+              is_public: true,
+              allowed_user_ids: true,
+              creator_id: true,
             },
           },
           creator: {
@@ -673,6 +734,9 @@ export class AchievementsService {
     if (!achievement) {
       throw ApiError.notFound('Achievement not found')
     }
+
+    // Проверка доступа (приватное достижение нельзя открыть по прямой ссылке без прав)
+    this.ensureCanAccessAchievement(achievement, userId)
 
     const userAchievement = userId && achievement.userAchievements
       ? achievement.userAchievements.find((ua) => ua.user_id === userId)

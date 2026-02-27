@@ -25,7 +25,7 @@ import { ProfileThemeModal } from './ProfileThemeModal'
 import { BackgroundIcons } from './BackgroundIcons'
 import { AvatarUploadModal } from './AvatarUploadModal'
 import { MainAchievement } from './MainAchievement'
-import { IoColorPaletteOutline, IoPerson, IoCamera } from 'react-icons/io5'
+import { IoColorPaletteOutline, IoPerson, IoCamera, IoStarOutline, IoFlashOutline } from 'react-icons/io5'
 import styled from 'styled-components'
 
 const ThemeButton = styled.button`
@@ -63,9 +63,19 @@ interface ProfileHeaderProps {
   xpToNextLevel: number
   currentXP: number
   mainAchievement?: UserAchievement | null
+  hideLevelAndXp?: boolean
 }
 
-export function ProfileHeader({ user, isAuthenticated, isOwnProfile = false, progress, xpToNextLevel, currentXP, mainAchievement }: ProfileHeaderProps) {
+export function ProfileHeader({
+  user,
+  isAuthenticated,
+  isOwnProfile = false,
+  progress,
+  xpToNextLevel,
+  currentXP,
+  mainAchievement,
+  hideLevelAndXp = false,
+}: ProfileHeaderProps) {
   const {
     status,
     setStatus,
@@ -204,19 +214,42 @@ export function ProfileHeader({ user, isAuthenticated, isOwnProfile = false, pro
         </StatusContainer>
       )}
 
-      <Level>Level {user.level}</Level>
+      {hideLevelAndXp && !isOwnProfile ? (
+        <>
+          <Level>
+            <IoStarOutline style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            <span>Уровень скрыт</span>
+          </Level>
+          <XPText>
+            <IoFlashOutline style={{ marginRight: 6, verticalAlign: 'middle' }} />
+            <span>XP скрыт</span>
+          </XPText>
+        </>
+      ) : (
+        <>
+          <Level>
+            <IoStarOutline style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            <span>Level {user.level}</span>
+          </Level>
 
-      <XPBar>
-        <XPProgress
-          initial={{ width: 0 }}
-          animate={{
-            width: `${progress}%`,
-            filter: progress > 80 ? ['hue-rotate(0deg)', 'hue-rotate(360deg)'] : 'none',
-          }}
-          transition={{ duration: 1, delay: 0.3 }}
-        />
-      </XPBar>
-      <XPText>{currentXP.toLocaleString()} / {xpToNextLevel.toLocaleString()} XP</XPText>
+          <XPBar>
+            <XPProgress
+              initial={{ width: 0 }}
+              animate={{
+                width: `${progress}%`,
+                filter: progress > 80 ? ['hue-rotate(0deg)', 'hue-rotate(360deg)'] : 'none',
+              }}
+              transition={{ duration: 1, delay: 0.3 }}
+            />
+          </XPBar>
+          <XPText>
+            <IoFlashOutline style={{ marginRight: 6, verticalAlign: 'middle' }} />
+            <span>
+              {currentXP.toLocaleString()} / {xpToNextLevel.toLocaleString()} XP
+            </span>
+          </XPText>
+        </>
+      )}
 
       <ProfileThemeModal
         isOpen={isThemeModalOpen}

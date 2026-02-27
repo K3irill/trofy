@@ -28,9 +28,10 @@ export default function UserProfilePage() {
   const { data: stats } = useGetUserStatsByUsernameQuery(username, {
     skip: !username,
   })
-
+  
   const isOwnProfile = isAuthenticated && currentUser && currentUser.username === username
-
+  const isProfileHidden = user && !user.privacy_settings?.show_profile && !isOwnProfile
+  
   // Если пользователь не авторизован и выбран фильтр "mine", переключаем на "best"
   const handleFilterChange = (filter: 'best' | 'recent' | 'mine') => {
     if (!isAuthenticated && filter === 'mine') {
@@ -93,7 +94,7 @@ export default function UserProfilePage() {
             isOwnProfile={isOwnProfile}
             stats={stats}
           />
-          <RecentTrophiesSection username={username} isOwnProfile={isOwnProfile} />
+          {!isProfileHidden && <RecentTrophiesSection username={username} isOwnProfile={isOwnProfile} />}
           {isOwnProfile && (
             <>
               {/* <DailyMissionSection />

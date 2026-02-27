@@ -81,7 +81,7 @@ export class AchievementsController {
     try {
       const { id } = req.params
       const userId = (req as AuthRequest).user?.userId
-      const category = await achievementsService.getCategoryById(id)
+      const category = await achievementsService.getCategoryById(id, userId)
       res.json(category)
     } catch (error) {
       next(error)

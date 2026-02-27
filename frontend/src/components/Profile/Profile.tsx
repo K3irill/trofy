@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { ProfileProps } from './types'
+import { IoLockClosed } from 'react-icons/io5'
 import { SectionMarker } from '@/components/SectionMarker'
 import { useGetStatsQuery, useGetUserAchievementsByUsernameQuery } from '@/store/api/userApi'
 import { PinnedAchievementsModal } from './PinnedAchievementsModal'
@@ -19,6 +20,9 @@ import {
   ProfileTitleWrap,
   ProfileOverlay,
   OverlayTitle,
+  ProfileTitle,
+  ClosedProfileNotice,
+  ProfileSidePanel,
 } from './styled'
 import { Button } from '@/components/ui/Button'
 
@@ -29,12 +33,17 @@ export const Profile = ({
   stats: externalStats,
   onLoginClick
 }: ProfileProps) => {
+  const isOwn = !!isOwnProfile
+
   // Используем переданные stats или получаем для текущего пользователя
   const { data: ownStats } = useGetStatsQuery(undefined, {
-    skip: !isOwnProfile || !!externalStats,
+    skip: !isOwn || !!externalStats,
   })
 
   const stats = externalStats || ownStats
+
+  const isProfileHidden = !user.privacy_settings?.show_profile
+  const hideLevelAndXp = isProfileHidden && !isOwn
 
   // Расчет опыта для текущего уровня
   // XP для уровня N = (N-1)^2 * 100
@@ -49,8 +58,8 @@ export const Profile = ({
     ? Math.max(0, Math.min(100, (currentXP / xpToNextLevel) * 100))
     : 100
 
-  const pinnedAchievementsHook = usePinnedAchievements(user, isOwnProfile)
-  const priorityAchievementsHook = usePriorityAchievements(user, isOwnProfile)
+  const pinnedAchievementsHook = usePinnedAchievements(user, isOwn)
+  const priorityAchievementsHook = usePriorityAchievements(user, isOwn)
 
   // Получаем главное достижение
   const { data: userAchievements } = useGetUserAchievementsByUsernameQuery(
@@ -68,48 +77,59 @@ export const Profile = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      $isBlurred={!isAuthenticated && isOwnProfile}
+      $isBlurred={!isAuthenticated && isOwn}
     >
 
 
       <ProfileTitleWrap>
         <SectionMarker />
-        <h2 style={{ color: '#f3f4f6', fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>
-          {isOwnProfile ? 'Мой профиль' : 'Профиль пользователя'}
-        </h2>
+        <ProfileTitle>{isOwn ? 'Мой профиль' : 'Профиль пользователя'}</ProfileTitle>
       </ProfileTitleWrap>
 
       <MainInfoWrap>
         <ProfileHeader
           user={user}
-          isAuthenticated={isOwnProfile}
-          isOwnProfile={isOwnProfile}
+          isAuthenticated={isOwn}
+          isOwnProfile={isOwn}
           progress={progress}
-          xpToNextLevel={xpToNextLevel}
-          currentXP={currentXP}
+          xpToNextLevel={hideLevelAndXp ? 0 : xpToNextLevel}
+          currentXP={hideLevelAndXp ? 0 : currentXP}
           mainAchievement={mainAchievement}
+          hideLevelAndXp={hideLevelAndXp}
         />
-        <div>
-          <PriorityAchievements
-            priorityAchievements={priorityAchievementsHook.priorityAchievements}
-            username={user.username}
-            onAdd={isOwnProfile ? priorityAchievementsHook.handleAddAchievement : undefined}
-            onRemove={isOwnProfile ? priorityAchievementsHook.handleRemoveAchievement : undefined}
-          />
-          <ProfileStreak isAuthenticated={true} user={user} stats={stats} />
-          <ProfileActions isAuthenticated={isAuthenticated} username={user.username} isOwnProfile={isOwnProfile} />
-        </div>
+        <ProfileSidePanel $centered={isProfileHidden && !isOwn}>
+          {isProfileHidden && !isOwn && (
+            <ClosedProfileNotice>
+              <IoLockClosed />
+              <span>Это закрытый профиль. Часть информации скрыта настройками приватности.</span>
+            </ClosedProfileNotice>
+          )}
+          {!isProfileHidden && (
+            <>
+              <PriorityAchievements
+                priorityAchievements={priorityAchievementsHook.priorityAchievements}
+                username={user.username}
+                onAdd={isOwn ? priorityAchievementsHook.handleAddAchievement : undefined}
+                onRemove={isOwn ? priorityAchievementsHook.handleRemoveAchievement : undefined}
+              />
+              <ProfileStreak isAuthenticated={true} user={user} stats={stats} />
+              <ProfileActions isAuthenticated={isAuthenticated} username={user.username} isOwnProfile={isOwn} />
+            </>
+          )}
+        </ProfileSidePanel>
       </MainInfoWrap>
 
-      <PinnedAchievements
-        isAuthenticated={true}
-        pinnedAchievements={pinnedAchievementsHook.pinnedAchievements}
-        username={user.username}
-        onAdd={isOwnProfile ? pinnedAchievementsHook.handleAddAchievement : undefined}
-        onRemove={isOwnProfile ? pinnedAchievementsHook.handleRemoveAchievement : undefined}
-      />
+      {!isProfileHidden && (
+        <PinnedAchievements
+          isAuthenticated={true}
+          pinnedAchievements={pinnedAchievementsHook.pinnedAchievements}
+          username={user.username}
+          onAdd={isOwn ? pinnedAchievementsHook.handleAddAchievement : undefined}
+          onRemove={isOwn ? pinnedAchievementsHook.handleRemoveAchievement : undefined}
+        />
+      )}
 
-      {isOwnProfile && (
+      {isOwn && (
         <>
           <PinnedAchievementsModal
             isOpen={pinnedAchievementsHook.modalOpen}
@@ -133,9 +153,9 @@ export const Profile = ({
         </>
       )}
 
-      <ProfileStats isAuthenticated={true} stats={stats} />
-      {isOwnProfile && <ProfileShare isAuthenticated={isAuthenticated} user={user} />}
-      {!isAuthenticated && isOwnProfile && (
+      {!isProfileHidden && <ProfileStats isAuthenticated={true} stats={stats} />}
+      {isOwn && <ProfileShare isAuthenticated={isAuthenticated} user={user} />}
+      {!isAuthenticated && isOwn && (
         <ProfileOverlay>
           <OverlayTitle>Авторизуйтесь, чтобы увидеть статистику</OverlayTitle>
           {onLoginClick && (
