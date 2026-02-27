@@ -154,6 +154,8 @@ export const TrophyIcon = styled.div <{ rarity: string }>`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
   filter: drop-shadow(0 0 15px ${(props) => {
     const rarityMap: Record<string, keyof typeof props.theme.colors.rarity> = {
       common: 'base',
@@ -169,7 +171,7 @@ export const TrophyIcon = styled.div <{ rarity: string }>`
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     display: block;
   }
 

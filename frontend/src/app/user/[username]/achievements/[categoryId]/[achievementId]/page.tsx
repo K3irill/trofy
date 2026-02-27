@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/useToast'
 import { renderIcon } from '@/lib/utils/iconUtils'
 import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
-import { IoArrowBack, IoFolderOpen, IoLockClosed, IoSearch, IoEyeOff, IoStar, IoHeart, IoCloseCircle, IoHandRight, IoChatbubble, IoCreateOutline, IoTrash } from 'react-icons/io5'
+import { IoArrowBack, IoFolderOpen, IoLockClosed, IoSearch, IoEyeOff, IoStar, IoHeart, IoCloseCircle, IoHandRight, IoChatbubble, IoCreateOutline, IoTrash, IoPerson, IoArrowForward } from 'react-icons/io5'
 import { AchievementDetailView } from '@/app/categories/[id]/[achievementId]/AchievementDetailView'
 import { AchievementActions } from '@/app/categories/[id]/[achievementId]/AchievementActions'
 import { AchievementProgress } from '@/app/categories/[id]/[achievementId]/AchievementProgress'
@@ -38,6 +38,15 @@ import {
   AchievementIndicators,
   IndicatorIcon,
   ContentSection,
+  OwnerBanner,
+  OwnerBannerContent,
+  OwnerBannerText,
+  OwnerBannerTitle,
+  OwnerBannerSubtitle,
+  ViewGeneralButton,
+  NotFoundState,
+  NotFoundIconWrap,
+  NotFoundText,
 } from '@/app/categories/[id]/[achievementId]/page.styled'
 
 export default function UserAchievementDetailPage() {
@@ -174,14 +183,38 @@ export default function UserAchievementDetailPage() {
   }
 
   if (error || !achievementDetail || !achievement) {
+    const checkError = (err: unknown): number | null => {
+      if (!err || typeof err !== 'object') return null
+      const errorObj = err as Record<string, unknown>
+      if ('status' in errorObj && typeof errorObj.status === 'number') return errorObj.status
+      if (errorObj?.data && typeof errorObj.data === 'object' && errorObj.data !== null) {
+        const data = errorObj.data as Record<string, unknown>
+        if ('status' in data && typeof data.status === 'number') return data.status
+      }
+      if ('originalStatus' in errorObj && typeof errorObj.originalStatus === 'number') {
+        return errorObj.originalStatus
+      }
+      return null
+    }
+
+    const errorStatus = checkError(error)
+    const message =
+      errorStatus === 403
+        ? 'Это достижение приватное'
+        : errorStatus === 404
+        ? 'Достижение не найдено'
+        : 'Достижение не найдено'
+    
+    const Icon = errorStatus === 403 ? IoLockClosed : IoSearch
+
     return (
       <Container>
-        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
-            <IoSearch style={{ color: '#9ca3af', fontSize: '4rem', width: '4rem', height: '4rem' }} />
-          </div>
-          <div style={{ color: '#9ca3af', fontSize: '1.125rem' }}>Достижение не найдено</div>
-        </div>
+        <NotFoundState>
+          <NotFoundIconWrap>
+            <Icon style={{ color: '#9ca3af', fontSize: '4rem', width: '4rem', height: '4rem' }} />
+          </NotFoundIconWrap>
+          <NotFoundText>{message}</NotFoundText>
+        </NotFoundState>
       </Container>
     )
   }
@@ -192,6 +225,30 @@ export default function UserAchievementDetailPage() {
         <BackButton onClick={() => router.push(`/user/${username}/achievements/${categoryId}`)}>
           <IoArrowBack /> Назад
         </BackButton>
+
+        {!isOwner && profileUser && (
+          <OwnerBanner
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <OwnerBannerContent>
+              <IoPerson size={24} style={{ color: 'var(--primary-color, #00d4ff)', flexShrink: 0 }} />
+              <OwnerBannerText>
+                <OwnerBannerTitle>Вы просматриваете достижение пользователя {profileUser.username}</OwnerBannerTitle>
+
+              </OwnerBannerText>
+            </OwnerBannerContent>
+            <ViewGeneralButton
+              onClick={() => router.push(`/categories/${categoryId}/${achievementId}`)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <IoArrowForward />
+              Взять в работу
+            </ViewGeneralButton>
+          </OwnerBanner>
+        )}
 
         {achievement.isHidden && (
           <HiddenBanner>
@@ -338,7 +395,9 @@ export default function UserAchievementDetailPage() {
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                fontSize: '1.25rem'
+                fontSize: '1.25rem',
+                borderRadius: '5px',
+                overflow: 'hidden'
               }}>
                 {achievementDetail.category.icon_url ? renderIcon(achievementDetail.category.icon_url, 'folder') : <IoFolderOpen />}
               </div>

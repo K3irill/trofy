@@ -68,7 +68,7 @@ export default function UserCategoryPage() {
   }, [searchQuery])
 
   // Получаем категорию
-  const { data: category, isLoading: isLoadingCategory } = useGetCategoryByIdQuery(categoryId, {
+  const { data: category, isLoading: isLoadingCategory, error: categoryError } = useGetCategoryByIdQuery(categoryId, {
     skip: !categoryId,
   })
 
@@ -81,6 +81,23 @@ export default function UserCategoryPage() {
     { username },
     { skip: !username }
   )
+
+  // Редирект на 404 при ошибках доступа (403/404)
+  useEffect(() => {
+    const checkError = (err: any) => {
+      if (!err) return null
+      if ('status' in err) return err.status
+      if (err?.data?.status) return err.data.status
+      if (err?.originalStatus) return err.originalStatus
+      return null
+    }
+
+    const errorStatus = checkError(categoryError) || checkError(achievementsError)
+    
+    if (errorStatus === 403 || errorStatus === 404) {
+      router.push('/404')
+    }
+  }, [categoryError, achievementsError, router])
 
   // Фильтруем достижения по категории
   const achievements = useMemo(() => {

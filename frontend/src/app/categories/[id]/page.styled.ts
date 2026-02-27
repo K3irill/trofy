@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { IoDocumentTextOutline } from 'react-icons/io5'
 
 
 
@@ -308,7 +309,7 @@ export const CategoryIconLarge = styled.div`
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
 
   @media (max-width: 767px) {
@@ -530,7 +531,7 @@ export const AchievementListIcon = styled.div<{ $status: AchievementStatus }>`
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
 
   @media (max-width: 768px) {
@@ -621,4 +622,65 @@ export const CreatorLink = styled(Link)`
   &:hover {
     color: rgba(0, 212, 255, 1);
   }
+`
+
+export const LoaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  width: 100%;
+  min-height: 200px;
+`
+
+export const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 0.875rem;
+`
+
+export const EmptyStateWrapper = styled.div`
+  text-align: center;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+`
+
+export const EmptyStateIcon = styled.div`
+  font-size: 3rem;
+  color: ${(props) => props.theme.colors.light[300]};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+export const EmptyStateText = styled.p`
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 1rem;
+  margin: 0;
+`
+
+export const NotFoundWrapper = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+`
+
+export const NotFoundIcon = styled.div`
+  font-size: 4rem;
+  color: ${(props) => props.theme.colors.light[300]};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`
+
+export const NotFoundText = styled.div`
+  font-size: 1.125rem;
+  color: ${(props) => props.theme.colors.light[300]};
 `

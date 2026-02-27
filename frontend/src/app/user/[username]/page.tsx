@@ -9,11 +9,41 @@ import { Profile } from '@/components/Profile'
 import { ShowcaseAside } from '@/components/ShowcaseAside'
 import { RecentTrophiesSection } from '@/components/RecentTrophiesSection'
 import Container from '@/components/Container/Container'
+import { BlockLoader } from '@/components/Loader/BlockLoader'
 import {
   Content,
   MainSection,
   AsideSection,
-} from '../../page.styled'
+  } from '../../page.styled'
+import styled from 'styled-components'
+
+const LoaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  width: 100%;
+  min-height: 200px;
+`
+
+const ErrorWrapper = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: ${(props) => props.theme.colors.light[100]};
+`
+
+const ErrorTitle = styled.h2`
+  color: ${(props) => props.theme.colors.light[100]};
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+`
+
+const ErrorText = styled.p`
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 1rem;
+  margin: 0;
+`
 
 export default function UserProfilePage() {
   const params = useParams()
@@ -53,9 +83,9 @@ export default function UserProfilePage() {
   if (isLoading) {
     return (
       <Container>
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#f3f4f6' }}>
-          Загрузка профиля...
-        </div>
+        <LoaderWrapper>
+          <BlockLoader text="Загрузка профиля..." />
+        </LoaderWrapper>
       </Container>
     )
   }
@@ -64,18 +94,18 @@ export default function UserProfilePage() {
     if ('status' in error && error.status === 403) {
       return (
         <Container>
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#f3f4f6' }}>
-            <h2>Профиль приватный</h2>
-            <p>Этот пользователь скрыл свой профиль от просмотра.</p>
-          </div>
+          <ErrorWrapper>
+            <ErrorTitle>Профиль приватный</ErrorTitle>
+            <ErrorText>Этот пользователь скрыл свой профиль от просмотра.</ErrorText>
+          </ErrorWrapper>
         </Container>
       )
     }
     return (
       <Container>
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#f3f4f6' }}>
-          Пользователь не найден
-        </div>
+        <ErrorWrapper>
+          <ErrorText>Пользователь не найден</ErrorText>
+        </ErrorWrapper>
       </Container>
     )
   }

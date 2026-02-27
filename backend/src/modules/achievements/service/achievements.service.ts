@@ -34,20 +34,20 @@ export class AchievementsService {
 
   private ensureCanAccessCategory(category: any, viewerId?: string) {
     if (!this.canAccessByPrivacy(category, viewerId)) {
-      // Не светим существование приватной категории
-      throw ApiError.notFound('Category not found')
+      // Возвращаем 403 для приватных категорий
+      throw ApiError.forbidden('Category is private')
     }
   }
 
   private ensureCanAccessAchievement(achievement: any, viewerId?: string) {
     // Доступ к самому достижению
     if (!this.canAccessByPrivacy(achievement, viewerId)) {
-      throw ApiError.notFound('Achievement not found')
+      throw ApiError.forbidden('Achievement is private')
     }
 
     // И доступ к категории тоже (важно, если категория приватная)
     if (achievement.category && !this.canAccessByPrivacy(achievement.category, viewerId)) {
-      throw ApiError.notFound('Achievement not found')
+      throw ApiError.forbidden('Achievement is private')
     }
   }
   /**
@@ -68,11 +68,6 @@ export class AchievementsService {
   async getCategories(viewerId?: string) {
     const categories = await prisma.category.findMany({
       include: {
-        _count: {
-          select: {
-            achievements: true,
-          },
-        },
         creator: {
           select: {
             id: true,
@@ -103,6 +98,34 @@ export class AchievementsService {
       return false
     })
 
+    // Получаем все достижения для всех категорий для фильтрации приватных
+    const allCategoryAchievements = await prisma.achievement.findMany({
+      where: {
+        category_id: {
+          in: filteredCategories.map((c) => c.id),
+        },
+      },
+      select: {
+        id: true,
+        category_id: true,
+        is_public: true,
+        allowed_user_ids: true,
+        creator_id: true,
+      },
+    })
+
+    // Группируем достижения по категориям и фильтруем приватные
+    const categoryAchievementCounts = new Map<string, number>()
+    filteredCategories.forEach((category) => {
+      const categoryAchievements = allCategoryAchievements.filter(
+        (a) => a.category_id === category.id
+      )
+      const accessibleAchievements = categoryAchievements.filter((achievement) =>
+        this.canAccessByPrivacy(achievement, viewerId)
+      )
+      categoryAchievementCounts.set(category.id, accessibleAchievements.length)
+    })
+
     return filteredCategories.map((category) => ({
       id: category.id,
       name: category.name,
@@ -110,7 +133,7 @@ export class AchievementsService {
       is_custom: category.is_custom,
       creator_id: category.creator_id,
       creator_username: category.creator?.username || undefined,
-      achievements_count: category._count.achievements,
+      achievements_count: categoryAchievementCounts.get(category.id) || 0,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
     }))
@@ -201,20 +224,64 @@ export class AchievementsService {
       })
 
       userAchievementsSet = new Set(userAchievements.map((ua) => ua.achievement_id))
+    }
 
-      // Подсчитываем только завершенные достижения по категориям (с completion_date)
+    // Получаем все достижения для всех категорий для фильтрации приватных
+    const allCategoryAchievements = await prisma.achievement.findMany({
+      where: {
+        category_id: {
+          in: filteredCategories.map((c) => c.id),
+        },
+      },
+      select: {
+        id: true,
+        category_id: true,
+        is_public: true,
+        allowed_user_ids: true,
+        creator_id: true,
+      },
+    })
+
+    // Группируем достижения по категориям и фильтруем приватные
+    const categoryAchievementCounts = new Map<string, number>()
+    const accessibleAchievementIdsByCategory = new Map<string, Set<string>>()
+
+    filteredCategories.forEach((category) => {
+      const categoryAchievements = allCategoryAchievements.filter(
+        (a) => a.category_id === category.id
+      )
+      const accessibleAchievements = categoryAchievements.filter((achievement) =>
+        this.canAccessByPrivacy(achievement, userId)
+      )
+      categoryAchievementCounts.set(category.id, accessibleAchievements.length)
+
+      // Сохраняем ID доступных достижений для каждой категории
+      accessibleAchievementIdsByCategory.set(
+        category.id,
+        new Set(accessibleAchievements.map((a) => a.id))
+      )
+    })
+
+    // Подсчитываем только завершенные и доступные достижения по категориям
+    if (userId && userAchievements.length > 0) {
       categoryUnlockedCounts = new Map()
       userAchievements.forEach((ua) => {
         // Считаем только завершенные достижения (с completion_date)
         if (ua.completion_date) {
           const categoryId = ua.achievement.category_id
-          const currentCount = categoryUnlockedCounts!.get(categoryId) || 0
-          categoryUnlockedCounts!.set(categoryId, currentCount + 1)
+          const accessibleIds = accessibleAchievementIdsByCategory.get(categoryId)
+
+          // Проверяем, что достижение доступно пользователю
+          if (accessibleIds && accessibleIds.has(ua.achievement_id)) {
+            const currentCount = categoryUnlockedCounts!.get(categoryId) || 0
+            categoryUnlockedCounts!.set(categoryId, currentCount + 1)
+          }
         }
       })
     }
 
     return filteredCategories.map((category) => {
+      const total = categoryAchievementCounts.get(category.id) || 0
       const unlockedCount = userId && categoryUnlockedCounts
         ? categoryUnlockedCounts.get(category.id) || 0
         : 0
@@ -270,7 +337,7 @@ export class AchievementsService {
         creator_username: category.creator?.username || undefined,
         is_public: (category as any).is_public,
         allowed_user_ids: allowedUserIds,
-        total: category._count.achievements,
+        total,
         unlocked: unlockedCount,
         achievements_preview: achievementsPreview,
         created_at: category.created_at.toISOString(),
@@ -286,11 +353,6 @@ export class AchievementsService {
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
       include: {
-        _count: {
-          select: {
-            achievements: true,
-          },
-        },
         creator: {
           select: {
             id: true,
@@ -305,6 +367,26 @@ export class AchievementsService {
     }
 
     this.ensureCanAccessCategory(category, viewerId)
+
+    // Получаем все достижения в категории для фильтрации приватных
+    const allAchievements = await prisma.achievement.findMany({
+      where: {
+        category_id: categoryId,
+      },
+      select: {
+        id: true,
+        is_public: true,
+        allowed_user_ids: true,
+        creator_id: true,
+      },
+    })
+
+    // Фильтруем достижения по доступу (только доступные для текущего пользователя)
+    const accessibleAchievements = allAchievements.filter((achievement) =>
+      this.canAccessByPrivacy(achievement, viewerId)
+    )
+
+    const achievements_count = accessibleAchievements.length
 
     // Преобразуем JSON поле в массив, если это строка
     let allowedUserIds: string[] = []
@@ -325,7 +407,7 @@ export class AchievementsService {
       creator_username: category.creator?.username || undefined,
       is_public: category.is_public,
       allowed_user_ids: allowedUserIds,
-      achievements_count: category._count.achievements,
+      achievements_count,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
     }
@@ -338,11 +420,6 @@ export class AchievementsService {
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
       include: {
-        _count: {
-          select: {
-            achievements: true,
-          },
-        },
         creator: {
           select: {
             id: true,
@@ -359,13 +436,38 @@ export class AchievementsService {
     // Проверка доступа к категории (для приватных)
     this.ensureCanAccessCategory(category, userId)
 
+    // Получаем все достижения в категории для фильтрации приватных
+    const allAchievements = await prisma.achievement.findMany({
+      where: {
+        category_id: categoryId,
+      },
+      select: {
+        id: true,
+        is_public: true,
+        allowed_user_ids: true,
+        creator_id: true,
+      },
+    })
+
+    // Фильтруем достижения по доступу (только доступные для текущего пользователя)
+    const accessibleAchievements = allAchievements.filter((achievement) =>
+      this.canAccessByPrivacy(achievement, userId)
+    )
+
+    const total = accessibleAchievements.length
+
     let unlockedCount = 0
     if (userId) {
+      // Подсчитываем только завершенные достижения из доступных (с completion_date)
+      const accessibleAchievementIds = accessibleAchievements.map((a) => a.id)
       const userAchievements = await prisma.userAchievement.findMany({
         where: {
           user_id: userId,
-          achievement: {
-            category_id: categoryId,
+          achievement_id: {
+            in: accessibleAchievementIds,
+          },
+          completion_date: {
+            not: null,
           },
         },
         select: {
@@ -394,7 +496,7 @@ export class AchievementsService {
       creator_username: category.creator?.username || undefined,
       is_public: (category as any).is_public,
       allowed_user_ids: allowedUserIds,
-      total: category._count.achievements,
+      total,
       unlocked: unlockedCount,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
@@ -449,19 +551,34 @@ export class AchievementsService {
     const where: any = {
       completion_date: { not: null }, // Только завершенные
       is_hidden: false, // Не скрытые
-      is_public: true, // Публичные
+      // is_public проверяется в userAchievement, но нам нужно проверять achievement.is_public
+      // Поэтому убираем отсюда и проверяем после запроса через canAccessByPrivacy
     }
 
     const userAchievements = await prisma.userAchievement.findMany({
       where,
       include: {
         achievement: {
-          include: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            icon_url: true,
+            rarity: true,
+            xp_reward: true,
+            is_public: true,
+            allowed_user_ids: true,
+            creator_id: true,
+            created_at: true,
+            updated_at: true,
             category: {
               select: {
                 id: true,
                 name: true,
                 icon_url: true,
+                is_public: true,
+                allowed_user_ids: true,
+                creator_id: true,
               },
             },
           },
@@ -478,17 +595,35 @@ export class AchievementsService {
       take: type === 'best' ? limit * 3 : limit, // Для best берем больше, чтобы потом отсортировать по XP
     })
 
+    // Фильтруем достижения из приватных категорий и приватные достижения
+    const filteredUserAchievements = userAchievements.filter((ua) => {
+      const category = ua.achievement.category as any
+      const achievement = ua.achievement as any
+
+      // Проверяем доступ к категории
+      if (!this.canAccessByPrivacy(category, currentUserId)) {
+        return false
+      }
+
+      // Проверяем доступ к достижению (должно быть публичным, но для надежности проверяем)
+      if (!this.canAccessByPrivacy(achievement, currentUserId)) {
+        return false
+      }
+
+      return true
+    })
+
     // Для "best" сортируем по XP и берем топ
     if (type === 'best') {
-      userAchievements.sort((a, b) => {
+      filteredUserAchievements.sort((a, b) => {
         const xpA = a.achievement.xp_reward
         const xpB = b.achievement.xp_reward
         return xpB - xpA
       })
-      userAchievements.splice(limit) // Оставляем только топ limit
+      filteredUserAchievements.splice(limit) // Оставляем только топ limit
     }
 
-    return userAchievements.map((ua) => {
+    return filteredUserAchievements.map((ua) => {
       const isCurrentUser = currentUserId && ua.user_id === currentUserId
       return {
         id: ua.achievement.id,
@@ -756,7 +891,7 @@ export class AchievementsService {
       xp_reward: achievement.xp_reward,
       unlocked: !!userAchievement,
       unlocked_at: userAchievement?.unlocked_at.toISOString(),
-      is_public: userAchievement?.is_public ?? true,
+      is_public: achievement.is_public !== undefined ? achievement.is_public : true,
       creator_id: achievement.creator_id || undefined,
       creator_username: achievement.creator?.username || undefined,
       is_custom: !!achievement.creator_id,
@@ -1273,9 +1408,63 @@ export class AchievementsService {
    * Получение детальной информации о достижении
    */
   async getAchievementDetail(achievementId: string, userId?: string, currentUserId?: string) {
-    const achievementData = await this.getAchievementById(achievementId, userId)
+    // Сначала получаем достижение напрямую из БД для проверки доступа
+    const achievement = await prisma.achievement.findUnique({
+      where: { id: achievementId },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            icon_url: true,
+            is_public: true,
+            allowed_user_ids: true,
+            creator_id: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    })
 
-    // Если пользователь авторизован, получаем его UserAchievement
+    if (!achievement) {
+      throw ApiError.notFound('Achievement not found')
+    }
+
+    // Проверка доступа для текущего пользователя (viewer), а не владельца достижения
+    // userId - это владелец достижения, currentUserId - это кто смотрит
+    this.ensureCanAccessAchievement(achievement, currentUserId)
+
+    // Теперь получаем базовые данные достижения
+    const achievementData = {
+      id: achievement.id,
+      title: achievement.title,
+      description: achievement.description,
+      icon_url: achievement.icon_url,
+      rarity: achievement.rarity.toLowerCase() as 'common' | 'rare' | 'epic' | 'legendary',
+      category: {
+        id: achievement.category.id,
+        name: achievement.category.name,
+        icon_url: achievement.category.icon_url,
+      },
+      xp_reward: achievement.xp_reward,
+      unlocked: false, // Будет установлено ниже на основе userAchievement
+      unlocked_at: null as string | null,
+      is_public: achievement.is_public !== undefined ? achievement.is_public : true,
+      creator_id: achievement.creator_id || undefined,
+      creator_username: achievement.creator?.username || undefined,
+      is_custom: !!achievement.creator_id,
+      created_at: achievement.created_at.toISOString(),
+      updated_at: achievement.updated_at.toISOString(),
+      progress: undefined as number | undefined,
+      completion_date: undefined as string | undefined,
+    }
+
+    // Если передан userId (владелец достижения), получаем его UserAchievement
     let userAchievement = null
     let likesCount = 0
     let commentsCount = 0

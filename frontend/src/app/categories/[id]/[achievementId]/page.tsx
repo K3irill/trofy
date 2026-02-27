@@ -38,12 +38,11 @@ import {
   AchievementIndicators,
   IndicatorIcon,
   ContentSection,
-  CreatorInfo,
-  CreatorLink,
   NotFoundState,
   NotFoundIconWrap,
   NotFoundText,
 } from './page.styled'
+import Link from 'next/link'
 
 export default function AchievementDetailPage() {
   const router = useRouter()
@@ -173,17 +172,35 @@ export default function AchievementDetailPage() {
   }
 
   if (error || !achievementDetail || !achievement) {
-    const status = (error as any)?.status
+    const checkError = (err: unknown): number | null => {
+      if (!err || typeof err !== 'object') return null
+      const errorObj = err as Record<string, unknown>
+      if ('status' in errorObj && typeof errorObj.status === 'number') return errorObj.status
+      if (errorObj?.data && typeof errorObj.data === 'object' && errorObj.data !== null) {
+        const data = errorObj.data as Record<string, unknown>
+        if ('status' in data && typeof data.status === 'number') return data.status
+      }
+      if ('originalStatus' in errorObj && typeof errorObj.originalStatus === 'number') {
+        return errorObj.originalStatus
+      }
+      return null
+    }
+
+    const errorStatus = checkError(error)
     const message =
-      status === 403 || status === 404
-        ? 'Достижение недоступно'
+      errorStatus === 403
+        ? 'Это достижение приватное'
+        : errorStatus === 404
+        ? 'Достижение не найдено'
         : 'Достижение не найдено'
+    
+    const Icon = errorStatus === 403 ? IoLockClosed : IoSearch
 
     return (
       <Container>
         <NotFoundState>
           <NotFoundIconWrap>
-            <IoSearch style={{ color: '#9ca3af', fontSize: '4rem', width: '4rem', height: '4rem' }} />
+            <Icon style={{ color: '#9ca3af', fontSize: '4rem', width: '4rem', height: '4rem' }} />
           </NotFoundIconWrap>
           <NotFoundText>{message}</NotFoundText>
         </NotFoundState>
@@ -360,8 +377,20 @@ export default function AchievementDetailPage() {
               )}
             </div>
             <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <IoFolderOpen /> {achievementDetail.category.name}
+              <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ 
+                  width: '30px', 
+                  height: '30px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontSize: '1.25rem',
+                  borderRadius: '5px',
+                  overflow: 'hidden'
+                }}>
+                  {achievementDetail.category.icon_url ? renderIcon(achievementDetail.category.icon_url, 'folder') : <IoFolderOpen />}
+                </div>
+                {achievementDetail.category.name}
               </div>
               {achievementDetail.creator_username && !isAchievementCreator && (
                 <>

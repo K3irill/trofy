@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { IoTrophy, IoTime, IoPerson } from 'react-icons/io5'
 import { useGetShowcaseAchievementsQuery } from '@/store/api/achievementsApi'
 import { useGetRecentAchievementsQuery } from '@/store/api/userApi'
@@ -27,6 +28,8 @@ import {
   TrophyDate,
   TrophyHeaderInfo,
   TrophyHeaderWrap,
+  ShowcaseTitleContent,
+  TrophiesEmptyState,
 } from './styled'
 
 interface ShowcaseAsideProps {
@@ -36,6 +39,7 @@ interface ShowcaseAsideProps {
 }
 
 export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated = true }: ShowcaseAsideProps) => {
+  const router = useRouter()
   // Если не авторизован и выбран фильтр "mine", используем "best"
   const activeFilter = (!isAuthenticated && filter === 'mine') ? 'best' : filter
 
@@ -101,12 +105,14 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
         name: achievement.title,
         rarity: achievement.rarity,
         owner: achievement.is_current_user ? 'Вы' : achievement.owner.username,
+        ownerUsername: achievement.is_current_user ? (currentUser?.username || '') : achievement.owner.username,
         date: achievement.unlocked_at
           ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
           : 'Недавно',
         icon: achievement.icon_url || '🏆',
+        categoryId: achievement.category.id,
       }))
-  }, [bestAchievementsData])
+  }, [bestAchievementsData, currentUser])
 
   const recentTrophies = useMemo(() => {
     if (!recentAchievementsData) return []
@@ -129,14 +135,16 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
       name: achievement.title,
       rarity: achievement.rarity,
       owner: achievement.is_current_user ? 'Вы' : achievement.owner.username,
+      ownerUsername: achievement.is_current_user ? (currentUser?.username || '') : achievement.owner.username,
       date: achievement.completion_date
         ? formatDistanceToNow(new Date(achievement.completion_date), { addSuffix: true, locale: ru })
         : achievement.unlocked_at
           ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
           : 'Недавно',
       icon: achievement.icon_url || '🏆',
-    }))
-  }, [recentAchievementsData])
+        categoryId: achievement.category.id,
+      }))
+  }, [recentAchievementsData, currentUser])
 
   const myTrophies = useMemo(() => {
     if (!myAchievementsData || !currentUser) return []
@@ -154,10 +162,12 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
         name: achievement.title,
         rarity: achievement.rarity,
         owner: 'Вы',
+        ownerUsername: currentUser?.username || '',
         date: achievement.unlocked_at
           ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
           : 'Недавно',
         icon: achievement.icon_url || '🏆',
+        categoryId: achievement.category.id,
       }))
   }, [myAchievementsData, currentUser])
 
@@ -216,9 +226,9 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
     >
       <ShowcaseHeader>
         <ShowcaseTitle>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+          <ShowcaseTitleContent>
             {getIcon()} {getTitle()}
-          </span>
+          </ShowcaseTitleContent>
         </ShowcaseTitle>
         {onFilterChange && (
           <ToggleContainer>
@@ -227,14 +237,14 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
               onClick={() => handleFilterChange('best')}
               position="left"
             >
-              <IoTrophy style={{ marginRight: '0.25rem' }} /> Лучшие
+              <IoTrophy /> Лучшие
             </SwitchOption>
             <SwitchOption
               active={activeFilter === 'recent'}
               onClick={() => handleFilterChange('recent')}
               position={isAuthenticated ? 'center' : 'right'}
             >
-              <IoTime style={{ marginRight: '0.25rem' }} /> Последние
+              <IoTime /> Последние
             </SwitchOption>
             {isAuthenticated && (
               <SwitchOption
@@ -242,7 +252,7 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
                 onClick={() => handleFilterChange('mine')}
                 position="right"
               >
-                <IoPerson style={{ marginRight: '0.25rem' }} /> Мои
+                <IoPerson /> Мои
               </SwitchOption>
             )}
 
@@ -253,13 +263,13 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
       <TrophiesList>
         <TrophiesScrollTrack>
           {isLoading ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #666)' }}>
+            <TrophiesEmptyState>
               Загрузка...
-            </div>
+            </TrophiesEmptyState>
           ) : getTrophies.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary, #666)' }}>
+            <TrophiesEmptyState>
               {!isAuthenticated && activeFilter !== 'best' ? 'Войдите, чтобы увидеть достижения' : 'Достижения не найдены'}
-            </div>
+            </TrophiesEmptyState>
           ) : (
             getTrophies.map((trophy, index) => (
               <TrophyItem
@@ -270,6 +280,11 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 whileHover={{ scale: 1.02, x: 5 }}
                 layout
+                onClick={() => {
+                  if (trophy.categoryId && trophy.ownerUsername) {
+                    router.push(`/user/${trophy.ownerUsername}/achievements/${trophy.categoryId}/${trophy.id}`)
+                  }
+                }}
               >
                 <TrophyHeader rarity={trophy.rarity}>
                   <TrophyHeaderWrap>

@@ -46,7 +46,7 @@ export const renderIcon = (
         style={{
           width: '100%',
           height: '100%',
-          objectFit: 'contain',
+          objectFit: 'cover',
         }}
       />
     )

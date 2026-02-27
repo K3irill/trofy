@@ -123,7 +123,7 @@ export const Header = () => {
                 href="/users"
                 $active={pathname === '/users' || pathname?.startsWith('/users/')}
               >
-                Сообщество
+                Пользователи
               </NavLink>
               {isAuthenticated && (
                 <NavLink
@@ -399,7 +399,7 @@ export const Header = () => {
               $active={pathname === '/users'}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Сообщество
+              Пользователи
             </MobileMenuNavLink>
             {isAuthenticated && (
               <MobileMenuDivider />

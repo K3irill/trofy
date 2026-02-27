@@ -118,7 +118,7 @@ export const PhotoSwiper = ({ photos }: PhotoSwiperProps) => {
                         src={getImageUrl(photo)}
                         alt={`Миниатюра ${index + 1}`}
                         fill
-                        style={{ objectFit: 'contain' }}
+                        style={{ objectFit: 'cover' }}
                         sizes="(max-width: 768px) 25vw, 20vw"
                         unoptimized={process.env.NODE_ENV === 'development'}
                       />
@@ -175,7 +175,7 @@ export const PhotoSwiper = ({ photos }: PhotoSwiperProps) => {
                       src={getImageUrl(selectedImage)}
                       alt="Увеличенное фото"
                       fill
-                      style={{ objectFit: 'contain' }}
+                      style={{ objectFit: 'cover' }}
                       sizes="90vw"
                       unoptimized={process.env.NODE_ENV === 'development'}
                     />

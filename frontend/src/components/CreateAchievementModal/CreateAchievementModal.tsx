@@ -509,7 +509,9 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
       // Преобразуем rarity в верхний регистр
       setRarity(achievementData.rarity.toUpperCase() as 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY')
       setXpReward(achievementData.xp_reward)
-      setIsPublic(achievementData.is_public ?? true)
+      // Явно проверяем is_public - может быть boolean или undefined
+      const isPublicValue = achievementData.is_public !== undefined ? achievementData.is_public : true
+      setIsPublic(isPublicValue)
       setAllowedUserIds(achievementData.allowed_user_ids || [])
       if (achievementData.icon_url) {
         setImagePreview(achievementData.icon_url.startsWith('http') ? achievementData.icon_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${achievementData.icon_url}`)

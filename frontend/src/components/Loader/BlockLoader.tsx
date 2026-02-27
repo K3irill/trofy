@@ -28,6 +28,7 @@ const LoaderContainer = styled.div`
   gap: 1rem;
   padding: 2rem;
   min-height: 200px;
+  width: 100%;
 `
 
 const Spinner = styled.div`

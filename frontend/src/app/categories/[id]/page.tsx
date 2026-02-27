@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { IoSearchOutline, IoDocumentTextOutline, IoAdd, IoCreateOutline, IoTrash, IoLockClosed } from 'react-icons/io5'
@@ -39,6 +38,14 @@ import {
   PageHeaderWrap,
   CreatorInfo,
   CreatorLink,
+  LoaderWrapper,
+  ErrorMessage,
+  EmptyStateWrapper,
+  EmptyStateIcon,
+  EmptyStateText,
+  NotFoundWrapper,
+  NotFoundIcon,
+  NotFoundText,
 } from './page.styled'
 import { AchievementCard } from './AchievementCard'
 import { ViewModeSelector, AchievementViewMode } from './ViewModeSelector'
@@ -107,11 +114,11 @@ export default function CategoryPage() {
   }, [searchQuery])
 
   // Получаем категорию со статистикой для авторизованных, без статистики для неавторизованных
-  const { data: categoryWithStats, isLoading: isLoadingCategoryWithStats } = useGetCategoryByIdWithStatsQuery(
+  const { data: categoryWithStats, isLoading: isLoadingCategoryWithStats, error: categoryWithStatsError } = useGetCategoryByIdWithStatsQuery(
     categoryId,
     { skip: !categoryId || !isAuthenticated }
   )
-  const { data: category, isLoading: isLoadingCategory } = useGetCategoryByIdQuery(categoryId, {
+  const { data: category, isLoading: isLoadingCategory, error: categoryError } = useGetCategoryByIdQuery(categoryId, {
     skip: !categoryId || isAuthenticated, // Пропускаем если авторизован (используем with-stats)
   })
 
@@ -135,6 +142,29 @@ export default function CategoryPage() {
   const isLoading = isLoadingCategoryWithStats || isLoadingCategory
   const hasCategoryData = !!activeCategory
   const achievements = achievementsData?.achievements || []
+
+  // Редирект на 404 при ошибках доступа (403/404)
+  useEffect(() => {
+    // Проверяем ошибки из RTK Query
+    const checkError = (err: any) => {
+      if (!err) return null
+      // RTK Query может возвращать ошибку в разных форматах
+      if ('status' in err) return err.status
+      if (err?.data?.status) return err.data.status
+      if (err?.originalStatus) return err.originalStatus
+      return null
+    }
+
+    const activeCategoryError = isAuthenticated ? categoryWithStatsError : categoryError
+    const achievementsErrorStatus = checkError(achievementsError)
+    const categoryErrorStatus = checkError(activeCategoryError)
+    
+    const errorStatus = categoryErrorStatus || achievementsErrorStatus
+    
+    if (errorStatus === 403 || errorStatus === 404) {
+      router.push('/404')
+    }
+  }, [categoryError, categoryWithStatsError, achievementsError, isAuthenticated, router])
 
   // Проверяем, является ли текущий пользователь создателем категории
   const isCategoryOwner = useMemo(() => {
@@ -242,10 +272,12 @@ export default function CategoryPage() {
   if (!activeCategory) {
     return (
       <Container>
-        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <IoSearchOutline style={{ fontSize: '4rem', color: 'var(--text-secondary, #666)', marginBottom: '1rem' }} />
-          <div style={{ fontSize: '1.125rem' }}>Категория не найдена</div>
-        </div>
+        <NotFoundWrapper>
+          <NotFoundIcon>
+            <IoSearchOutline />
+          </NotFoundIcon>
+          <NotFoundText>Категория не найдена</NotFoundText>
+        </NotFoundWrapper>
       </Container>
     )
   }
@@ -258,26 +290,28 @@ export default function CategoryPage() {
     // Показываем лоадер только если действительно загружаем и данных еще нет
     if ((isLoadingAchievements || isFetchingAchievements) && !achievementsData) {
       return (
-        <div style={{ padding: '2rem' }}>
+        <LoaderWrapper>
           <BlockLoader text="Загрузка достижений..." />
-        </div>
+        </LoaderWrapper>
       )
     }
 
     if (achievementsError) {
       return (
-        <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.5)' }}>
-          <div>Ошибка загрузки достижений</div>
-        </div>
+        <ErrorMessage>
+          Ошибка загрузки достижений
+        </ErrorMessage>
       )
     }
 
     if (achievementsList.length === 0) {
       return (
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <IoDocumentTextOutline style={{ fontSize: '3rem', color: 'var(--text-secondary, #666)', marginBottom: '1rem' }} />
-          <div>Достижения не найдены</div>
-        </div>
+        <EmptyStateWrapper>
+          <EmptyStateIcon>
+            <IoDocumentTextOutline />
+          </EmptyStateIcon>
+          <EmptyStateText>Достижения не найдены</EmptyStateText>
+        </EmptyStateWrapper>
       )
     }
 

@@ -173,7 +173,7 @@ export const AchievementPreviewModal = ({
                   src={icon!} 
                   alt={name} 
                   fill 
-                  style={{ objectFit: 'contain' }} 
+                  style={{ objectFit: 'cover' }} 
                   unoptimized
                 />
               </ModalImage>

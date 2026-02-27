@@ -274,7 +274,12 @@ export const achievementsApi = baseApi.injectEndpoints({
           body: formData,
         }
       },
-      invalidatesTags: ['Achievement', 'Category'],
+      invalidatesTags: (result, error, { id }) => [
+        'Achievement',
+        'Category',
+        { type: 'AchievementDetail', id },
+        { type: 'AchievementDetail', id: 'LIST' },
+      ],
     }),
     deleteCustomCategory: builder.mutation<
       { success: boolean; message: string },

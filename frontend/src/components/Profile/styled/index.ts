@@ -664,8 +664,10 @@ export const TrophyIcon = styled(motion.div) <{ rarity: string }>`
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	width: 100%;
-	height: 120px;
+
+  max-width: 115px;
+  border-radius: 10px;
+  overflow: hidden;
 	filter: ${props => {
     switch (props.rarity) {
       case 'legendary':
@@ -683,7 +685,6 @@ export const TrophyIcon = styled(motion.div) <{ rarity: string }>`
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		padding: 0.5rem;
 	}
 
 	@media (max-width: 767px) {
@@ -1286,7 +1287,7 @@ export const MainAchievementIcon = styled(motion.div) <{ $iconUrl: string | null
 	img {
 		width: 80%;
 		height: 80%;
-		object-fit: contain;
+		object-fit: cover;
 		filter: drop-shadow(0 0 15px ${props => props.$rarityColor}90);
 		transform-style: preserve-3d;
 	}

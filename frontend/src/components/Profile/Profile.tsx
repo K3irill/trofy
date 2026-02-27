@@ -42,7 +42,7 @@ export const Profile = ({
 
   const stats = externalStats || ownStats
 
-  const isProfileHidden = !user.privacy_settings?.show_profile
+  const isProfileHidden = !user.privacy_settings?.show_profile && !isOwn
   const hideLevelAndXp = isProfileHidden && !isOwn
 
   // Расчет опыта для текущего уровня

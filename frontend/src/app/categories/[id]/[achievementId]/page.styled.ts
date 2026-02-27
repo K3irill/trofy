@@ -159,6 +159,7 @@ export const AchievementIcon = styled.div<{ $unlocked: boolean }>`
   filter: ${props => props.$unlocked ? `drop-shadow(${props.theme.shadows.glow.primary}) drop-shadow(${props.theme.shadows.glow.gold})` : 'grayscale(0.7) brightness(0.6)'};
   flex-shrink: 0;
   cursor: pointer;
+  ищкв
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -228,7 +229,6 @@ export const AchievementIcon = styled.div<{ $unlocked: boolean }>`
     width: 100%;
     height: 100%;
     object-fit: cover;
-    padding: 1rem;
   }
 
   @media (max-width: 768px) {
@@ -347,4 +347,82 @@ export const NotFoundIconWrap = styled.div`
 export const NotFoundText = styled.div`
   color: ${(props) => props.theme.colors.light[300]};
   font-size: 1.125rem;
+`
+
+export const OwnerBanner = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary}20 0%, ${(props) => props.theme.colors.secondary}10 100%);
+  border: 2px solid ${(props) => props.theme.colors.primary}60;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  box-shadow: ${(props) => props.theme.shadows.glass.light};
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+`
+
+export const OwnerBannerContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+`
+
+export const OwnerBannerText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`
+
+export const OwnerBannerTitle = styled.span`
+  color: ${(props) => props.theme.colors.light[100]};
+  font-size: 0.875rem;
+  font-weight: 600;
+`
+
+export const OwnerBannerSubtitle = styled.span`
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 0.75rem;
+`
+
+export const ViewGeneralButton = styled(motion.button)`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, ${(props) => props.theme.colors.primary} 0%, ${(props) => props.theme.colors.secondary} 100%);
+  color: ${(props) => props.theme.colors.dark[900]};
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${(props) => props.theme.shadows.glow.primary}, 0 4px 12px ${(props) => props.theme.colors.primary}40;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    font-size: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+  }
 `

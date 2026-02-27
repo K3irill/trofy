@@ -383,7 +383,7 @@ export const PreviewItem = styled.div<{ $status: PreviewStatus }>`
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
 
   &:hover {
@@ -763,7 +763,7 @@ export const ListItemIcon = styled.div<{ $status: AchievementStatus }>`
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
   }
 
   @media (max-width: 768px) {

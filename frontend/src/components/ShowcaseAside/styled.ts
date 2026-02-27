@@ -43,6 +43,12 @@ export const ShowcaseTitle = styled.h3`
   }
 `
 
+export const ShowcaseTitleContent = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+`
+
 export const ToggleContainer = styled.div`
   position: relative;
   display: flex;
@@ -65,10 +71,13 @@ export const SwitchOption = styled(motion.button) <{ active: boolean; position: 
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
 
   svg {
     color: ${(props) => props.active ? props.theme.colors.dark[900] : props.theme.colors.light[300]};
     transition: color 0.3s ease;
+    margin-right: 0.25rem;
   }
 
   &:hover {
@@ -366,4 +375,10 @@ export const TrophyHeaderInfo = styled.div`
    @media (max-width: 1024px) {
       display: block;
   }
+`
+
+export const TrophiesEmptyState = styled.div`
+  padding: 2rem;
+  text-align: center;
+  color: ${(props) => props.theme.colors.light[300]};
 `

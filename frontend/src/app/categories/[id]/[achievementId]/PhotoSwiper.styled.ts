@@ -163,11 +163,11 @@ export const SwiperImage = styled.div<{ $isThumb?: boolean }>`
     transition: transform 0.3s ease;
     object-position: center;
     ${(props) =>
-      props.$isThumb &&
-      `
+    props.$isThumb &&
+    `
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
     `}
   }
 

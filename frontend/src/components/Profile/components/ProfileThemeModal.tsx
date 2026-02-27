@@ -583,7 +583,7 @@ export function ProfileThemeModal({
               })}
             </ModalContent>
 
-            <div style={{ padding: '0 1.5rem 1.5rem' }}>
+            {/* <div style={{ padding: '0 1.5rem 1.5rem' }}>
               <PreviewLabel>Предпросмотр</PreviewLabel>
               <PreviewBlock
                 $gradient={getPreviewTheme().gradient}
@@ -596,7 +596,7 @@ export function ProfileThemeModal({
                   {themes.find(t => t.value === previewTheme)?.name || 'Полночь'}
                 </span>
               </PreviewBlock>
-            </div>
+            </div> */}
 
             <IconsSection>
               <IconsTitle>Иконки для фона ({selectedIcons.length}/10)</IconsTitle>
