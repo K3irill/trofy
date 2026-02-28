@@ -171,6 +171,8 @@ export class AchievementsService {
         updated_at: category.updated_at.toISOString(),
       }
     })
+
+    return result
   }
 
   /**

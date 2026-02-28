@@ -30,6 +30,7 @@ import {
   TopUsersSection,
   TopUsersGrid,
   TopUserCard,
+  RankBadge,
   EmptyState,
   EmptyStateIcon,
   EmptyStateText,
@@ -51,7 +52,7 @@ export default function UsersPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  const { data: topUsers, isLoading: topUsersLoading } = useGetTopUsersQuery({ limit: 3 })
+  const { data: topUsers, isLoading: topUsersLoading } = useGetTopUsersQuery({ limit: 100 })
   const { data: searchResults, isLoading: searchLoading } = useSearchUsersQuery(
     { query: debouncedSearch, limit: 20 },
     { skip: !debouncedSearch || debouncedSearch.trim().length === 0 }
@@ -128,16 +129,25 @@ export default function UsersPage() {
             <BlockLoader text="Загрузка топ пользователей..." />
           ) : topUsers && topUsers.length > 0 ? (
             <TopUsersGrid>
-              {topUsers.map((user, index) => (
-                <TopUserCard
-                  key={user.id}
-                  $rank={index + 1}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  onClick={() => handleUserClick(user.username)}
-                >
-                  <UserHeader>
+              {topUsers.map((user, index) => {
+                const rank = index + 1
+                const getRankDisplay = () => {
+                  if (rank === 1) return '🥇'
+                  if (rank === 2) return '🥈'
+                  if (rank === 3) return '🥉'
+                  return `#${rank}`
+                }
+                return (
+                  <TopUserCard
+                    key={user.id}
+                    $rank={rank}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    onClick={() => handleUserClick(user.username)}
+                  >
+                    <RankBadge $rank={rank}>{getRankDisplay()}</RankBadge>
+                    <UserHeader>
                     <Avatar $level={user.level}>
                       {user.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -169,9 +179,10 @@ export default function UsersPage() {
                       <StatValue>{user.xp || 0}</StatValue>
                       <StatLabel>XP</StatLabel>
                     </StatBadge>
-                  </UserStats>
-                </TopUserCard>
-              ))}
+                    </UserStats>
+                  </TopUserCard>
+                )
+              })}
             </TopUsersGrid>
           ) : null}
         </TopUsersSection>

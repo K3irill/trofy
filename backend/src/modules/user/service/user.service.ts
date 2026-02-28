@@ -536,14 +536,21 @@ export class UserService {
     let fastestAchievement: { title: string; days: number } | null = null
     completedAchievements.forEach((ua) => {
       if (ua.unlocked_at && ua.completion_date) {
-        const days = Math.floor(
-          (new Date(ua.completion_date).getTime() - new Date(ua.unlocked_at).getTime()) /
-          (1000 * 60 * 60 * 24)
-        )
-        if (!fastestAchievement || days < fastestAchievement.days) {
-          fastestAchievement = {
-            title: ua.achievement.title,
-            days,
+        const unlockedDate = new Date(ua.unlocked_at)
+        const completionDate = new Date(ua.completion_date)
+        
+        // Убеждаемся, что completion_date позже или равен unlocked_at
+        if (completionDate >= unlockedDate) {
+          const days = Math.floor(
+            (completionDate.getTime() - unlockedDate.getTime()) /
+            (1000 * 60 * 60 * 24)
+          )
+          // Убеждаемся, что days положительное число
+          if (days >= 0 && (!fastestAchievement || days < fastestAchievement.days)) {
+            fastestAchievement = {
+              title: ua.achievement.title,
+              days,
+            }
           }
         }
       }

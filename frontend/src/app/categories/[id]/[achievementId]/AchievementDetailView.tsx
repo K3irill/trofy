@@ -274,7 +274,7 @@ export const AchievementDetailView = ({
             <InfoValue>{achievement.completionDate ? new Date(achievement.completionDate).toLocaleDateString('ru-RU') : 'Не указана'}</InfoValue>
           )}
         </InfoRow>
-        <InfoRow>
+        {(achievement?.difficulty || isEditing) && <InfoRow>
           <InfoLabel>
             <IoStar /> Сложность:
           </InfoLabel>
@@ -294,7 +294,7 @@ export const AchievementDetailView = ({
           ) : (
             <InfoValue>{renderDifficulty(achievement.difficulty)}</InfoValue>
           )}
-        </InfoRow>
+      </InfoRow>}
         <InfoRow>
           <InfoLabel>
             <IoGift /> Награда:

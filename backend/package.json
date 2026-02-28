@@ -30,10 +30,13 @@
 		"helmet": "^8.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"multer": "^2.0.1",
-		"unique-username-generator": "^1.4.0"
+		"reflect-metadata": "^0.2.2",
+		"unique-username-generator": "^1.4.0",
+		"uuid": "^10.0.0"
 	},
 	"devDependencies": {
 		"@types/bcrypt": "^5.0.2",
+		"@types/uuid": "^10.0.0",
 		"prisma": "^5.10.0",
 		"ts-node-dev": "^2.0.0",
 		"typescript": "^5.3.3"

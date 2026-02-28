@@ -20,7 +20,12 @@ const initialState: AuthState = {
 export const logoutWithCacheReset = createAsyncThunk(
   'auth/logoutWithCacheReset',
   async (_, { dispatch }) => {
-    // Сбрасываем кэш RTK Query
+    // Сначала очищаем токены и localStorage
+    clearTokens()
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user')
+    }
+    // Затем сбрасываем кэш RTK Query
     dispatch(baseApi.util.resetApiState())
     // Возвращаем пустой результат
     return null
@@ -132,27 +137,41 @@ const authSlice = createSlice({
       .addMatcher(
         (action) => action.type === logoutWithCacheReset.pending.type,
         (state) => {
+          // Очищаем токены и localStorage сразу при начале logout
+          clearTokens()
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('user')
+          }
           state.loading = true
         }
       )
       .addMatcher(
         (action) => action.type === logoutWithCacheReset.fulfilled.type,
-        () => {
+        (state) => {
+          // Убеждаемся, что все очищено
           clearTokens()
           if (typeof window !== 'undefined') {
             localStorage.removeItem('user')
           }
-          return initialState
+          // Возвращаем начальное состояние
+          state.user = null
+          state.isAuthenticated = false
+          state.loading = false
+          state.error = null
         }
       )
       .addMatcher(
         (action) => action.type === logoutWithCacheReset.rejected.type,
-        () => {
+        (state) => {
+          // Даже при ошибке очищаем все
           clearTokens()
           if (typeof window !== 'undefined') {
             localStorage.removeItem('user')
           }
-          return initialState
+          state.user = null
+          state.isAuthenticated = false
+          state.loading = false
+          state.error = null
         }
       )
 

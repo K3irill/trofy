@@ -81,7 +81,7 @@ export function ProfileStats({ isAuthenticated, stats }: ProfileStatsProps) {
             animate={{ scale: 1 }}
             transition={{ type: 'spring', delay: 0.8 }}
           >
-            {isAuthenticated && stats && stats.fastest_achievement
+            {isAuthenticated && stats && stats.fastest_achievement && stats.fastest_achievement.days >= 0
               ? `${stats.fastest_achievement.days}д`
               : '?'}
           </StatValue>

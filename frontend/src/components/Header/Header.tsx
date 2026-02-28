@@ -253,10 +253,14 @@ export const Header = () => {
                       Настройки
                     </UserProfileMenuItem>
                     <UserProfileMenuDivider />
-                    <UserProfileMenuItem $danger onClick={() => {
-                      dispatch(logoutWithCacheReset())
+                    <UserProfileMenuItem $danger onClick={async () => {
+                      await dispatch(logoutWithCacheReset())
                       setShowProfileMenu(false)
                       router.push('/')
+                      // Принудительно обновляем страницу для полной очистки
+                      if (typeof window !== 'undefined') {
+                        window.location.href = '/'
+                      }
                     }}>
                       <IoLogOutOutline />
                       Выйти
@@ -421,10 +425,14 @@ export const Header = () => {
               <MobileMenuDivider />
             )}
             {isAuthenticated && (
-              <MobileMenuLogoutButton onClick={() => {
-                dispatch(logoutWithCacheReset())
+              <MobileMenuLogoutButton onClick={async () => {
+                await dispatch(logoutWithCacheReset())
                 setIsMobileMenuOpen(false)
                 router.push('/')
+                // Принудительно обновляем страницу для полной очистки
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/'
+                }
               }}>
                 <IoLogOutOutline />
                 Выйти
