@@ -492,12 +492,24 @@ useEffect(()=>{
                 {mode === 'categories' ? (
                   <>
                     <TitleIcon as={IoFolder} />
-                    Категории достижений
+                     {
+                      filterMode === 'all' ? 'Все категории достижений' :
+                      filterMode === 'global' ? 'Глобальные категории достижений' :
+                      filterMode === 'custom' ? 'Пользовательские категории достижений' :
+                      filterMode === 'my' ? 'Мои категории достижений' :
+                      'Все категории достижений'
+                    }
                   </>
                 ) : (
                   <>
                     <TitleIcon as={IoTrophy} />
-                    Все достижения
+                    {
+                      filterMode === 'all' ? 'Все достижения' :
+                      filterMode === 'global' ? 'Глобальные достижения' :
+                      filterMode === 'custom' ? 'Пользовательские достижения' :
+                      filterMode === 'my' ? 'Мои достижения' :
+                      'Все достижения'
+                    }
                   </>
                 )}
               </Title>

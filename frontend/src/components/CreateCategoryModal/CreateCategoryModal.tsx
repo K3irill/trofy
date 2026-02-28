@@ -135,6 +135,12 @@ const ScrollableContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+
+  form{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
   
   /* Кастомный скроллбар */
   &::-webkit-scrollbar {
@@ -246,6 +252,21 @@ const PrivacyToggle = styled.button<{ $isPublic: boolean }>`
   }
 `
 
+const ToggleIndicator = styled.div<{ $isPublic: boolean }>`
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: ${(props) => props.$isPublic ? props.theme.colors.primary : props.theme.colors.secondary};
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+`
+
+const ToggleLabel = styled.span`
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+`
+
 const UsersSearchInput = styled(Input)`
   margin-top: 0.5rem;
 `
@@ -311,6 +332,12 @@ const UserAvatar = styled.div<{ $avatarUrl?: string | null }>`
 const UserName = styled.span`
   color: ${(props) => props.theme.colors.light[100]};
   font-weight: 500;
+`
+
+const UserEmail = styled.span`
+  color: ${(props) => props.theme.colors.light[300]};
+  font-size: 0.75rem;
+  font-weight: 400;
 `
 
 const RemoveButton = styled.button`
@@ -725,15 +752,15 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess, category }: Cr
                     {!isPublic && (
                       <PrivacySection>
                         <Label>Пользователи с доступом</Label>
-                        <UserSearchInput
+                        <UsersSearchInput
                           type="text"
                           value={userSearchQuery}
                           onChange={(e) => setUserSearchQuery(e.target.value)}
                           placeholder="Поиск пользователей..."
                         />
-                        {debouncedSearchQuery && searchUsersData && searchUsersData.length > 0 && (
+                        {debouncedSearchQuery && searchResults && searchResults.length > 0 && (
                           <UsersList>
-                            {searchUsersData.map((user) => (
+                            {searchResults.map((user) => (
                               <UserItem
                                 key={user.id}
                                 onClick={() => {
@@ -760,7 +787,7 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess, category }: Cr
                             <Label style={{ marginTop: '1rem' }}>Выбранные пользователи:</Label>
                             <UsersList>
                               {allowedUserIds.map((userId) => {
-                                const user = searchUsersData?.find((u) => u.id === userId)
+                                const user = searchResults?.find((u) => u.id === userId)
                                 if (!user) return null
                                 return (
                                   <UserItem
