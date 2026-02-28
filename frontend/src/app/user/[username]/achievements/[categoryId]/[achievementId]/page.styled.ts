@@ -122,3 +122,42 @@ export const DeleteAchievementButton = styled(motion.button)`
     }
   }
 `
+
+export const DescriptionText = styled.p<{ $isExpanded?: boolean }>`
+  margin: 0;
+  position: relative;
+  z-index: 0;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  ${(props) => !props.$isExpanded && `
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  `}
+`
+
+export const DescriptionToggle = styled.button`
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: ${(props) => props.theme.colors.primary}20;
+  border: 1px solid ${(props) => props.theme.colors.primary}4d;
+  border-radius: 8px;
+  color: ${(props) => props.theme.colors.primary};
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: fit-content;
+  position: relative;
+  z-index: 2;
+
+  &:hover {
+    background: ${(props) => props.theme.colors.primary}33;
+    border-color: ${(props) => props.theme.colors.primary}80;
+    transform: translateY(-1px);
+  }
+`

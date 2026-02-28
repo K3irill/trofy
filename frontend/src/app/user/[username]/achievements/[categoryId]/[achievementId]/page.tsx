@@ -52,6 +52,8 @@ import {
   AchievementActionsContainer,
   EditAchievementButton,
   DeleteAchievementButton,
+  DescriptionToggle,
+  DescriptionText,
 } from './page.styled'
 
 export default function UserAchievementDetailPage() {
@@ -67,6 +69,7 @@ export default function UserAchievementDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isEditAchievementModalOpen, setIsEditAchievementModalOpen] = useState(false)
   const [isDeleteAchievementModalOpen, setIsDeleteAchievementModalOpen] = useState(false)
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   const detailViewRef = useRef<HTMLDivElement>(null)
   const [actionsRef, setActionsRef] = useState<{
     handleEdit: () => void
@@ -429,7 +432,16 @@ export default function UserAchievementDetailPage() {
           />
         )}
 
-        <AchievementDescription>{achievement.description}</AchievementDescription>
+        <AchievementDescription $isExpanded={isDescriptionExpanded}>
+          <DescriptionText $isExpanded={isDescriptionExpanded}>
+            {achievement.description}
+          </DescriptionText>
+          {achievement.description && achievement.description.length > 100 && (
+            <DescriptionToggle onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+              {isDescriptionExpanded ? 'Скрыть' : 'Показать ещё'}
+            </DescriptionToggle>
+          )}
+        </AchievementDescription>
 
         {isAuthenticated && (
           <>

@@ -82,7 +82,7 @@ export const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   font-size: 2.5rem;
   position: relative;
   transition: all 0.3s ease;
-  overflow: hidden;
+
   filter: ${(props) => {
     if (props.$status === 'not_achieved') return 'grayscale(0.6) brightness(0.7)'
     return `drop-shadow(${props.theme.shadows.glow.primary})`

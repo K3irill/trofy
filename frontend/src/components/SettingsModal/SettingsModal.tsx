@@ -98,7 +98,7 @@ export const SettingsModal = ({ isOpen, onClose, initialView = 'categories' }: S
                   ← Назад
                 </SettingsBackButton>
               )}
-              <SettingsModalTitle>
+              <SettingsModalTitle $hasBackButton={currentView !== 'categories'}>
                 {currentView === 'categories' && 'Настройки'}
                 {currentView === 'theme' && 'Тема оформления'}
                 {currentView === 'privacy' && 'Приватность профиля'}

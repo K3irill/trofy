@@ -61,13 +61,14 @@ export const SettingsModalHeader = styled.div`
   }
 `
 
-export const SettingsModalTitle = styled.h2`
+export const SettingsModalTitle = styled.h2<{ $hasBackButton?: boolean }>`
   font-size: 1.5rem;
   font-weight: 700;
   color: ${(props) => props.theme.colors.light[100]};
   flex: 1;
   text-align: center;
   padding-right: 3rem;
+  padding-left: ${(props) => (props.$hasBackButton ? '4rem' : '0')};
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -76,6 +77,7 @@ export const SettingsModalTitle = styled.h2`
   @media (max-width: 768px) {
     font-size: 1.25rem;
     padding-right: 2.5rem;
+    padding-left: ${(props) => (props.$hasBackButton ? '3.5rem' : '0')};
   }
 `
 

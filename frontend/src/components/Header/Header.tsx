@@ -86,12 +86,18 @@ export const Header = () => {
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden'
+      document.body.style.overflowX = 'hidden'
+      document.documentElement.style.overflowX = 'hidden'
     } else {
       document.body.style.overflow = ''
+      document.body.style.overflowX = ''
+      document.documentElement.style.overflowX = ''
     }
 
     return () => {
       document.body.style.overflow = ''
+      document.body.style.overflowX = ''
+      document.documentElement.style.overflowX = ''
     }
   }, [isMobileMenuOpen])
 
@@ -365,7 +371,7 @@ export const Header = () => {
             </MobileMenuHeader>
             <MobileMenuNavLink
               href={isAuthenticated && user ? `/user/${user.username}` : '/'}
-              $active={isAuthenticated && user ? (pathname === `/user/${user.username}` || pathname?.startsWith(`/user/${user.username}/`)) : false}
+              $active={isAuthenticated && user ? (pathname === `/user/${user.username}` || (pathname?.startsWith(`/user/${user.username}/`) && !pathname?.startsWith(`/user/${user.username}/achievements`))) : false}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Профиль
