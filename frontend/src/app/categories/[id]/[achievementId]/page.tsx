@@ -117,7 +117,8 @@ export default function AchievementDetailPage() {
     }
     : null
 
-  const isOwner = achievement?.ownerId === currentUser?.id
+  // На странице категорий isOwner = true, если у текущего пользователя есть userAchievement для этого достижения
+  const isOwner = !!achievementDetail?.userAchievement && !!currentUser?.id
   const isAchievementCreator = achievementDetail?.creator_id === currentUser?.id && achievementDetail?.is_custom
 
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

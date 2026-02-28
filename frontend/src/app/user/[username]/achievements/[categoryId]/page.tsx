@@ -329,7 +329,7 @@ export default function UserCategoryPage() {
       <Container>
         <PageHeader>
           <PageHeaderWrap>
-            <BackButton onClick={() => router.push(`/user/${username}/achievements`)} initial={{ x: -20 }} animate={{ x: 0 }}>
+            <BackButton onClick={() => router.back()} initial={{ x: -20 }} animate={{ x: 0 }}>
               ← Назад
             </BackButton>
             <ViewModeSelector mode={viewMode} onChange={setViewMode} />

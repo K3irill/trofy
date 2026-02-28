@@ -130,7 +130,9 @@ export default function UserAchievementDetailPage() {
     : null
 
   // Проверяем, является ли текущий пользователь владельцем достижения
-  const isOwner = profileUser?.id === currentUser?.id
+  // isOwner для достижения (проверяем, является ли текущий пользователь владельцем этого достижения)
+  // На странице пользователя достижение принадлежит пользователю профиля, если у него есть userAchievement
+  const isOwner = profileUser?.id === currentUser?.id && !!achievementDetail?.userAchievement
   const isAchievementCreator = achievementDetail?.creator_id === currentUser?.id && achievementDetail?.is_custom
 
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -230,7 +232,7 @@ export default function UserAchievementDetailPage() {
   return (
     <Container>
       <PageContainer>
-        <BackButton onClick={() => router.push(`/user/${username}/achievements/${categoryId}`)}>
+        <BackButton onClick={() => router.back()}>
           <IoArrowBack /> Назад
         </BackButton>
 
@@ -429,6 +431,7 @@ export default function UserAchievementDetailPage() {
             name={achievementDetail.title}
             description={achievementDetail.description}
             unlocked={achievementDetail.unlocked}
+            isOwner={isOwner}
           />
         )}
 

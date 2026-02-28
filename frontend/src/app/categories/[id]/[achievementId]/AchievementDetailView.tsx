@@ -60,6 +60,9 @@ export const AchievementDetailView = ({
   achievementId,
   onUpdate,
 }: AchievementDetailViewProps) => {
+  // Получаем текущую дату в формате YYYY-MM-DD для ограничения
+  const today = new Date().toISOString().split('T')[0]
+
   const {
     register,
     handleSubmit,
@@ -253,7 +256,16 @@ export const AchievementDetailView = ({
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
               <EditInput
                 type="date"
-                {...register('date', { required: 'Пожалуйста, укажите дату выполнения' })}
+                max={today}
+                {...register('date', {
+                  required: 'Пожалуйста, укажите дату выполнения',
+                  validate: (value) => {
+                    if (value > today) {
+                      return 'Дата выполнения не может быть в будущем'
+                    }
+                    return true
+                  },
+                })}
                 $hasError={!!errors.date}
               />
               {errors.date && <ErrorMessage>{errors.date.message}</ErrorMessage>}

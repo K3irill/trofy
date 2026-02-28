@@ -194,7 +194,7 @@ export const DifficultySelector = styled.div`
 export const DifficultyButton = styled.button<{ $active: boolean }>`
   flex: 1;
   max-width: 60px;
-  padding: 0.75rem;
+  padding: 0.25rem;
   background: ${props => props.$active
     ? `linear-gradient(135deg, ${props.theme.colors.primary}4d 0%, ${props.theme.colors.secondary}33 100%)`
     : `${props.theme.colors.dark[800]}cc`};

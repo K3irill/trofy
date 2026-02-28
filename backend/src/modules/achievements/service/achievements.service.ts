@@ -1717,6 +1717,14 @@ export class AchievementsService {
       throw ApiError.notFound('Achievement not found')
     }
 
+    // Проверяем, что дата выполнения не в будущем
+    const completionDate = new Date(dto.completion_date)
+    const today = new Date()
+    today.setHours(23, 59, 59, 999) // Устанавливаем конец дня для сравнения
+    if (completionDate > today) {
+      throw ApiError.badRequest('Дата выполнения не может быть в будущем')
+    }
+
     // Проверяем, не завершено ли уже (проверяем наличие completion_date, а не просто существование UserAchievement)
     const existing = await prisma.userAchievement.findUnique({
       where: {
@@ -1829,6 +1837,16 @@ export class AchievementsService {
 
     if (userAchievement.user_id !== userId) {
       throw ApiError.forbidden('You can only update your own achievements')
+    }
+
+    // Проверяем, что дата выполнения не в будущем (если она передана)
+    if (dto.completion_date) {
+      const completionDate = new Date(dto.completion_date)
+      const today = new Date()
+      today.setHours(23, 59, 59, 999) // Устанавливаем конец дня для сравнения
+      if (completionDate > today) {
+        throw ApiError.badRequest('Дата выполнения не может быть в будущем')
+      }
     }
 
     // Обновляем данные
