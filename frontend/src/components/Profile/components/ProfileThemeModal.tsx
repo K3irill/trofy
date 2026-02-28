@@ -59,6 +59,13 @@ const ModalOverlay = styled(motion.div)`
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 768px) {
+    padding: 0;
+    align-items: flex-end;
+  }
 `
 
 const ModalContainer = styled(motion.div)`
@@ -74,6 +81,12 @@ const ModalContainer = styled(motion.div)`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: ${(props) => props.theme.glass.radius} ${(props) => props.theme.glass.radius} 0 0;
+  }
 `
 
 const ModalHeader = styled.div`

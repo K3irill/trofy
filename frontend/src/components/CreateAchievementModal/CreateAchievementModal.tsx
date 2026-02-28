@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import styled from 'styled-components'
 import { IoClose, IoLockClosed, IoLockOpen, IoPersonAdd, IoPersonRemove, IoImageOutline, IoCloseCircle, IoAdd } from 'react-icons/io5'
-import { useCreateCustomAchievementMutation, useUpdateCustomAchievementMutation, useGetCategoriesQuery, useGetRaritiesQuery, useGetAchievementByIdQuery, type Achievement } from '@/store/api/achievementsApi'
+import { useCreateCustomAchievementMutation, useUpdateCustomAchievementMutation, useGetCategoriesQuery, useGetCategoriesWithStatsQuery, useGetRaritiesQuery, useGetAchievementByIdQuery, type Achievement } from '@/store/api/achievementsApi'
 import { useSearchUsersQuery, useGetMeQuery } from '@/store/api/userApi'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
@@ -26,12 +26,18 @@ const ModalOverlay = styled(motion.div)`
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 768px) {
+    padding: 0;
+    align-items: flex-end;
+  }
 `
 
 const ModalContainer = styled(motion.div)`
   width: 100%;
   max-width: 700px;
-  height: 90vh;
   max-height: 90vh;
   background: ${(props) => props.theme.colors.dark.glass};
   backdrop-filter: ${(props) => props.theme.glass.blur};
@@ -44,9 +50,14 @@ const ModalContainer = styled(motion.div)`
   overflow: hidden;
   position: relative;
   
+  @media (max-width: 768px) {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: ${(props) => props.theme.glass.radius} ${(props) => props.theme.glass.radius} 0 0;
+  }
+
   @media (max-height: 600px) {
-    height: 95vh;
-    max-height: 95vh;
+    max-height: 100vh;
   }
 `
 
@@ -97,11 +108,13 @@ const ModalContent = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `
 
 const ScrollableContent = styled.div`
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 1.5rem;
@@ -474,9 +487,17 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
   
   const [createAchievement, { isLoading: isCreating }] = useCreateCustomAchievementMutation()
   const [updateAchievement, { isLoading: isUpdating }] = useUpdateCustomAchievementMutation()
-  const { data: categories } = useGetCategoriesQuery()
-  const { data: rarities } = useGetRaritiesQuery()
   const { data: currentUser } = useGetMeQuery()
+  const isAuthenticated = !!currentUser
+  
+  // Для авторизованных пользователей используем getCategoriesWithStats, для неавторизованных - getCategories
+  const { data: categoriesData, refetch: refetchCategories } = useGetCategoriesQuery(undefined, { skip: isAuthenticated })
+  const { data: categoriesWithStatsData, refetch: refetchCategoriesWithStats } = useGetCategoriesWithStatsQuery(undefined, { skip: !isAuthenticated })
+  
+  // Объединяем данные из обоих запросов
+  const categories = isAuthenticated ? categoriesWithStatsData : categoriesData
+  
+  const { data: rarities } = useGetRaritiesQuery()
   const { showToast, ToastComponent } = useToast()
   
   // Загружаем полные данные достижения при редактировании
@@ -555,27 +576,55 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
   }, [defaultCategoryId, isEditMode])
 
   // Обновляем список категорий после создания новой
-  const { refetch: refetchCategories } = useGetCategoriesQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  })
   useEffect(() => {
     if (!isCreateCategoryModalOpen) {
       // Небольшая задержка для обновления кеша RTK Query
       const timer = setTimeout(() => {
-        refetchCategories()
+        if (isAuthenticated) {
+          refetchCategoriesWithStats()
+        } else {
+          refetchCategories()
+        }
       }, 300)
       return () => clearTimeout(timer)
     }
-  }, [isCreateCategoryModalOpen, refetchCategories])
+  }, [isCreateCategoryModalOpen, isAuthenticated, refetchCategories, refetchCategoriesWithStats])
 
   // Фильтруем только свои категории
   const myCategories = useMemo(() => {
-    if (!categories || !currentUser) return []
+    if (!categories || !currentUser || !currentUser.id) {
+      console.log('CreateAchievementModal - No categories or user:', { 
+        hasCategories: !!categories, 
+        categoriesLength: categories?.length, 
+        hasCurrentUser: !!currentUser,
+        currentUserId: currentUser?.id 
+      })
+      return []
+    }
+    const currentUserId = String(currentUser.id)
     const filtered = categories.filter((cat) => {
       // Проверяем, что категория кастомная и создана текущим пользователем
-      const isMyCategory = cat.is_custom && cat.creator_id === currentUser.id
+      // Сравниваем по ID (приводим к строке для надежности)
+      const catCreatorId = cat.creator_id ? String(cat.creator_id) : null
+      const isMyCategory = cat.is_custom && catCreatorId === currentUserId
       return isMyCategory
     })
+    
+    // Отладка для проверки
+    if (filtered.length === 0 && categories.length > 0) {
+      console.log('CreateAchievementModal - No my categories found:', {
+        currentUserId: currentUserId,
+        categoriesCount: categories.length,
+        customCategories: categories.filter(c => c.is_custom).map(c => ({
+          id: c.id,
+          name: c.name,
+          creator_id: c.creator_id,
+          is_custom: c.is_custom,
+          match: String(c.creator_id) === currentUserId
+        }))
+      })
+    }
+    
     return filtered
   }, [categories, currentUser])
 
@@ -845,7 +894,7 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
                     </FileInputWrapper>
                   </FormGroup>
 
-                  <FormGroup>
+                  {/* <FormGroup>
                     <Label>XP награда</Label>
                     <Input
                       type="number"
@@ -855,7 +904,7 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
                       onChange={(e) => setXpReward(parseInt(e.target.value) || 100)}
                       placeholder="100"
                     />
-                  </FormGroup>
+                  </FormGroup> */}
 
                   <PrivacySection>
                     <Label>Приватность</Label>
@@ -992,7 +1041,14 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
         isOpen={isCreateCategoryModalOpen}
         onClose={() => setIsCreateCategoryModalOpen(false)}
         onSuccess={() => {
-          // Категории обновятся автоматически через RTK Query
+          // Обновляем список категорий после успешного создания
+          setTimeout(() => {
+            if (isAuthenticated) {
+              refetchCategoriesWithStats()
+            } else {
+              refetchCategories()
+            }
+          }, 100)
         }}
       />
     </>

@@ -124,6 +124,9 @@ interface CategorySearchAndFiltersProps {
   onSortChange: (value: string) => void
   privacyFilter: string
   onPrivacyFilterChange: (value: string) => void
+  favoriteOnly?: boolean
+  onFavoriteOnlyChange?: (value: boolean) => void
+  isAuthenticated?: boolean
 }
 
 export const CategorySearchAndFilters = ({
@@ -133,6 +136,9 @@ export const CategorySearchAndFilters = ({
   onSortChange,
   privacyFilter,
   onPrivacyFilterChange,
+  favoriteOnly = false,
+  onFavoriteOnlyChange,
+  isAuthenticated = false,
 }: CategorySearchAndFiltersProps) => {
   const sortOptions: ThemedSelectOption[] = [
     { value: 'default', label: 'Сортировка' },
@@ -162,6 +168,19 @@ export const CategorySearchAndFilters = ({
         />
       </SearchInputWrapper>
       <FiltersRow>
+        {isAuthenticated && onFavoriteOnlyChange && (
+          <FilterSelectWrapper>
+            <ThemedSelect
+              options={[
+                { value: 'false', label: 'Все категории' },
+                { value: 'true', label: 'Избранные' },
+              ]}
+              value={favoriteOnly ? { value: 'true', label: 'Избранные' } : { value: 'false', label: 'Все категории' }}
+              onChange={(option) => onFavoriteOnlyChange(option?.value === 'true')}
+              placeholder="Фильтр"
+            />
+          </FilterSelectWrapper>
+        )}
         <FilterSelectWrapper>
           <ThemedSelect
             options={privacyOptions}

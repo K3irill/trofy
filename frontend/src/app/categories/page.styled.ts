@@ -340,6 +340,7 @@ export const AchievementPreview = styled.div`
   @media (max-width: 640px) {
     gap: 0.3rem;
     margin-top: 0.75rem;
+ 
   }
 
   @media (max-width: 400px) {
@@ -1231,5 +1232,130 @@ export const TreeBackButton = styled.button`
   @media (max-width: 768px) {
     padding: 0.3rem 0.6rem;
     font-size: 0.75rem;
+  }
+`
+
+export const UserFilterContainer = styled.div`
+  background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}e6 0%, ${(props) => props.theme.colors.dark[800]}f2 100%);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
+`
+
+export const UserFilterTitle = styled.div`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${(props) => props.theme.colors.light[200]};
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`
+
+export const ExcludedUsersList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+`
+
+export const ExcludedUserTag = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: ${(props) => props.theme.colors.dark[600]}80;
+  border: 1px solid ${(props) => props.theme.colors.dark[500]}80;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: ${(props) => props.theme.colors.light[200]};
+`
+
+export const RemoveUserButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: ${(props) => props.theme.colors.danger}33;
+  border: 1px solid ${(props) => props.theme.colors.danger}80;
+  color: ${(props) => props.theme.colors.danger};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  svg {
+    font-size: 0.75rem;
+  }
+
+  &:hover {
+    background: ${(props) => props.theme.colors.danger}4d;
+    border-color: ${(props) => props.theme.colors.danger};
+    transform: scale(1.1);
+  }
+`
+
+export const FilterModeSelector = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+`
+
+export const FilterModeButton = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: ${(props) =>
+    props.$active
+      ? `linear-gradient(135deg, ${props.theme.colors.primary}33 0%, ${props.theme.colors.primary}1a 100%)`
+      : `linear-gradient(135deg, ${props.theme.colors.dark[700]}e6 0%, ${props.theme.colors.dark[800]}f2 100%)`};
+  border: 1px solid ${(props) =>
+    props.$active ? `${props.theme.colors.primary}80` : `${props.theme.colors.dark[600]}80`};
+  border-radius: 8px;
+  color: ${(props) => (props.$active ? props.theme.colors.primary : props.theme.colors.light[300])};
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+
+  svg {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    background: ${(props) =>
+    props.$active
+      ? `linear-gradient(135deg, ${props.theme.colors.primary}4d 0%, ${props.theme.colors.primary}33 100%)`
+      : `linear-gradient(135deg, ${props.theme.colors.dark[600]}e6 0%, ${props.theme.colors.dark[700]}f2 100%)`};
+    border-color: ${(props) => (props.$active ? props.theme.colors.primary : `${props.theme.colors.primary}66`)};
+    transform: scale(1.05);
+  }
+`
+
+export const AddUserFilterInput = styled.input`
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background: ${(props) => props.theme.colors.dark[800]}cc;
+  border: 2px solid ${(props) => props.theme.colors.dark[600]}80;
+  border-radius: 8px;
+  color: ${(props) => props.theme.colors.light[100]};
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${(props) => props.theme.colors.primary};
+    box-shadow: 0 0 0 3px ${(props) => props.theme.colors.primary}1a;
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme.colors.light[300]};
   }
 `

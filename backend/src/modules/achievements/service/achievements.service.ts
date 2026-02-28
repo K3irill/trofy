@@ -65,7 +65,7 @@ export class AchievementsService {
   /**
    * Получение всех категорий (с учетом прав доступа)
    */
-  async getCategories(viewerId?: string) {
+  async getCategories(viewerId?: string, excludeUserIds?: string[], favoriteOnly?: boolean) {
     const categories = await prisma.category.findMany({
       include: {
         creator: {
@@ -80,8 +80,32 @@ export class AchievementsService {
       },
     })
 
+    // Если нужны только избранные категории
+    let favoriteCategoryIds: string[] = []
+    if (favoriteOnly && viewerId) {
+      const favorites = await (prisma as any).categoryFavorite.findMany({
+        where: { user_id: viewerId },
+        select: { category_id: true },
+      })
+      favoriteCategoryIds = favorites.map((f: any) => f.category_id)
+    }
+
     // Фильтруем категории по правам доступа
-    const filteredCategories = categories.filter((category) => {
+    let filteredCategories = categories.filter((category) => {
+      // Если нужны только избранные, проверяем наличие в избранном
+      if (favoriteOnly && viewerId) {
+        if (!favoriteCategoryIds.includes(category.id)) {
+          return false
+        }
+      }
+
+      // Фильтр по исключенным пользователям
+      if (excludeUserIds && excludeUserIds.length > 0 && category.creator_id) {
+        if (excludeUserIds.includes(category.creator_id)) {
+          return false
+        }
+      }
+
       const isPublic = (category as any).is_public !== false
       const allowedUserIds = (category as any).allowed_user_ids || []
       const creatorId = category.creator_id
@@ -126,23 +150,33 @@ export class AchievementsService {
       categoryAchievementCounts.set(category.id, accessibleAchievements.length)
     })
 
-    return filteredCategories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      icon_url: category.icon_url,
-      is_custom: category.is_custom,
-      creator_id: category.creator_id,
-      creator_username: category.creator?.username || undefined,
-      achievements_count: categoryAchievementCounts.get(category.id) || 0,
-      created_at: category.created_at.toISOString(),
-      updated_at: category.updated_at.toISOString(),
-    }))
+    // Получаем информацию о лайках и избранном для категорий
+    const likesAndFavorites = viewerId
+      ? await this.getCategoriesWithLikesAndFavorites(viewerId, filteredCategories.map((c) => c.id))
+      : new Map()
+
+    const result = filteredCategories.map((category) => {
+      const likeAndFavorite = likesAndFavorites.get(category.id) || { isLiked: false, isFavorite: false }
+      return {
+        id: category.id,
+        name: category.name,
+        icon_url: category.icon_url,
+        is_custom: category.is_custom,
+        creator_id: category.creator_id,
+        creator_username: category.creator?.username || undefined,
+        achievements_count: categoryAchievementCounts.get(category.id) || 0,
+        is_liked: likeAndFavorite.isLiked,
+        is_favorite: likeAndFavorite.isFavorite,
+        created_at: category.created_at.toISOString(),
+        updated_at: category.updated_at.toISOString(),
+      }
+    })
   }
 
   /**
    * Получение всех категорий со статистикой пользователя
    */
-  async getCategoriesWithStats(userId?: string) {
+  async getCategoriesWithStats(userId?: string, excludeUserIds?: string[], favoriteOnly?: boolean) {
     const categories = await prisma.category.findMany({
       include: {
         _count: {
@@ -175,8 +209,32 @@ export class AchievementsService {
       },
     })
 
+    // Если нужны только избранные категории
+    let favoriteCategoryIds: string[] = []
+    if (favoriteOnly && userId) {
+      const favorites = await (prisma as any).categoryFavorite.findMany({
+        where: { user_id: userId },
+        select: { category_id: true },
+      })
+      favoriteCategoryIds = favorites.map((f: any) => f.category_id)
+    }
+
     // Фильтруем категории по правам доступа
-    const filteredCategories = categories.filter((category) => {
+    let filteredCategories = categories.filter((category) => {
+      // Если нужны только избранные, проверяем наличие в избранном
+      if (favoriteOnly && userId) {
+        if (!favoriteCategoryIds.includes(category.id)) {
+          return false
+        }
+      }
+
+      // Фильтр по исключенным пользователям
+      if (excludeUserIds && excludeUserIds.length > 0 && category.creator_id) {
+        if (excludeUserIds.includes(category.creator_id)) {
+          return false
+        }
+      }
+
       const isPublic = (category as any).is_public !== false
       const allowedUserIds = (category as any).allowed_user_ids || []
       const creatorId = category.creator_id
@@ -280,7 +338,7 @@ export class AchievementsService {
       })
     }
 
-    return filteredCategories.map((category) => {
+    const result = filteredCategories.map((category) => {
       const total = categoryAchievementCounts.get(category.id) || 0
       const unlockedCount = userId && categoryUnlockedCounts
         ? categoryUnlockedCounts.get(category.id) || 0
@@ -340,8 +398,25 @@ export class AchievementsService {
         total,
         unlocked: unlockedCount,
         achievements_preview: achievementsPreview,
+        is_liked: false, // Будет заполнено позже
+        is_favorite: false, // Будет заполнено позже
         created_at: category.created_at.toISOString(),
         updated_at: category.updated_at.toISOString(),
+      }
+    })
+
+    // Получаем информацию о лайках и избранном для категорий
+    const likesAndFavorites = userId
+      ? await this.getCategoriesWithLikesAndFavorites(userId, filteredCategories.map((c) => c.id))
+      : new Map()
+
+    // Добавляем информацию о лайках и избранном
+    return result.map((category) => {
+      const likeAndFavorite = likesAndFavorites.get(category.id) || { isLiked: false, isFavorite: false }
+      return {
+        ...category,
+        is_liked: likeAndFavorite.isLiked,
+        is_favorite: likeAndFavorite.isFavorite,
       }
     })
   }
@@ -398,6 +473,18 @@ export class AchievementsService {
       }
     }
 
+    // Получаем количество лайков и информацию о лайке/избранном для текущего пользователя
+    const [likesCount, likesAndFavorites] = await Promise.all([
+      (prisma as any).categoryLike.count({
+        where: { category_id: category.id },
+      }),
+      viewerId
+        ? this.getCategoriesWithLikesAndFavorites(viewerId, [category.id])
+        : Promise.resolve(new Map()),
+    ])
+
+    const likeAndFavorite = likesAndFavorites.get(category.id) || { isLiked: false, isFavorite: false }
+
     return {
       id: category.id,
       name: category.name,
@@ -408,6 +495,9 @@ export class AchievementsService {
       is_public: category.is_public,
       allowed_user_ids: allowedUserIds,
       achievements_count,
+      likes_count: likesCount,
+      is_liked: likeAndFavorite.isLiked,
+      is_favorite: likeAndFavorite.isFavorite,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
     }
@@ -487,6 +577,18 @@ export class AchievementsService {
       }
     }
 
+    // Получаем количество лайков и информацию о лайке/избранном для текущего пользователя
+    const [likesCount, likesAndFavorites] = await Promise.all([
+      (prisma as any).categoryLike.count({
+        where: { category_id: category.id },
+      }),
+      userId
+        ? this.getCategoriesWithLikesAndFavorites(userId, [category.id])
+        : Promise.resolve(new Map()),
+    ])
+
+    const likeAndFavorite = likesAndFavorites.get(category.id) || { isLiked: false, isFavorite: false }
+
     return {
       id: category.id,
       name: category.name,
@@ -498,6 +600,9 @@ export class AchievementsService {
       allowed_user_ids: allowedUserIds,
       total,
       unlocked: unlockedCount,
+      likes_count: likesCount,
+      is_liked: likeAndFavorite.isLiked,
+      is_favorite: likeAndFavorite.isFavorite,
       created_at: category.created_at.toISOString(),
       updated_at: category.updated_at.toISOString(),
     }
@@ -705,6 +810,14 @@ export class AchievementsService {
     // Форматируем результат и фильтруем по правам доступа
     let formatted = achievements
       .filter((achievement) => {
+        // Фильтр по исключенным пользователям
+        if (dto?.excludeUserIds && dto.excludeUserIds.length > 0) {
+          const creatorId = (achievement as any).creator_id
+          if (creatorId && dto.excludeUserIds.includes(creatorId)) {
+            return false
+          }
+        }
+
         const isPublic = (achievement as any).is_public !== false
         const allowedUserIds = this.normalizeAllowedUserIds((achievement as any).allowed_user_ids)
         const creatorId = (achievement as any).creator_id
@@ -2441,6 +2554,136 @@ export class AchievementsService {
         updated_at: created.updated_at,
       }
     }
+  }
+
+  /**
+   * Переключение лайка категории
+   */
+  async toggleCategoryLike(userId: string, categoryId: string) {
+    // Проверяем существование категории
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    })
+
+    if (!category) {
+      throw ApiError.notFound('Category not found')
+    }
+
+    // Лайки можно ставить только пользовательским категориям
+    if (!category.is_custom) {
+      throw ApiError.forbidden('Can only like custom categories')
+    }
+
+    // Проверяем доступ к категории
+    if (!this.canAccessByPrivacy(category, userId)) {
+      throw ApiError.forbidden('Category is private')
+    }
+
+    const existing = await (prisma as any).categoryLike.findUnique({
+      where: {
+        category_id_user_id: {
+          category_id: categoryId,
+          user_id: userId,
+        },
+      },
+    })
+
+    if (existing) {
+      await (prisma as any).categoryLike.delete({
+        where: { id: existing.id },
+      })
+      return { isLiked: false }
+    } else {
+      await (prisma as any).categoryLike.create({
+        data: {
+          category_id: categoryId,
+          user_id: userId,
+        },
+      })
+      return { isLiked: true }
+    }
+  }
+
+  /**
+   * Переключение избранного для категории
+   */
+  async toggleCategoryFavorite(userId: string, categoryId: string) {
+    // Проверяем существование категории
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+    })
+
+    if (!category) {
+      throw ApiError.notFound('Category not found')
+    }
+
+    // Проверяем доступ к категории
+    if (!this.canAccessByPrivacy(category, userId)) {
+      throw ApiError.forbidden('Category is private')
+    }
+
+    const existing = await (prisma as any).categoryFavorite.findUnique({
+      where: {
+        category_id_user_id: {
+          category_id: categoryId,
+          user_id: userId,
+        },
+      },
+    })
+
+    if (existing) {
+      await (prisma as any).categoryFavorite.delete({
+        where: { id: existing.id },
+      })
+      return { isFavorite: false }
+    } else {
+      await (prisma as any).categoryFavorite.create({
+        data: {
+          category_id: categoryId,
+          user_id: userId,
+        },
+      })
+      return { isFavorite: true }
+    }
+  }
+
+  /**
+   * Получение информации о лайках и избранном для категорий
+   */
+  async getCategoriesWithLikesAndFavorites(viewerId?: string, categoryIds?: string[]) {
+    if (!viewerId || !categoryIds || categoryIds.length === 0) {
+      return new Map()
+    }
+
+    const [likes, favorites] = await Promise.all([
+      (prisma as any).categoryLike.findMany({
+        where: {
+          user_id: viewerId,
+          category_id: { in: categoryIds },
+        },
+        select: { category_id: true },
+      }),
+      (prisma as any).categoryFavorite.findMany({
+        where: {
+          user_id: viewerId,
+          category_id: { in: categoryIds },
+        },
+        select: { category_id: true },
+      }),
+    ])
+
+    const likedCategoryIds = new Set(likes.map((l: any) => l.category_id))
+    const favoritedCategoryIds = new Set(favorites.map((f: any) => f.category_id))
+
+    const result = new Map()
+    categoryIds.forEach((id) => {
+      result.set(id, {
+        isLiked: likedCategoryIds.has(id),
+        isFavorite: favoritedCategoryIds.has(id),
+      })
+    })
+
+    return result
   }
 }
 

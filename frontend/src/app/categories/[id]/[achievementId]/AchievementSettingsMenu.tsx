@@ -10,6 +10,7 @@ import {
   MenuItem,
   MenuDivider,
 } from './AchievementSettingsMenu.styled'
+import { BiLike, BiSolidLike } from 'react-icons/bi'
 
 interface AchievementSettingsMenuProps {
   achievement: {
@@ -138,7 +139,7 @@ export const AchievementSettingsMenu = ({
                     </MenuItem>
                     <MenuDivider />
                     <MenuItem onClick={onToggleLikes} $active={!achievement.canLike} $warning={!achievement.canLike}>
-                      {achievement.canLike ? <IoHandRight /> : <IoCloseCircle />}
+                      {achievement.canLike ? <BiLike /> : <BiSolidLike />}
                       <span>{achievement.canLike ? 'Аплодисменты разрешены' : 'Аплодисменты отключены'}</span>
                     </MenuItem>
                     <MenuItem onClick={onToggleComments} $active={!achievement.canComment} $warning={!achievement.canComment}>

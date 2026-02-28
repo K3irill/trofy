@@ -54,7 +54,24 @@ export class AchievementsController {
   async getCategories(req: Request | AuthRequest, res: Response, next: NextFunction) {
     try {
       const viewerId = (req as AuthRequest).user?.userId
-      const categories = await achievementsService.getCategories(viewerId)
+      let excludeUserIds: string[] | undefined
+      if (req.query.excludeUserIds) {
+        try {
+          // Если это JSON строка, парсим её
+          if (typeof req.query.excludeUserIds === 'string' && req.query.excludeUserIds.startsWith('[')) {
+            excludeUserIds = JSON.parse(req.query.excludeUserIds)
+          } else if (Array.isArray(req.query.excludeUserIds)) {
+            excludeUserIds = req.query.excludeUserIds.map(String)
+          } else {
+            excludeUserIds = [String(req.query.excludeUserIds)]
+          }
+        } catch (e) {
+          // Если не удалось распарсить, игнорируем
+          excludeUserIds = undefined
+        }
+      }
+      const favoriteOnly = req.query.favoriteOnly === 'true'
+      const categories = await achievementsService.getCategories(viewerId, excludeUserIds, favoriteOnly)
       res.json(categories)
     } catch (error) {
       next(error)
@@ -67,7 +84,24 @@ export class AchievementsController {
   async getCategoriesWithStats(req: Request | AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = (req as AuthRequest).user?.userId
-      const categories = await achievementsService.getCategoriesWithStats(userId)
+      let excludeUserIds: string[] | undefined
+      if (req.query.excludeUserIds) {
+        try {
+          // Если это JSON строка, парсим её
+          if (typeof req.query.excludeUserIds === 'string' && req.query.excludeUserIds.startsWith('[')) {
+            excludeUserIds = JSON.parse(req.query.excludeUserIds)
+          } else if (Array.isArray(req.query.excludeUserIds)) {
+            excludeUserIds = req.query.excludeUserIds.map(String)
+          } else {
+            excludeUserIds = [String(req.query.excludeUserIds)]
+          }
+        } catch (e) {
+          // Если не удалось распарсить, игнорируем
+          excludeUserIds = undefined
+        }
+      }
+      const favoriteOnly = req.query.favoriteOnly === 'true'
+      const categories = await achievementsService.getCategoriesWithStats(userId, excludeUserIds, favoriteOnly)
       res.json(categories)
     } catch (error) {
       next(error)
@@ -937,6 +971,44 @@ export class AchievementsController {
       if (!(await validateDto(dto, res, next))) return
 
       const result = await achievementsService.createOrUpdateRoadmap(userId, userAchievementId, dto)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/categories/:id/likes - Переключение лайка категории
+   */
+  async toggleCategoryLike(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { id: categoryId } = req.params
+      const userId = req.user.userId
+
+      const result = await achievementsService.toggleCategoryLike(userId, categoryId)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/achievements/categories/:id/favorite - Переключение избранного для категории
+   */
+  async toggleCategoryFavorite(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const { id: categoryId } = req.params
+      const userId = req.user.userId
+
+      const result = await achievementsService.toggleCategoryFavorite(userId, categoryId)
       res.json(result)
     } catch (error) {
       next(error)

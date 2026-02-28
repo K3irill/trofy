@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { IoSearchOutline, IoDocumentTextOutline, IoAdd, IoCreateOutline, IoTrash, IoLockClosed } from 'react-icons/io5'
+import { IoSearchOutline, IoDocumentTextOutline, IoAdd, IoCreateOutline, IoTrash, IoLockClosed, IoHeart, IoHeartOutline, IoStar, IoStarOutline } from 'react-icons/io5'
 import { useAppSelector } from '@/store/hooks'
 import { useGetMeQuery } from '@/store/api/userApi'
 import { CreateAchievementModal } from '@/components/CreateAchievementModal/CreateAchievementModal'
@@ -13,9 +13,12 @@ import {
   useGetCategoryByIdWithStatsQuery,
   useGetCategoryByIdQuery,
   useGetAchievementsByCategoryQuery,
+  useToggleCategoryLikeMutation,
+  useToggleCategoryFavoriteMutation,
   type Achievement as ApiAchievement,
 } from '@/store/api/achievementsApi'
 import { renderIcon } from '@/lib/utils/iconUtils'
+import { useToast } from '@/hooks/useToast'
 
 import {
   Header as PageHeader,
@@ -46,6 +49,10 @@ import {
   NotFoundWrapper,
   NotFoundIcon,
   NotFoundText,
+  CategoryActions,
+  LikeButton,
+  FavoriteButton,
+  LikesCount,
 } from './page.styled'
 import { AchievementCard } from './AchievementCard'
 import { ViewModeSelector, AchievementViewMode } from './ViewModeSelector'
@@ -76,6 +83,9 @@ export default function CategoryPage() {
   const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] = useState(false)
   const { isAuthenticated } = useAppSelector((state) => state.auth)
   const { data: currentUser } = useGetMeQuery(undefined, { skip: !isAuthenticated })
+  const [toggleLike, { isLoading: isLiking }] = useToggleCategoryLikeMutation()
+  const [toggleFavorite, { isLoading: isFavoriting }] = useToggleCategoryFavoriteMutation()
+  const { showToast } = useToast()
 
   const categoryId = params?.id as string
 
@@ -174,6 +184,9 @@ export default function CategoryPage() {
 
   // Фильтрация и сортировка достижений (должен быть до условных return)
   const filteredAndSortedAchievements = useMemo(() => {
+    if (!achievements || !Array.isArray(achievements)) {
+      return []
+    }
     let filtered = [...achievements]
 
     // Фильтрация по поисковому запросу
@@ -287,6 +300,18 @@ export default function CategoryPage() {
   const progress = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0
 
   const renderAchievements = (achievementsList: ApiAchievement[]) => {
+    // Защита от null/undefined
+    if (!achievementsList || !Array.isArray(achievementsList)) {
+      return (
+        <EmptyStateWrapper>
+          <EmptyStateIcon>
+            <IoDocumentTextOutline />
+          </EmptyStateIcon>
+          <EmptyStateText>Достижения не найдены</EmptyStateText>
+        </EmptyStateWrapper>
+      )
+    }
+    
     // Показываем лоадер только если действительно загружаем и данных еще нет
     if ((isLoadingAchievements || isFetchingAchievements) && !achievementsData) {
       return (
@@ -421,6 +446,43 @@ export default function CategoryPage() {
                   {activeCategory.creator_username}
                 </CreatorLink>
               </CreatorInfo>
+            )}
+            {isAuthenticated && (
+              <CategoryActions>
+                {activeCategory.is_custom && (
+                  <LikeButton
+                    $isLiked={activeCategory.is_liked || false}
+                    onClick={async () => {
+                      try {
+                        await toggleLike({ categoryId: activeCategory.id }).unwrap()
+                      } catch (error) {
+                        showToast('Ошибка при изменении лайка', 'error')
+                      }
+                    }}
+                    disabled={isLiking}
+                    title={activeCategory.is_liked ? 'Убрать лайк' : 'Поставить лайк'}
+                  >
+                    {activeCategory.is_liked ? <IoHeart /> : <IoHeartOutline />}
+                    {activeCategory.likes_count !== undefined && activeCategory.likes_count > 0 && (
+                      <LikesCount>{activeCategory.likes_count}</LikesCount>
+                    )}
+                  </LikeButton>
+                )}
+                <FavoriteButton
+                  $isFavorite={activeCategory.is_favorite || false}
+                  onClick={async () => {
+                    try {
+                      await toggleFavorite({ categoryId: activeCategory.id }).unwrap()
+                    } catch (error) {
+                      showToast('Ошибка при изменении избранного', 'error')
+                    }
+                  }}
+                  disabled={isFavoriting}
+                  title={activeCategory.is_favorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+                >
+                  {activeCategory.is_favorite ? <IoStar /> : <IoStarOutline />}
+                </FavoriteButton>
+              </CategoryActions>
             )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
               {activeCategory.is_public === false && (

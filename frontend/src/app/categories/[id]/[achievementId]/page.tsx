@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/useToast'
 import { renderIcon } from '@/lib/utils/iconUtils'
 import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
-import { IoArrowBack, IoFolderOpen, IoLockClosed, IoSearch, IoEyeOff, IoStar, IoHeart, IoCloseCircle, IoCreateOutline, IoTrash } from 'react-icons/io5'
+import { IoArrowBack, IoFolderOpen, IoLockClosed, IoSearch, IoEyeOff, IoStar, IoHeart, IoCloseCircle, IoCreateOutline, IoTrash, IoHandRight } from 'react-icons/io5'
 import { AchievementDetailView } from './AchievementDetailView'
 import { AchievementActions } from './AchievementActions'
 import { AchievementProgress } from './AchievementProgress'
@@ -436,7 +436,7 @@ export default function AchievementDetailPage() {
                 )}
                 {achievement.canLike === false && (
                   <IndicatorIcon title="Аплодисменты отключены" $warning>
-                    <IoCloseCircle />
+                    <IoHandRight />
                   </IndicatorIcon>
                 )}
                 {achievement.canComment === false && (

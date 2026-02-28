@@ -202,6 +202,8 @@ const ModalOverlay = styled.div`
   justify-content: center;
   z-index: 1000;
   padding: 2rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 
   @media (max-width: 768px) {
     padding: 0;

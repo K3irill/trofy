@@ -15,9 +15,12 @@ export const ModalOverlay = styled(motion.div)`
   z-index: 1000;
   padding: 2rem;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0.5rem;
+    align-items: flex-start;
+    padding-top: 1rem;
   }
 `
 
@@ -25,6 +28,7 @@ export const ModalContainer = styled(motion.div)`
   position: relative;
   max-width: 700px;
   width: 100%;
+  max-height: 90vh;
   background: linear-gradient(145deg, ${(props) => props.theme.colors.dark[700]}fa 0%, ${(props) => props.theme.colors.dark[800]}fa 100%);
   border-radius: 24px;
   padding: 3rem;
@@ -34,11 +38,15 @@ export const ModalContainer = styled(motion.div)`
   flex-direction: column;
   align-items: center;
   gap: 2rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 
   @media (max-width: 768px) {
     padding: 2rem 1.5rem;
     gap: 1.5rem;
     max-width: 100%;
+    max-height: 100vh;
+    border-radius: 20px 20px 0 0;
   }
 `
 

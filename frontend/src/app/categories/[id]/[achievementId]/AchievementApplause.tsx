@@ -10,7 +10,7 @@ import {
   ApplauseCount,
   ApplauseDisabled,
 } from './AchievementApplause.styled'
-
+import { BiLike, BiSolidLike } from "react-icons/bi";
 interface AchievementApplauseProps {
   achievement: AchievementDetail
   isOwner: boolean
@@ -37,7 +37,7 @@ export const AchievementApplause = ({ achievement, isOwner, currentUserId, userA
     return (
       <ApplauseContainer>
         <ApplauseDisabled>
-          <IoHandRightOutline style={{ marginRight: '0.5rem' }} />
+          <IoHandRight  style={{ marginRight: '0.5rem' }} />
           Аплодисменты отключены владельцем
         </ApplauseDisabled>
       </ApplauseContainer>
@@ -62,7 +62,7 @@ export const AchievementApplause = ({ achievement, isOwner, currentUserId, userA
         liked={isLiked}
         disabled={isToggling}
       >
-        {isLiked ? <IoHandRight /> : <IoHandRightOutline />}
+        {isLiked ? <BiSolidLike /> : <BiLike />}
         <ApplauseCount>{likesCount}</ApplauseCount>
       </ApplauseButton>
       <ToastComponent />

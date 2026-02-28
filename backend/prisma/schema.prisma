@@ -47,6 +47,8 @@ model User {
   achievementComments  AchievementComment[]
   achievementLikes     AchievementLike[]
   achievementFavorites AchievementFavorite[]
+  categoryLikes        CategoryLike[]
+  categoryFavorites    CategoryFavorite[]
   createdAchievements  Achievement[]         @relation("AchievementCreator")
   journalEntries       JournalEntry[]
   journalFolders       JournalFolder[]
@@ -90,8 +92,10 @@ model Category {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  creator      User?         @relation(fields: [creator_id], references: [id], onDelete: SetNull)
+  creator      User?              @relation(fields: [creator_id], references: [id], onDelete: SetNull)
   achievements Achievement[]
+  likes        CategoryLike[]
+  favorites    CategoryFavorite[]
 
   @@index([creator_id])
 }
@@ -343,4 +347,32 @@ model Roadmap {
   userAchievement UserAchievement @relation(fields: [user_achievement_id], references: [id], onDelete: Cascade)
 
   @@index([user_achievement_id])
+}
+
+model CategoryLike {
+  id          String   @id @default(uuid())
+  category_id String
+  user_id     String
+  created_at  DateTime @default(now())
+
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([category_id, user_id])
+  @@index([category_id])
+  @@index([user_id])
+}
+
+model CategoryFavorite {
+  id          String   @id @default(uuid())
+  category_id String
+  user_id     String
+  created_at  DateTime @default(now())
+
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([category_id, user_id])
+  @@index([category_id])
+  @@index([user_id])
 }

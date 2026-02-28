@@ -105,3 +105,112 @@ export const CreatorLink = styled(Link)`
     color: rgba(0, 212, 255, 1);
   }
 `
+
+export const CategoryActions = styled.div`
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+`
+
+export const LikeButton = styled.button<{ $isLiked: boolean }>`
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${(props) =>
+    props.$isLiked
+      ? `linear-gradient(135deg, ${props.theme.colors.danger}33 0%, ${props.theme.colors.danger}1a 100%)`
+      : `linear-gradient(135deg, ${props.theme.colors.dark[700]}e6 0%, ${props.theme.colors.dark[800]}f2 100%)`};
+  border: 1px solid ${(props) =>
+    props.$isLiked ? `${props.theme.colors.danger}80` : `${props.theme.colors.dark[600]}80`};
+  border-radius: 8px;
+  color: ${(props) => (props.$isLiked ? props.theme.colors.danger : props.theme.colors.light[300])};
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+
+  svg {
+    font-size: 1.125rem;
+    color: ${(props) => (props.$isLiked ? props.theme.colors.danger : props.theme.colors.light[300])};
+  }
+
+  &:hover:not(:disabled) {
+    background: ${(props) =>
+    props.$isLiked
+      ? `linear-gradient(135deg, ${props.theme.colors.danger}4d 0%, ${props.theme.colors.danger}33 100%)`
+      : `linear-gradient(135deg, ${props.theme.colors.dark[600]}e6 0%, ${props.theme.colors.dark[700]}f2 100%)`};
+    border-color: ${(props) => (props.$isLiked ? props.theme.colors.danger : props.theme.colors.dark[600])};
+    transform: scale(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 640px) {
+    width: 32px;
+    height: 32px;
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+`
+
+export const FavoriteButton = styled.button<{ $isFavorite: boolean }>`
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${(props) =>
+    props.$isFavorite
+      ? `linear-gradient(135deg, #ffd70033 0%, #ffd7001a 100%)`
+      : `linear-gradient(135deg, ${props.theme.colors.dark[700]}e6 0%, ${props.theme.colors.dark[800]}f2 100%)`};
+  border: 1px solid ${(props) =>
+    props.$isFavorite ? '#ffd70080' : `${props.theme.colors.dark[600]}80`};
+  border-radius: 8px;
+  color: ${(props) => (props.$isFavorite ? '#ffd700' : props.theme.colors.light[300])};
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+
+  svg {
+    font-size: 1.125rem;
+    color: ${(props) => (props.$isFavorite ? '#ffd700' : props.theme.colors.light[300])};
+  }
+
+  &:hover:not(:disabled) {
+    background: ${(props) =>
+    props.$isFavorite
+      ? `linear-gradient(135deg, #ffd7004d 0%, #ffd70033 100%)`
+      : `linear-gradient(135deg, ${props.theme.colors.dark[600]}e6 0%, ${props.theme.colors.dark[700]}f2 100%)`};
+    border-color: ${(props) => (props.$isFavorite ? '#ffd700' : props.theme.colors.dark[600])};
+    transform: scale(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 640px) {
+    width: 32px;
+    height: 32px;
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+`

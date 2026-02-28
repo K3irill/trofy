@@ -23,11 +23,18 @@ const ModalOverlay = styled(motion.div)`
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
 `
 
 const ModalContainer = styled(motion.div)`
   width: 100%;
   max-width: 500px;
+  max-height: 90vh;
   background: ${(props) => props.theme.colors.dark.glass};
   backdrop-filter: ${(props) => props.theme.glass.blur};
   -webkit-backdrop-filter: ${(props) => props.theme.glass.blur};
@@ -38,6 +45,11 @@ const ModalContainer = styled(motion.div)`
   flex-direction: column;
   overflow: hidden;
   position: relative;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    max-height: 100vh;
+  }
 `
 
 const ModalHeader = styled.div`

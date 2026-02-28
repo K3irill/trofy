@@ -64,6 +64,11 @@ export class GetAchievementsDto {
   @IsOptional()
   @Type(() => Number)
   offset?: number
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  excludeUserIds?: string[]
 }
 
 export class CreateCategoryDto {

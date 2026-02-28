@@ -138,6 +138,20 @@ router.post(
   achievementsController.toggleFavorite.bind(achievementsController)
 )
 
+// Лайки категорий
+router.post(
+  '/categories/:id/likes',
+  authenticate,
+  achievementsController.toggleCategoryLike.bind(achievementsController)
+)
+
+// Избранные категории
+router.post(
+  '/categories/:id/favorite',
+  authenticate,
+  achievementsController.toggleCategoryFavorite.bind(achievementsController)
+)
+
 // Комментарии
 router.get(
   '/user-achievements/:userAchievementId/comments',

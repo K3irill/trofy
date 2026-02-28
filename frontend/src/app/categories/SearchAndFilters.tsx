@@ -160,14 +160,14 @@ export const SearchAndFilters = ({
   onPrivacyFilterChange,
   showPrivacyFilter = false,
 }: SearchAndFiltersProps) => {
-  const { data: categoriesData = [] } = useGetCategoriesQuery()
+  const { data: categoriesData } = useGetCategoriesQuery()
 
   const categoryOptions: ThemedSelectOption[] = [
     { value: '', label: 'Все категории' },
-    ...categoriesData.map((category) => ({
+    ...(categoriesData && Array.isArray(categoriesData) ? categoriesData.map((category) => ({
       value: category.id,
       label: category.name,
-    })),
+    })) : []),
   ]
 
   const statusOptions: ThemedSelectOption[] = [

@@ -14,9 +14,11 @@ import {
   PreviewItem,
   AchievementCount,
 } from './page.styled'
-import { CategoryTypeBadge, EditButton, CreatorInfo, CreatorLink } from './CategoryCard.styled'
+import { CategoryTypeBadge, EditButton, CreatorInfo, CreatorLink, CategoryActions, LikeButton, FavoriteButton } from './CategoryCard.styled'
 import { isImageUrl } from '@/lib/utils/iconUtils'
-import { IoPerson, IoGlobe, IoCreateOutline, IoLockClosed, IoPeople } from 'react-icons/io5'
+import { IoPerson, IoGlobe, IoCreateOutline, IoLockClosed, IoPeople, IoHeart, IoHeartOutline, IoStar, IoStarOutline } from 'react-icons/io5'
+import { useToggleCategoryLikeMutation, useToggleCategoryFavoriteMutation } from '@/store/api/achievementsApi'
+import { useToast } from '@/hooks/useToast'
 
 export interface Category {
   id: string
@@ -43,6 +45,8 @@ interface CategoryCardProps {
   isAuthenticated?: boolean
   currentUserId?: string
   onEdit?: (category: Category) => void
+  isLiked?: boolean
+  isFavorite?: boolean
 }
 
 export const CategoryCardComponent = ({ 
@@ -50,7 +54,9 @@ export const CategoryCardComponent = ({
   onClick, 
   isAuthenticated = false, 
   currentUserId,
-  onEdit 
+  onEdit,
+  isLiked,
+  isFavorite,
 }: CategoryCardProps) => {
   const progress = category.total > 0 ? Math.round((category.unlocked / category.total) * 100) : 0
   const previewAchievements = category.achievements.slice(0, 8)
@@ -63,6 +69,30 @@ export const CategoryCardComponent = ({
   const isMyCustom = isCustom && isOwner
   const isOtherCustom = isCustom && !isOwner
   const isPrivate = category.is_public === false
+
+  const [toggleLike, { isLoading: isLiking }] = useToggleCategoryLikeMutation()
+  const [toggleFavorite, { isLoading: isFavoriting }] = useToggleCategoryFavoriteMutation()
+  const { showToast } = useToast()
+
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isAuthenticated) return
+    try {
+      await toggleLike({ categoryId: category.id }).unwrap()
+    } catch (error) {
+      showToast('Ошибка при изменении лайка', 'error')
+    }
+  }
+
+  const handleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isAuthenticated) return
+    try {
+      await toggleFavorite({ categoryId: category.id }).unwrap()
+    } catch (error) {
+      showToast('Ошибка при изменении избранного', 'error')
+    }
+  }
 
   return (
     <CategoryCard
@@ -97,7 +127,9 @@ export const CategoryCardComponent = ({
       )}
       {isPrivate && (
         <CategoryTypeBadge $isCustom={false} style={{ 
-          top: isAuthenticated && !isOwner ? '3.5rem' : isAuthenticated ?  '6.5rem' : '2rem', 
+          top: isAuthenticated && !isOwner ? '3.5rem' : isAuthenticated ?  '5rem' : '2rem', 
+          left: 'auto',
+          right: '0.5rem',
           background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%)', 
           border: '1px solid rgba(239, 68, 68, 0.4)', 
           color: '#ef4444',
@@ -108,6 +140,28 @@ export const CategoryCardComponent = ({
           <IoLockClosed />
           <span>Приватная</span>
         </CategoryTypeBadge>
+      )}
+      {isAuthenticated && (
+        <CategoryActions>
+          {isCustom && (
+            <LikeButton
+              $isLiked={!!isLiked}
+              onClick={handleLike}
+              disabled={isLiking}
+              title={isLiked ? 'Убрать лайк' : 'Поставить лайк'}
+            >
+              {isLiked ? <IoHeart /> : <IoHeartOutline />}
+            </LikeButton>
+          )}
+          <FavoriteButton
+            $isFavorite={!!isFavorite}
+            onClick={handleFavorite}
+            disabled={isFavoriting}
+            title={isFavorite ? 'Убрать из избранного' : 'Добавить в избранное'}
+          >
+            {isFavorite ? <IoStar /> : <IoStarOutline />}
+          </FavoriteButton>
+        </CategoryActions>
       )}
       <CategoryIcon>
         {isImageUrl(category.icon) ? (

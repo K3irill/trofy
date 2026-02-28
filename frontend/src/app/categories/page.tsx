@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { IoFolder, IoTrophy, IoCloseCircle, IoSearch, IoAdd } from 'react-icons/io5'
+import { IoFolder, IoTrophy, IoCloseCircle, IoSearch, IoAdd, IoPersonRemove, IoClose, IoEye } from 'react-icons/io5'
 import { useAppSelector } from '@/store/hooks'
 import { useGetMeQuery } from '@/store/api/userApi'
 import { CreateCategoryModal } from '@/components/CreateCategoryModal/CreateCategoryModal'
@@ -34,6 +34,14 @@ import {
   PageHeaderTop,
   PageHeaderControls,
   ControlsWrap,
+  UserFilterContainer,
+  UserFilterTitle,
+  ExcludedUsersList,
+  ExcludedUserTag,
+  RemoveUserButton,
+  AddUserFilterInput,
+  FilterModeSelector,
+  FilterModeButton,
 } from './page.styled'
 import { CategoryCardComponent } from './CategoryCard'
 import { Tumbler } from './Tumbler'
@@ -84,6 +92,23 @@ export default function CategoriesPage() {
   const [rarityFilter, setRarityFilter] = useState('')
   const [sortBy, setSortBy] = useState('default')
   const [privacyFilter, setPrivacyFilter] = useState('')
+  const [favoriteOnly, setFavoriteOnly] = useState(false)
+  const [excludedUsernames, setExcludedUsernames] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('excludedUsernames')
+      return stored ? JSON.parse(stored) : []
+    }
+    return []
+  })
+  const [includedOnlyUsernames, setIncludedOnlyUsernames] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('includedOnlyUsernames')
+      return stored ? JSON.parse(stored) : []
+    }
+    return []
+  })
+  const [newFilterUsername, setNewFilterUsername] = useState('')
+  const [userFilterMode, setUserFilterMode] = useState<'exclude' | 'includeOnly'>('exclude')
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
   const [isCreateAchievementModalOpen, setIsCreateAchievementModalOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string; icon_url: string | null; is_custom: boolean; creator_id?: string; is_public?: boolean; allowed_user_ids?: string[] } | null>(null)
@@ -98,23 +123,60 @@ export default function CategoriesPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  // Сохранение фильтров в localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('excludedUsernames', JSON.stringify(excludedUsernames))
+      localStorage.setItem('includedOnlyUsernames', JSON.stringify(includedOnlyUsernames))
+    }
+  }, [excludedUsernames, includedOnlyUsernames])
+
   // Запрос категорий
   const {
     data: categoriesData,
     isLoading: categoriesLoading,
     error: categoriesError,
-  } = useGetCategoriesQuery(undefined, {
-    skip: mode === 'achievements' || isAuthenticated,
-  })
+  } = useGetCategoriesQuery(
+    mode === 'achievements' || isAuthenticated
+      ? undefined
+      : {
+          favoriteOnly: favoriteOnly,
+        },
+    {
+      skip: mode === 'achievements' || isAuthenticated,
+    }
+  )
 
   const {
     data: categoriesWithStatsData,
     isLoading: categoriesWithStatsLoading,
     error: categoriesWithStatsError,
     refetch: refetchCategoriesWithStats,
-  } = useGetCategoriesWithStatsQuery(undefined, {
-    skip: mode === 'achievements' || !isAuthenticated,
-  })
+  } = useGetCategoriesWithStatsQuery(
+    mode === 'achievements' || !isAuthenticated
+      ? undefined
+      : {
+          favoriteOnly: favoriteOnly,
+        },
+    {
+      skip: mode === 'achievements' || !isAuthenticated,
+    }
+  )
+
+  // Преобразуем usernames в IDs для фильтрации достижений (используем creator_username из категорий)
+  const excludeUserIds = useMemo(() => {
+    if (excludedUsernames.length === 0) return []
+    const allCategories = categoriesData || categoriesWithStatsData || []
+    const userIds: string[] = []
+    allCategories.forEach((cat) => {
+      if (cat.creator_username && excludedUsernames.includes(cat.creator_username.toLowerCase()) && cat.creator_id) {
+        if (!userIds.includes(cat.creator_id)) {
+          userIds.push(cat.creator_id)
+        }
+      }
+    })
+    return userIds
+  }, [excludedUsernames, categoriesData, categoriesWithStatsData])
 
   // Преобразование категорий для компонента
   const categories = useMemo(() => {
@@ -128,7 +190,10 @@ export default function CategoriesPage() {
       unlocked: number
       is_custom: boolean
       creator_id?: string
+      creator_username?: string
       is_public?: boolean
+      is_liked?: boolean
+      is_favorite?: boolean
       achievements: Array<{
         id: string
         icon: string
@@ -152,6 +217,8 @@ export default function CategoriesPage() {
           creator_id: cat.creator_id,
           creator_username: cat.creator_username,
           is_public: cat.is_public,
+          is_liked: Boolean(cat.is_liked),
+          is_favorite: Boolean(cat.is_favorite),
           achievements: cat.achievements_preview.map((ach) => ({
             id: ach.id,
             icon: ach.icon_url || '',
@@ -174,6 +241,8 @@ export default function CategoriesPage() {
           creator_id: cat.creator_id,
           creator_username: cat.creator_username,
           is_public: cat.is_public,
+          is_liked: Boolean(cat.is_liked),
+          is_favorite: Boolean(cat.is_favorite),
           achievements: [],
         }))
       }
@@ -193,6 +262,21 @@ export default function CategoriesPage() {
     } else if (filterMode === 'custom') {
       // Все пользовательские категории (не приватные - фильтрация уже на бэкенде)
       filtered = filtered.filter((cat) => cat.is_custom)
+    }
+
+    // Фильтрация по пользователям
+    if (includedOnlyUsernames.length > 0) {
+      // Показать только категории указанных пользователей
+      filtered = filtered.filter((cat) => {
+        if (!cat.creator_username) return false
+        return includedOnlyUsernames.includes(cat.creator_username.toLowerCase())
+      })
+    } else if (excludedUsernames.length > 0) {
+      // Скрыть категории указанных пользователей
+      filtered = filtered.filter((cat) => {
+        if (!cat.creator_username) return true
+        return !excludedUsernames.includes(cat.creator_username.toLowerCase())
+      })
     }
 
     // Фильтрация по поисковому запросу
@@ -235,7 +319,7 @@ export default function CategoriesPage() {
     }
 
     return sorted
-  }, [categoriesData, categoriesWithStatsData, isAuthenticated, mode, filterMode, currentUser, debouncedSearchQuery, sortBy, privacyFilter])
+  }, [categoriesData, categoriesWithStatsData, isAuthenticated, mode, filterMode, currentUser, debouncedSearchQuery, sortBy, privacyFilter, excludedUsernames, includedOnlyUsernames])
 
   // Параметры для запроса достижений
   const achievementsParams = useMemo(() => {
@@ -307,6 +391,15 @@ export default function CategoriesPage() {
       filtered = filtered.filter((achievement) => {
         const apiAchievement: ApiAchievementType | undefined = achievementsData.achievements.find((a) => a.id === achievement.id)
         return apiAchievement?.is_custom
+      })
+    }
+
+    // Фильтрация по исключенным пользователям (по creator_id)
+    if (excludeUserIds.length > 0) {
+      filtered = filtered.filter((achievement) => {
+        const apiAchievement: ApiAchievementType | undefined = achievementsData.achievements.find((a) => a.id === achievement.id)
+        if (!apiAchievement?.creator_id) return true
+        return !excludeUserIds.includes(apiAchievement.creator_id)
       })
     }
 
@@ -382,17 +475,13 @@ export default function CategoriesPage() {
     ? ((isAuthenticated ? categoriesWithStatsLoading : categoriesLoading) &&
       categories.length === 0)
     : (achievementsLoading && achievements.length === 0 && !achievementsData)
-  console.log({
-    categories,
-    categoriesData,
-    categoriesWithStatsData,
-    achievementsData,
-    isAuthenticated,
-    mode,
-    categoriesLoading,
 
-    skip: mode === 'achievements' || isAuthenticated
-  })
+
+useEffect(()=>{
+
+  console.log({categories: categories[categories.length - 1]})
+  console.log({categoriesWithStatsData})
+}, [categoriesWithStatsData, categories])
   return (
     <>
       <Container>
@@ -495,7 +584,90 @@ export default function CategoriesPage() {
                 onSortChange={setSortBy}
                 privacyFilter={privacyFilter}
                 onPrivacyFilterChange={setPrivacyFilter}
+                favoriteOnly={favoriteOnly}
+                onFavoriteOnlyChange={setFavoriteOnly}
+                isAuthenticated={isAuthenticated}
               />
+              {/* {isAuthenticated && (
+                <UserFilterContainer>
+                  <UserFilterTitle>
+                    <IoPersonRemove />
+                    <span>Фильтр категорий по пользователям</span>
+                  </UserFilterTitle>
+                  <FilterModeSelector>
+                    <FilterModeButton
+                      $active={userFilterMode === 'exclude'}
+                      onClick={() => setUserFilterMode('exclude')}
+                    >
+                      <IoPersonRemove />
+                      <span>Скрыть</span>
+                    </FilterModeButton>
+                    <FilterModeButton
+                      $active={userFilterMode === 'includeOnly'}
+                      onClick={() => setUserFilterMode('includeOnly')}
+                    >
+                      <IoEye />
+                      <span>Показать только</span>
+                    </FilterModeButton>
+                  </FilterModeSelector>
+                  {userFilterMode === 'exclude' && excludedUsernames.length > 0 && (
+                    <ExcludedUsersList>
+                      {excludedUsernames.map((username) => (
+                        <ExcludedUserTag key={username}>
+                          <span>{username}</span>
+                          <RemoveUserButton
+                            onClick={() => {
+                              setExcludedUsernames((prev) => prev.filter((u) => u !== username))
+                            }}
+                            title="Убрать из списка"
+                          >
+                            <IoClose />
+                          </RemoveUserButton>
+                        </ExcludedUserTag>
+                      ))}
+                    </ExcludedUsersList>
+                  )}
+                  {userFilterMode === 'includeOnly' && includedOnlyUsernames.length > 0 && (
+                    <ExcludedUsersList>
+                      {includedOnlyUsernames.map((username) => (
+                        <ExcludedUserTag key={username}>
+                          <span>{username}</span>
+                          <RemoveUserButton
+                            onClick={() => {
+                              setIncludedOnlyUsernames((prev) => prev.filter((u) => u !== username))
+                            }}
+                            title="Убрать из списка"
+                          >
+                            <IoClose />
+                          </RemoveUserButton>
+                        </ExcludedUserTag>
+                      ))}
+                    </ExcludedUsersList>
+                  )}
+                  <AddUserFilterInput
+                    type="text"
+                    placeholder={userFilterMode === 'exclude' ? 'Введите username для скрытия...' : 'Введите username для показа...'}
+                    value={newFilterUsername}
+                    onChange={(e) => setNewFilterUsername(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newFilterUsername.trim()) {
+                        const username = newFilterUsername.trim().toLowerCase()
+                        if (userFilterMode === 'exclude') {
+                          if (!excludedUsernames.includes(username)) {
+                            setExcludedUsernames((prev) => [...prev, username])
+                            setNewFilterUsername('')
+                          }
+                        } else {
+                          if (!includedOnlyUsernames.includes(username)) {
+                            setIncludedOnlyUsernames((prev) => [...prev, username])
+                            setNewFilterUsername('')
+                          }
+                        }
+                      }
+                    }}
+                  />
+                </UserFilterContainer>
+              )} */}
               {showLoader ? (
                 <BlockLoader text="Загрузка категорий..." />
               ) : hasError ? (
@@ -529,6 +701,8 @@ export default function CategoriesPage() {
                       onClick={() => router.push(`/categories/${category.id}`)}
                       isAuthenticated={isAuthenticated}
                       currentUserId={currentUser?.id}
+                      isLiked={category.is_liked}
+                      isFavorite={category.is_favorite}
                       onEdit={(cat) => {
                         // Преобразуем CategoryItem в формат Category для модалки
                         // Минимальные данные, полные данные загрузятся через useGetCategoryByIdQuery

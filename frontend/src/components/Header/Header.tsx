@@ -119,12 +119,6 @@ export const Header = () => {
               >
                 Каталог достижений
               </NavLink>
-              <NavLink
-                href="/users"
-                $active={pathname === '/users' || pathname?.startsWith('/users/')}
-              >
-                Пользователи
-              </NavLink>
               {isAuthenticated && (
                 <NavLink
                   href="/journal"
@@ -133,6 +127,12 @@ export const Header = () => {
                   Дневник
                 </NavLink>
               )}
+              <NavLink
+                href="/users"
+                $active={pathname === '/users' || pathname?.startsWith('/users/')}
+              >
+                Пользователи
+              </NavLink>
               {/* <NavLink
                 href="/"
                 $active={pathname === '/' || pathname === '/'}

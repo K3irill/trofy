@@ -24,16 +24,31 @@ const ModalOverlay = styled(motion.div)`
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
 `
 
 const ModalContainer = styled(motion.div)`
   width: 100%;
   max-width: 500px;
+  max-height: 90vh;
   background: ${(props) => props.theme.colors.dark[800]};
   border-radius: 20px;
   padding: 2rem;
   box-shadow: ${(props) => props.theme.shadows.glass.heavy};
   position: relative;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    max-height: 100vh;
+    padding: 1.5rem;
+  }
 `
 
 const ModalHeader = styled.div`

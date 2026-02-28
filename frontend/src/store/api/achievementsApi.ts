@@ -59,6 +59,9 @@ export interface Category {
   is_public?: boolean
   allowed_user_ids?: string[]
   achievements_count: number
+  likes_count?: number
+  is_liked?: boolean
+  is_favorite?: boolean
   created_at: string
   updated_at: string
 }
@@ -81,6 +84,9 @@ export interface CategoryWithStats {
     progress?: number
     completion_date?: string
   }>
+  likes_count?: number
+  is_liked?: boolean
+  is_favorite?: boolean
   created_at: string
   updated_at: string
 }
@@ -98,6 +104,7 @@ export interface GetAchievementsParams {
   sortBy?: 'default' | 'unlocked-asc' | 'unlocked-desc' | 'date-asc' | 'date-desc' | 'xp-asc' | 'xp-desc'
   limit?: number
   offset?: number
+  excludeUserIds?: string[]
 }
 
 export interface GetAchievementsResponse {
@@ -113,26 +120,61 @@ export const achievementsApi = baseApi.injectEndpoints({
       query: () => '/achievements/rarities',
       providesTags: ['Category'],
     }),
-    getCategories: builder.query<Category[], void>({
-      query: () => '/achievements/categories',
+    getCategories: builder.query<Category[], { excludeUserIds?: string[]; favoriteOnly?: boolean } | void>({
+      query: (params) => {
+        const queryParams: Record<string, string> = {}
+        if (params) {
+          if (params.excludeUserIds && params.excludeUserIds.length > 0) {
+            queryParams.excludeUserIds = JSON.stringify(params.excludeUserIds)
+          }
+          if (params.favoriteOnly) {
+            queryParams.favoriteOnly = 'true'
+          }
+        }
+        return {
+          url: '/achievements/categories',
+          params: Object.keys(queryParams).length > 0 ? queryParams : undefined,
+        }
+      },
       providesTags: ['Category'],
     }),
-    getCategoriesWithStats: builder.query<CategoryWithStats[], void>({
-      query: () => '/achievements/categories/with-stats',
+    getCategoriesWithStats: builder.query<CategoryWithStats[], { excludeUserIds?: string[]; favoriteOnly?: boolean } | void>({
+      query: (params) => {
+        const queryParams: Record<string, string> = {}
+        if (params) {
+          if (params.excludeUserIds && params.excludeUserIds.length > 0) {
+            queryParams.excludeUserIds = JSON.stringify(params.excludeUserIds)
+          }
+          if (params.favoriteOnly) {
+            queryParams.favoriteOnly = 'true'
+          }
+        }
+        return {
+          url: '/achievements/categories/with-stats',
+          params: Object.keys(queryParams).length > 0 ? queryParams : undefined,
+        }
+      },
       providesTags: ['Category'],
     }),
     getCategoryById: builder.query<Category, string>({
       query: (id) => `/achievements/categories/${id}`,
-      providesTags: ['Category'],
+      providesTags: (result, error, id) => [{ type: 'Category', id }, 'Category'],
     }),
     getCategoryByIdWithStats: builder.query<CategoryWithStats, string>({
       query: (id) => `/achievements/categories/${id}/with-stats`,
-      providesTags: ['Category'],
+      providesTags: (result, error, id) => [{ type: 'Category', id }, 'Category'],
     }),
     getAchievements: builder.query<GetAchievementsResponse, GetAchievementsParams | void>({
       query: (params) => ({
         url: '/achievements',
-        params: params || {},
+        params: params
+          ? {
+              ...params,
+              ...(params.excludeUserIds && params.excludeUserIds.length > 0
+                ? { excludeUserIds: params.excludeUserIds }
+                : {}),
+            }
+          : {},
       }),
       providesTags: ['Achievement'],
     }),
@@ -301,6 +343,180 @@ export const achievementsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Achievement', 'Category'],
     }),
+    toggleCategoryLike: builder.mutation<{ isLiked: boolean }, { categoryId: string }>({
+      query: ({ categoryId }) => ({
+        url: `/achievements/categories/${categoryId}/likes`,
+        method: 'POST',
+      }),
+      async onQueryStarted({ categoryId }, { dispatch, queryFulfilled }) {
+        // Оптимистичное обновление для всех вариантов запросов
+        const patchResults: any[] = []
+        
+        // Обновляем getCategories для всех возможных параметров
+        try {
+          const patchResult1 = dispatch(
+            achievementsApi.util.updateQueryData('getCategories', undefined, (draft) => {
+              const category = draft.find((cat) => cat.id === categoryId)
+              if (category) {
+                const wasLiked = category.is_liked || false
+                category.is_liked = !wasLiked
+                category.likes_count = (category.likes_count || 0) + (wasLiked ? -1 : 1)
+              }
+            })
+          )
+          if (patchResult1) patchResults.push(patchResult1)
+        } catch (e) {
+          // Игнорируем ошибки, если запрос не найден в кэше
+        }
+        
+        try {
+          const patchResult2 = dispatch(
+            achievementsApi.util.updateQueryData('getCategoriesWithStats', undefined, (draft) => {
+              const category = draft.find((cat) => cat.id === categoryId)
+              if (category) {
+                const wasLiked = category.is_liked || false
+                category.is_liked = !wasLiked
+                category.likes_count = (category.likes_count || 0) + (wasLiked ? -1 : 1)
+              }
+            })
+          )
+          if (patchResult2) patchResults.push(patchResult2)
+        } catch (e) {
+          // Игнорируем ошибки, если запрос не найден в кэше
+        }
+        
+        // Обновляем с параметром favoriteOnly: true
+        try {
+          const patchResult3 = dispatch(
+            achievementsApi.util.updateQueryData('getCategories', { favoriteOnly: true }, (draft) => {
+              const category = draft.find((cat) => cat.id === categoryId)
+              if (category) {
+                category.is_liked = !category.is_liked
+                category.likes_count = (category.likes_count || 0) + (category.is_liked ? 1 : -1)
+              }
+            })
+          )
+          if (patchResult3) patchResults.push(patchResult3)
+        } catch (e) {
+          // Игнорируем ошибки, если запрос не найден в кэше
+        }
+        
+        try {
+          const patchResult4 = dispatch(
+            achievementsApi.util.updateQueryData('getCategoriesWithStats', { favoriteOnly: true }, (draft) => {
+              const category = draft.find((cat) => cat.id === categoryId)
+              if (category) {
+                category.is_liked = !category.is_liked
+                category.likes_count = (category.likes_count || 0) + (category.is_liked ? 1 : -1)
+              }
+            })
+          )
+          if (patchResult4) patchResults.push(patchResult4)
+        } catch (e) {
+          // Игнорируем ошибки, если запрос не найден в кэше
+        }
+        
+        try {
+          await queryFulfilled
+        } catch {
+          // Откатываем все изменения при ошибке
+          patchResults.forEach((patchResult) => {
+            if (patchResult && patchResult.undo) {
+              patchResult.undo()
+            }
+          })
+        }
+      },
+      invalidatesTags: (result, error, { categoryId }) => [
+        'Category',
+        { type: 'Category', id: categoryId },
+        { type: 'Category', id: 'LIST' },
+      ],
+    }),
+    toggleCategoryFavorite: builder.mutation<{ isFavorite: boolean }, { categoryId: string }>({
+      query: ({ categoryId }) => ({
+        url: `/achievements/categories/${categoryId}/favorite`,
+        method: 'POST',
+      }),
+      async onQueryStarted({ categoryId }, { dispatch, queryFulfilled }) {
+        // Оптимистичное обновление для всех вариантов запросов
+        const patchResults: any[] = []
+        
+        // Обновляем getCategories для всех возможных параметров
+        try {
+          const patchResult1 = dispatch(
+            achievementsApi.util.updateQueryData('getCategories', undefined, (draft) => {
+              const category = draft.find((cat) => cat.id === categoryId)
+              if (category) {
+                category.is_favorite = !category.is_favorite
+              }
+            })
+          )
+          if (patchResult1) patchResults.push(patchResult1)
+        } catch (e) {
+          // Игнорируем ошибки, если запрос не найден в кэше
+        }
+        
+        try {
+          const patchResult2 = dispatch(
+            achievementsApi.util.updateQueryData('getCategoriesWithStats', undefined, (draft) => {
+              const category = draft.find((cat) => cat.id === categoryId)
+              if (category) {
+                category.is_favorite = !category.is_favorite
+              }
+            })
+          )
+          if (patchResult2) patchResults.push(patchResult2)
+        } catch (e) {
+          // Игнорируем ошибки, если запрос не найден в кэше
+        }
+        
+        // Обновляем с параметром favoriteOnly: true
+        try {
+          const patchResult3 = dispatch(
+            achievementsApi.util.updateQueryData('getCategories', { favoriteOnly: true }, (draft) => {
+              const category = draft.find((cat) => cat.id === categoryId)
+              if (category) {
+                category.is_favorite = !category.is_favorite
+              }
+            })
+          )
+          if (patchResult3) patchResults.push(patchResult3)
+        } catch (e) {
+          // Игнорируем ошибки, если запрос не найден в кэше
+        }
+        
+        try {
+          const patchResult4 = dispatch(
+            achievementsApi.util.updateQueryData('getCategoriesWithStats', { favoriteOnly: true }, (draft) => {
+              const category = draft.find((cat) => cat.id === categoryId)
+              if (category) {
+                category.is_favorite = !category.is_favorite
+              }
+            })
+          )
+          if (patchResult4) patchResults.push(patchResult4)
+        } catch (e) {
+          // Игнорируем ошибки, если запрос не найден в кэше
+        }
+        
+        try {
+          await queryFulfilled
+        } catch {
+          // Откатываем все изменения при ошибке
+          patchResults.forEach((patchResult) => {
+            if (patchResult && patchResult.undo) {
+              patchResult.undo()
+            }
+          })
+        }
+      },
+      invalidatesTags: (result, error, { categoryId }) => [
+        'Category',
+        { type: 'Category', id: categoryId },
+        { type: 'Category', id: 'LIST' },
+      ],
+    }),
   }),
 })
 
@@ -320,4 +536,6 @@ export const {
   useUpdateCustomAchievementMutation,
   useDeleteCustomCategoryMutation,
   useDeleteCustomAchievementMutation,
+  useToggleCategoryLikeMutation,
+  useToggleCategoryFavoriteMutation,
 } = achievementsApi
