@@ -260,14 +260,18 @@ export const TrophyHeader = styled.div <{ rarity: string }>`
     border-radius: 14px;
     width: 56px;
     height: 56px;
-
+    overflow: hidden;
+    position: relative;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+    isolation: isolate;
   }
 
   @media (max-width: 1024px) {
     flex-direction: row;
     flex-wrap: nowrap;
     span{
-
       width: 48px;
       height: 48px;
       border-radius: 12px;
@@ -282,9 +286,30 @@ export const TrophyIcon = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 5px;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
 
   @media (max-width: 1024px) {
     font-size: 1.75rem;
+    border-radius: 12px;
+
+    img {
+      border-radius: 12px;
+    }
   }
 `
 

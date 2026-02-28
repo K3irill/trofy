@@ -87,7 +87,14 @@ export function MainAchievement({ achievement, username }: MainAchievementProps)
                   : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${achievement.icon_url}`
               }
               alt={achievement.title}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover',
+                borderRadius: '50%',
+                WebkitTransform: 'translateZ(0)',
+                transform: 'translateZ(0)',
+              }}
               onError={(e) => {
                 e.currentTarget.style.display = 'none'
               }}

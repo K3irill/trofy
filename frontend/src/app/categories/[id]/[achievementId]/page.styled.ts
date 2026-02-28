@@ -159,11 +159,14 @@ export const AchievementIcon = styled.div<{ $unlocked: boolean }>`
   filter: ${props => props.$unlocked ? `drop-shadow(${props.theme.shadows.glow.primary}) drop-shadow(${props.theme.shadows.glow.gold})` : 'grayscale(0.7) brightness(0.6)'};
   flex-shrink: 0;
   cursor: pointer;
-  ищкв
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   transform-style: preserve-3d;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
   box-shadow: ${props => props.$unlocked
     ? `${props.theme.shadows.glass.heavy}, ${props.theme.shadows.glow.primary}40`
     : props.theme.shadows.glass.medium};
@@ -424,5 +427,127 @@ export const ViewGeneralButton = styled(motion.button)`
     width: 100%;
     justify-content: center;
     padding: 0.75rem 1rem;
+  }
+`
+
+export const AchievementActionsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+
+    .button-text {
+      display: none;
+    }
+
+    button {
+      padding: 0.5rem !important;
+      gap: 0 !important;
+    }
+  }
+`
+
+export const EditAchievementButton = styled(motion.button)`
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  color: #00d4ff;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 212, 255, 0.1) 100%);
+    border-color: rgba(0, 212, 255, 0.5);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    font-size: 1.125rem;
+    flex-shrink: 0;
+  }
+
+  span {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    background: rgba(2, 97, 116, 0.5);
+    padding: 0.5rem;
+    justify-content: center;
+    gap: 0;
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+`
+
+export const DeleteAchievementButton = styled(motion.button)`
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%);
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    font-size: 1.125rem;
+    flex-shrink: 0;
+  }
+
+  span {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    background: rgba(130, 30, 30, 0.515);
+    padding: 0.5rem;
+    justify-content: center;
+    gap: 0;
+
+    svg {
+      font-size: 1rem;
+    }
   }
 `

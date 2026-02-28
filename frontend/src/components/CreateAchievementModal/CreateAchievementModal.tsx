@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
 import { ThemedSelect } from '@/components/Select/ThemedSelect'
 import { CreateCategoryModal } from '@/components/CreateCategoryModal/CreateCategoryModal'
+import { ImageCropModal } from '@/components/ImageCropModal/ImageCropModal'
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -31,7 +32,10 @@ const ModalOverlay = styled(motion.div)`
 
   @media (max-width: 768px) {
     padding: 0;
-    align-items: flex-end;
+    align-items: flex-start;
+    padding-top: env(safe-area-inset-top, 0);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 `
 
@@ -52,12 +56,15 @@ const ModalContainer = styled(motion.div)`
   
   @media (max-width: 768px) {
     max-width: 100%;
-    max-height: 100vh;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0));
+    height: calc(100dvh - env(safe-area-inset-top, 0));
     border-radius: ${(props) => props.theme.glass.radius} ${(props) => props.theme.glass.radius} 0 0;
+    margin-top: 0;
   }
 
   @media (max-height: 600px) {
-    max-height: 100vh;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0));
+    height: calc(100dvh - env(safe-area-inset-top, 0));
   }
 `
 
@@ -77,6 +84,16 @@ const ModalTitle = styled.h2`
   color: ${(props) => props.theme.colors.light[100]};
   flex: 1;
   text-align: center;
+  padding-right: 3rem;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+    padding-right: 2.5rem;
+  }
 `
 
 const CloseButton = styled.button`
@@ -474,6 +491,8 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
   const [description, setDescription] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageForCrop, setImageForCrop] = useState<string | null>(null)
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false)
   const [isCreateCategoryModalOpen, setIsCreateCategoryModalOpen] = useState(false)
   const [categoryId, setCategoryId] = useState(defaultCategoryId || '')
   const [rarity, setRarity] = useState<'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'>('COMMON')
@@ -652,7 +671,7 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
     }
 
     if (title.trim().length < 3) {
-      showToast('Название достижения должно содержать минимум 3 символа', 'error')
+      showToast('Название достижения должно содержать минимум 2 символа', 'error')
       return
     }
 
@@ -777,9 +796,9 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Введите название достижения (минимум 3 символа)"
+                      placeholder="Введите название достижения"
                       required
-                      minLength={3}
+                      minLength={2}
                     />
                   </FormGroup>
 
@@ -788,7 +807,7 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
                     <Textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Введите описание достижения (минимум 3 символа)"
+                      placeholder="Введите описание достижения"
                       required
                       minLength={3}
                     />
@@ -860,10 +879,11 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
                             onChange={(e) => {
                               const file = e.target.files?.[0]
                               if (file) {
-                                setImageFile(file)
                                 const reader = new FileReader()
                                 reader.onloadend = () => {
-                                  setImagePreview(reader.result as string)
+                                  const imageSrc = reader.result as string
+                                  setImageForCrop(imageSrc)
+                                  setIsCropModalOpen(true)
                                 }
                                 reader.readAsDataURL(file)
                               }
@@ -889,6 +909,35 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
                           >
                             <IoCloseCircle />
                           </RemoveImageButton>
+                          <motion.button
+                            onClick={() => {
+                              if (imagePreview) {
+                                setImageForCrop(imagePreview)
+                                setIsCropModalOpen(true)
+                              }
+                            }}
+                            style={{
+                              position: 'absolute',
+                              bottom: '0.5rem',
+                              left: '0.5rem',
+                              padding: '0.5rem 1rem',
+                              background: 'rgba(0, 212, 255, 0.2)',
+                              border: '1px solid rgba(0, 212, 255, 0.5)',
+                              borderRadius: '8px',
+                              color: '#00d4ff',
+                              cursor: 'pointer',
+                              fontSize: '0.875rem',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                            }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <IoImageOutline size={16} />
+                            Обрезать
+                          </motion.button>
                         </ImagePreview>
                       )}
                     </FileInputWrapper>
@@ -1049,6 +1098,25 @@ export function CreateAchievementModal({ isOpen, onClose, onSuccess, defaultCate
               refetchCategories()
             }
           }, 100)
+        }}
+      />
+      <ImageCropModal
+        isOpen={isCropModalOpen}
+        imageSrc={imageForCrop}
+        onClose={() => {
+          setIsCropModalOpen(false)
+          setImageForCrop(null)
+        }}
+        onCropComplete={(croppedBlob) => {
+          const croppedFile = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' })
+          setImageFile(croppedFile)
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            setImagePreview(reader.result as string)
+          }
+          reader.readAsDataURL(croppedFile)
+          setIsCropModalOpen(false)
+          setImageForCrop(null)
         }}
       />
     </>

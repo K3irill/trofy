@@ -808,13 +808,8 @@ export const AddTrophyText = styled.div`
 `
 
 export const CurrentGoalsSection = styled.div`
-	margin-bottom: 2rem;
 	position: relative;
 	z-index: 1;
-
-	@media (max-width: 767px) {
-		margin-bottom: 1.5rem;
-	}
 `
 export const CurrentGoals = styled.div`
 	display: flex;
@@ -994,13 +989,11 @@ export const StreakContainer = styled(motion.div)`
 	border: 1px solid rgba(255, 107, 107, 0.3);
 	border-radius: 12px;
 	padding: 0.75rem 1.5rem;
-	margin-bottom: 2rem;
 	position: relative;
 	z-index: 1;
 
 	@media (max-width: 767px) {
 		padding: 0.5rem 1rem;
-		margin-bottom: 1.5rem;
 	}
 `
 
@@ -1283,13 +1276,20 @@ export const MainAchievementIcon = styled(motion.div) <{ $iconUrl: string | null
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
 	transform-style: preserve-3d;
+	-webkit-transform: translateZ(0);
+	transform: translateZ(0);
+	will-change: transform;
+	isolation: isolate;
 
 	img {
-		width: 80%;
-		height: 80%;
+		width: 100%;
+		height: 100%;
 		object-fit: cover;
 		filter: drop-shadow(0 0 15px ${props => props.$rarityColor}90);
 		transform-style: preserve-3d;
+		border-radius: 50%;
+		-webkit-transform: translateZ(0);
+		transform: translateZ(0);
 	}
 
 	span {

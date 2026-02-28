@@ -94,6 +94,9 @@ export const ConfirmModalTitle = styled.h3`
   font-weight: 700;
   margin: 0;
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   @media (max-width: 768px) {
     font-size: 1.25rem;

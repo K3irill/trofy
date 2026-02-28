@@ -18,9 +18,11 @@ export const ModalOverlay = styled(motion.div)`
   -webkit-overflow-scrolling: touch;
 
   @media (max-width: 768px) {
-    padding: 0.5rem;
+    padding: 0;
     align-items: flex-start;
-    padding-top: 1rem;
+    padding-top: env(safe-area-inset-top, 0);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 `
 
@@ -45,8 +47,10 @@ export const ModalContainer = styled(motion.div)`
     padding: 2rem 1.5rem;
     gap: 1.5rem;
     max-width: 100%;
-    max-height: 100vh;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0));
+    height: calc(100dvh - env(safe-area-inset-top, 0));
     border-radius: 20px 20px 0 0;
+    margin-top: 0;
   }
 `
 

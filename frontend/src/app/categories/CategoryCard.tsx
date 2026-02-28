@@ -172,6 +172,9 @@ export const CategoryCardComponent = ({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              borderRadius: 'inherit',
+              WebkitTransform: 'translateZ(0)',
+              transform: 'translateZ(0)',
             }}
           />
         ) : (
@@ -234,6 +237,9 @@ export const CategoryCardComponent = ({
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
+                    borderRadius: '12px',
+                    WebkitTransform: 'translateZ(0)',
+                    transform: 'translateZ(0)',
                   }}
                 />
               ) : (

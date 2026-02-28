@@ -8,6 +8,7 @@ import { SettingsModal } from '@/components/SettingsModal'
 import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import { NotificationModal } from '@/components/NotificationModal'
 import { QuickNoteModal } from '@/components/Journal/QuickNoteModal'
+import { CreateAchievementModal } from '@/components/CreateAchievementModal/CreateAchievementModal'
 import { Button } from '@/components/ui/Button'
 import { useGetUnreadCountQuery } from '@/store/api/notificationsApi'
 import { HiBell } from 'react-icons/hi'
@@ -56,6 +57,7 @@ export const Header = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isQuickNoteOpen, setIsQuickNoteOpen] = useState(false)
+  const [isCreateAchievementModalOpen, setIsCreateAchievementModalOpen] = useState(false)
   const [settingsInitialView, setSettingsInitialView] = useState<'categories' | 'theme'>('categories')
 
   const { data: unreadData } = useGetUnreadCountQuery(undefined, {
@@ -230,7 +232,7 @@ export const Header = () => {
                       Мои достижения
                     </UserProfileMenuItem>
                     <UserProfileMenuItem onClick={() => {
-                      setIsQuickNoteOpen(true)
+                      setIsCreateAchievementModalOpen(true)
                       setShowProfileMenu(false)
                     }}>
                       <IoAdd />
@@ -432,6 +434,13 @@ export const Header = () => {
       <QuickNoteModal
         isOpen={isQuickNoteOpen}
         onClose={() => setIsQuickNoteOpen(false)}
+      />
+      <CreateAchievementModal
+        isOpen={isCreateAchievementModalOpen}
+        onClose={() => setIsCreateAchievementModalOpen(false)}
+        onSuccess={() => {
+          // Модалка закроется автоматически через onClose
+        }}
       />
     </>
   )

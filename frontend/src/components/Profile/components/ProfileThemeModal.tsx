@@ -64,7 +64,10 @@ const ModalOverlay = styled(motion.div)`
 
   @media (max-width: 768px) {
     padding: 0;
-    align-items: flex-end;
+    align-items: flex-start;
+    padding-top: env(safe-area-inset-top, 0);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 `
 
@@ -84,8 +87,10 @@ const ModalContainer = styled(motion.div)`
 
   @media (max-width: 768px) {
     max-width: 100%;
-    max-height: 100vh;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0));
+    height: calc(100dvh - env(safe-area-inset-top, 0));
     border-radius: ${(props) => props.theme.glass.radius} ${(props) => props.theme.glass.radius} 0 0;
+    margin-top: 0;
   }
 `
 
@@ -104,6 +109,16 @@ const ModalTitle = styled.h2`
   color: ${(props) => props.theme.colors.light[100]};
   flex: 1;
   text-align: center;
+  padding-right: 3rem;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+    padding-right: 2.5rem;
+  }
 `
 
 const CloseButton = styled.button`

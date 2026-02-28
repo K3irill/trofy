@@ -80,7 +80,7 @@ export const FiltersContainer = styled.div`
 
 export const FilterButton = styled.button<{ $active?: boolean }>`
   padding: 0.75rem 1.5rem;
-  background: ${props => props.$active 
+  background: ${props => props.$active
     ? `linear-gradient(135deg, ${props.theme.colors.primary} 0%, ${props.theme.colors.secondary} 100%)`
     : `linear-gradient(145deg, ${props.theme.colors.dark[700]}e6 0%, ${props.theme.colors.dark[800]}f2 100%)`};
   border: 2px solid ${props => props.$active ? props.theme.colors.primary : `${props.theme.colors.dark[600]}80`};
@@ -265,7 +265,7 @@ export const TopUsersGrid = styled.div`
   }
 `
 
-export const TopUserCard = styled(motion.div)<{ $rank: number }>`
+export const TopUserCard = styled(motion.div) <{ $rank: number }>`
   background: linear-gradient(145deg, ${props => props.theme.colors.dark[700]}e6 0%, ${props => props.theme.colors.dark[800]}f2 100%);
   backdrop-filter: blur(10px);
   border-radius: 20px;

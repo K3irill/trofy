@@ -121,16 +121,25 @@ export const CategoryIcon = styled.div`
   transition: all 0.3s ease;
   overflow: hidden;
   align-self: center;
+  position: relative;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 20px;
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   &:hover img {
-    transform: scale(1.15);
+    transform: scale(1.15) translateZ(0);
+    -webkit-transform: scale(1.15) translateZ(0);
   }
 
   @media (max-width: 1024px) {
@@ -162,6 +171,7 @@ export const CategoryName = styled.h3`
   color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
   margin-bottom: 0.5rem;
+  text-align: center;
 
   @media (max-width: 1024px) {
     font-size: 1.375rem;
@@ -380,11 +390,18 @@ export const PreviewItem = styled.div<{ $status: PreviewStatus }>`
     return `drop-shadow(${props.theme.shadows.glow.primary})`
   }};
   overflow: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 12px;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   &:hover {

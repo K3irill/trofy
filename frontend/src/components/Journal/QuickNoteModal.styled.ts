@@ -59,6 +59,11 @@ export const ModalTitle = styled.h2`
   font-weight: 700;
   color: ${(props) => props.theme.colors.light[100]};
   margin: 0;
+  flex: 1;
+  padding-right: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   @media (max-width: 640px) {
     font-size: 1.125rem;

@@ -437,18 +437,28 @@ export default function CategoryPage() {
           <CategoryIconLarge>
             {renderIcon(activeCategory.icon_url, 'folder')}
           </CategoryIconLarge>
-          <CategoryDetails>
-            <CategoryName>{activeCategory.name}</CategoryName>
-            {activeCategory.creator_username && !isCategoryOwner && (
-              <CreatorInfo>
-                <span>Создатель:</span>
-                <CreatorLink href={`/user/${activeCategory.creator_username}`}>
-                  {activeCategory.creator_username}
-                </CreatorLink>
-              </CreatorInfo>
-            )}
-            {isAuthenticated && (
+          {isAuthenticated && (
               <CategoryActions>
+                {activeCategory.is_public === false && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem',
+                padding: '0.375rem 0.75rem',
+                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                borderRadius: '8px',
+                color: '#ef4444',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                pointerEvents: 'none',
+                userSelect: 'none',
+                opacity: 0.9
+              }}>
+                <IoLockClosed size={16} />
+                <span>Приватная</span>
+              </div>
+            )}
                 {activeCategory.is_custom && (
                   <LikeButton
                     $isLiked={activeCategory.is_liked || false}
@@ -484,27 +494,19 @@ export default function CategoryPage() {
                 </FavoriteButton>
               </CategoryActions>
             )}
+          <CategoryDetails>
+            <CategoryName>{activeCategory.name}</CategoryName>
+            {activeCategory.creator_username && !isCategoryOwner && (
+              <CreatorInfo>
+                <span>Создатель:</span>
+                <CreatorLink href={`/user/${activeCategory.creator_username}`}>
+                  {activeCategory.creator_username}
+                </CreatorLink>
+              </CreatorInfo>
+            )}
+            
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-              {activeCategory.is_public === false && (
-                <div style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.375rem',
-                  padding: '0.375rem 0.75rem',
-                  background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%)',
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
-                  borderRadius: '8px',
-                  color: '#ef4444',
-                  fontSize: '0.875rem',
-                  fontWeight: 600,
-                  pointerEvents: 'none',
-                  userSelect: 'none',
-                  opacity: 0.9
-                }}>
-                  <IoLockClosed size={16} />
-                  <span>Приватная</span>
-                </div>
-              )}
+              
               {isAuthenticated && isCategoryOwner && (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <motion.button

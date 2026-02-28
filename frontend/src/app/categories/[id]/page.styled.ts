@@ -97,11 +97,31 @@ export const CategoryIcon = styled.div`
   font-size: 2.5rem;
   margin-bottom: 1rem;
   border: 2px solid ${(props) => props.theme.colors.dark[600]};
+  overflow: hidden;
+  position: relative;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
 
   @media (max-width: 768px) {
     width: 64px;
     height: 64px;
     font-size: 2rem;
+    border-radius: 12px;
+
+    img {
+      border-radius: 12px;
+    }
   }
 `
 
@@ -123,7 +143,7 @@ export const CategoryStats = styled.div`
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    gap: 1rem;
+    gap: 0.5rem;
   }
 `
 
@@ -287,6 +307,7 @@ export const CategoryInfo = styled.div`
   display: flex;
   gap: 2rem;
   align-items: center;
+  position: relative;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -306,11 +327,19 @@ export const CategoryIconLarge = styled.div`
   font-size: 4rem;
   border: 2px solid ${(props) => props.theme.colors.dark[600]};
   overflow: hidden;
+  position: relative;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 20px;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   @media (max-width: 767px) {
@@ -326,12 +355,21 @@ export const CategoryDetails = styled.div`
 
 export const CategoryActions = styled.div`
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 1rem;
+  right: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+ 
+    span{
+      display: none;
+    }
+    
+  }
 `
 
 export const LikeButton = styled.button<{ $isLiked: boolean }>`
@@ -361,9 +399,9 @@ export const LikeButton = styled.button<{ $isLiked: boolean }>`
 
   &:hover:not(:disabled) {
     background: ${(props) =>
-      props.$isLiked
-        ? `linear-gradient(135deg, ${props.theme.colors.danger}4d 0%, ${props.theme.colors.danger}33 100%)`
-        : `linear-gradient(135deg, ${props.theme.colors.dark[600]}e6 0%, ${props.theme.colors.dark[700]}f2 100%)`};
+    props.$isLiked
+      ? `linear-gradient(135deg, ${props.theme.colors.danger}4d 0%, ${props.theme.colors.danger}33 100%)`
+      : `linear-gradient(135deg, ${props.theme.colors.dark[600]}e6 0%, ${props.theme.colors.dark[700]}f2 100%)`};
     border-color: ${(props) => (props.$isLiked ? props.theme.colors.danger : props.theme.colors.dark[500])};
     transform: scale(1.05);
   }
@@ -401,9 +439,9 @@ export const FavoriteButton = styled.button<{ $isFavorite: boolean }>`
 
   &:hover:not(:disabled) {
     background: ${(props) =>
-      props.$isFavorite
-        ? `linear-gradient(135deg, ${props.theme.colors.gold || '#ffd700'}4d 0%, ${props.theme.colors.gold || '#ffd700'}33 100%)`
-        : `linear-gradient(135deg, ${props.theme.colors.dark[600]}e6 0%, ${props.theme.colors.dark[700]}f2 100%)`};
+    props.$isFavorite
+      ? `linear-gradient(135deg, ${props.theme.colors.gold || '#ffd700'}4d 0%, ${props.theme.colors.gold || '#ffd700'}33 100%)`
+      : `linear-gradient(135deg, ${props.theme.colors.dark[600]}e6 0%, ${props.theme.colors.dark[700]}f2 100%)`};
     border-color: ${(props) => (props.$isFavorite ? props.theme.colors.gold || '#ffd700' : props.theme.colors.dark[500])};
     transform: scale(1.05);
   }
@@ -622,6 +660,11 @@ export const AchievementListIcon = styled.div<{ $status: AchievementStatus }>`
   font-size: 2rem;
   flex-shrink: 0;
   overflow: hidden;
+  position: relative;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  isolation: isolate;
   filter: ${(props) => {
     if (props.$status === 'not_achieved') return 'grayscale(0.6) brightness(0.7)'
     return `drop-shadow(${props.theme.shadows.glow.primary})`
@@ -631,6 +674,9 @@ export const AchievementListIcon = styled.div<{ $status: AchievementStatus }>`
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 12px;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   @media (max-width: 768px) {

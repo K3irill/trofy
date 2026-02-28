@@ -63,6 +63,11 @@ const ModalTitle = styled.h2`
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
+  flex: 1;
+  padding-right: 1rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 const CloseButton = styled.button`

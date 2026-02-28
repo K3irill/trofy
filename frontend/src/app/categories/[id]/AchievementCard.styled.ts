@@ -82,17 +82,23 @@ export const AchievementIcon = styled.div<{ $status: AchievementStatus }>`
   font-size: 2.5rem;
   position: relative;
   transition: all 0.3s ease;
+  overflow: hidden;
   filter: ${(props) => {
     if (props.$status === 'not_achieved') return 'grayscale(0.6) brightness(0.7)'
     return `drop-shadow(${props.theme.shadows.glow.primary})`
   }};
   transform: translateZ(20px);
+  -webkit-transform: translateZ(20px);
+  will-change: transform;
+  isolation: isolate;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 16px;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   @media (max-width: 768px) {

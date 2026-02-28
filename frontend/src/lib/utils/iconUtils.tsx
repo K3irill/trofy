@@ -47,6 +47,9 @@ export const renderIcon = (
           width: '100%',
           height: '100%',
           objectFit: 'cover',
+          borderRadius: 'inherit',
+          WebkitTransform: 'translateZ(0)',
+          transform: 'translateZ(0)',
         }}
       />
     )

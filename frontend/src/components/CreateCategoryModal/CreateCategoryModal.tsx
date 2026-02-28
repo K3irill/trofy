@@ -9,6 +9,7 @@ import { useCreateCustomCategoryMutation, useUpdateCategoryMutation, useGetCateg
 import { useSearchUsersQuery } from '@/store/api/userApi'
 import { useToast } from '@/hooks/useToast'
 import { Button } from '@/components/ui/Button'
+import { ImageCropModal } from '@/components/ImageCropModal/ImageCropModal'
 
 const ModalOverlay = styled(motion.div)`
   position: fixed;
@@ -29,7 +30,10 @@ const ModalOverlay = styled(motion.div)`
 
   @media (max-width: 768px) {
     padding: 0;
-    align-items: flex-end;
+    align-items: flex-start;
+    padding-top: env(safe-area-inset-top, 0);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 `
 
@@ -50,12 +54,15 @@ const ModalContainer = styled(motion.div)`
   
   @media (max-width: 768px) {
     max-width: 100%;
-    max-height: 100vh;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0));
+    height: calc(100dvh - env(safe-area-inset-top, 0));
     border-radius: ${(props) => props.theme.glass.radius} ${(props) => props.theme.glass.radius} 0 0;
+    margin-top: 0;
   }
 
   @media (max-height: 600px) {
-    max-height: 100vh;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0));
+    height: calc(100dvh - env(safe-area-inset-top, 0));
   }
 `
 
@@ -75,6 +82,16 @@ const ModalTitle = styled.h2`
   color: ${(props) => props.theme.colors.light[100]};
   flex: 1;
   text-align: center;
+  padding-right: 3rem;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+    padding-right: 2.5rem;
+  }
 `
 
 const CloseButton = styled.button`
@@ -441,6 +458,8 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess, category }: Cr
   const [name, setName] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageForCrop, setImageForCrop] = useState<string | null>(null)
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false)
   const [isPublic, setIsPublic] = useState(true)
   const [allowedUserIds, setAllowedUserIds] = useState<string[]>([])
   const [userSearchQuery, setUserSearchQuery] = useState('')
@@ -507,7 +526,7 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess, category }: Cr
     }
 
     if (name.trim().length < 3) {
-      showToast('Название категории должно содержать минимум 3 символа', 'error')
+      showToast('Название категории должно содержать минимум 2 символа', 'error')
       return
     }
 
@@ -572,177 +591,202 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess, category }: Cr
 
   if (typeof window === 'undefined') return null
 
-  return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <ModalOverlay
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <ModalContainer
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ duration: 0.2 }}
+  return (
+    <>
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <ModalOverlay
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  onClose()
+                }
+              }}
             >
-              <ModalHeader>
-                <ModalTitle>{isEditMode ? 'Редактировать категорию' : 'Создать категорию'}</ModalTitle>
-                <CloseButton onClick={onClose}>
-                  <IoClose />
-                </CloseButton>
-              </ModalHeader>
+              <ModalContainer
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ModalHeader>
+                  <ModalTitle>{isEditMode ? 'Редактировать категорию' : 'Создать категорию'}</ModalTitle>
+                  <CloseButton onClick={onClose}>
+                    <IoClose size={24} />
+                  </CloseButton>
+                </ModalHeader>
 
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-                <ModalContent>
-                  <ScrollableContent>
+                <ScrollableContent>
+                  <form onSubmit={handleSubmit}>
                     <FormGroup>
-                      <Label>Название категории *</Label>
-                    <Input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Введите название категории (минимум 3 символа)"
-                      required
-                      minLength={3}
-                    />
-                  </FormGroup>
+                      <Label>Название категории</Label>
+                      <Input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Введите название категории"
+                        required
+                        minLength={3}
+                        maxLength={50}
+                      />
+                    </FormGroup>
 
-                  <FormGroup>
-                    <Label>Изображение категории</Label>
-                    <FileInputWrapper>
-                      {!imagePreview ? (
-                        <FileInputLabel>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0]
-                              if (file) {
-                                setImageFile(file)
-                                const reader = new FileReader()
-                                reader.onloadend = () => {
-                                  setImagePreview(reader.result as string)
+                    <FormGroup>
+                      <Label>Изображение категории</Label>
+                      <FileInputWrapper>
+                        {!imagePreview ? (
+                          <FileInputLabel>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) {
+                                  const reader = new FileReader()
+                                  reader.onloadend = () => {
+                                    const imageSrc = reader.result as string
+                                    setImageForCrop(imageSrc)
+                                    setIsCropModalOpen(true)
+                                  }
+                                  reader.readAsDataURL(file)
                                 }
-                                reader.readAsDataURL(file)
-                              }
-                            }}
-                          />
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                            <IoImageOutline size={32} />
-                            <span>Нажмите для загрузки изображения</span>
-                            <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>JPG, PNG, WebP до 10MB</span>
-                          </div>
-                        </FileInputLabel>
-                      ) : (
-                        <ImagePreview
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                        >
-                          <PreviewImage src={imagePreview} alt="Preview" />
-                          <RemoveImageButton
-                            onClick={() => {
-                              setImageFile(null)
-                              setImagePreview(null)
-                            }}
+                              }}
+                            />
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                              <IoImageOutline size={32} />
+                              <span>Нажмите для загрузки изображения</span>
+                              <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>JPG, PNG, WebP до 10MB</span>
+                            </div>
+                          </FileInputLabel>
+                        ) : (
+                          <ImagePreview
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
                           >
-                            <IoCloseCircle />
-                          </RemoveImageButton>
-                        </ImagePreview>
-                      )}
-                    </FileInputWrapper>
-                  </FormGroup>
+                            <PreviewImage src={imagePreview} alt="Preview" />
+                            <RemoveImageButton
+                              onClick={() => {
+                                setImageFile(null)
+                                setImagePreview(null)
+                              }}
+                            >
+                              <IoCloseCircle />
+                            </RemoveImageButton>
+                            <motion.button
+                              onClick={() => {
+                                if (imagePreview) {
+                                  setImageForCrop(imagePreview)
+                                  setIsCropModalOpen(true)
+                                }
+                              }}
+                              style={{
+                                position: 'absolute',
+                                bottom: '0.5rem',
+                                left: '0.5rem',
+                                padding: '0.5rem 1rem',
+                                background: 'rgba(0, 212, 255, 0.2)',
+                                border: '1px solid rgba(0, 212, 255, 0.5)',
+                                borderRadius: '8px',
+                                color: '#00d4ff',
+                                cursor: 'pointer',
+                                fontSize: '0.875rem',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                              }}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <IoImageOutline size={16} />
+                              Обрезать
+                            </motion.button>
+                          </ImagePreview>
+                        )}
+                      </FileInputWrapper>
+                    </FormGroup>
 
-                  <PrivacySection>
-                    <Label>Приватность</Label>
-                    <PrivacyToggle
-                      type="button"
-                      $isPublic={isPublic}
-                      onClick={() => setIsPublic(!isPublic)}
-                    >
-                      {isPublic ? <IoLockOpen /> : <IoLockClosed />}
-                      {isPublic ? 'Публичная категория' : 'Приватная категория'}
-                    </PrivacyToggle>
+                    <PrivacySection>
+                      <Label>Приватность</Label>
+                      <PrivacyToggle
+                        type="button"
+                        $isPublic={isPublic}
+                        onClick={() => setIsPublic(!isPublic)}
+                      >
+                        <ToggleIndicator $isPublic={isPublic} />
+                        <ToggleLabel>{isPublic ? 'Публичная' : 'Приватная'}</ToggleLabel>
+                        {isPublic ? <IoLockOpen size={18} /> : <IoLockClosed size={18} />}
+                      </PrivacyToggle>
+                    </PrivacySection>
 
                     {!isPublic && (
-                      <>
-                        <Label>Дать доступ пользователям:</Label>
-                        <UsersSearchInput
+                      <PrivacySection>
+                        <Label>Пользователи с доступом</Label>
+                        <UserSearchInput
                           type="text"
                           value={userSearchQuery}
                           onChange={(e) => setUserSearchQuery(e.target.value)}
-                          placeholder="Поиск по username..."
+                          placeholder="Поиск пользователей..."
                         />
-
-                        {filteredSearchResults && filteredSearchResults.length > 0 && (
-                          <SearchResults>
-                            {filteredSearchResults.map((user) => (
-                              <SearchResultItem
-                                key={user.id}
-                                type="button"
-                                onClick={() => handleAddUser(user.id, user.username)}
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                              >
-                                <UserAvatar $avatarUrl={user.avatar_url}>
-                                  {user.avatar_url ? (
-                                    <img
-                                      src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
-                                      alt={user.username}
-                                      onError={(e) => {
-                                        e.currentTarget.style.display = 'none'
-                                      }}
-                                    />
-                                  ) : (
-                                    user.username[0].toUpperCase()
-                                  )}
-                                </UserAvatar>
-                                <UserName>{user.username}</UserName>
-                              </SearchResultItem>
-                            ))}
-                          </SearchResults>
-                        )}
-
-                        {allowedUserIds.length > 0 && (
+                        {debouncedSearchQuery && searchUsersData && searchUsersData.length > 0 && (
                           <UsersList>
-                            {allowedUserIds.map((userId) => {
-                              const user = searchResults?.find((u) => u.id === userId)
-                              if (!user) return null
-                              return (
-                                <UserItem
-                                  key={userId}
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                >
-                                  <UserInfo>
-                                    <UserAvatar $avatarUrl={user.avatar_url}>
-                                      {user.avatar_url ? (
-                                        <img
-                                          src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
-                                          alt={user.username}
-                                          onError={(e) => {
-                                            e.currentTarget.style.display = 'none'
-                                          }}
-                                        />
-                                      ) : (
-                                        user.username[0].toUpperCase()
-                                      )}
-                                    </UserAvatar>
-                                    <UserName>{user.username}</UserName>
-                                  </UserInfo>
-                                  <RemoveButton onClick={() => handleRemoveUser(userId)}>
-                                    <IoPersonRemove />
-                                  </RemoveButton>
-                                </UserItem>
-                              )
-                            })}
+                            {searchUsersData.map((user) => (
+                              <UserItem
+                                key={user.id}
+                                onClick={() => {
+                                  if (!allowedUserIds.includes(user.id)) {
+                                    setAllowedUserIds([...allowedUserIds, user.id])
+                                  }
+                                  setUserSearchQuery('')
+                                }}
+                              >
+                                <UserAvatar $avatarUrl={user.avatar_url || ''}>
+                                  {!user.avatar_url && <span>{user.username[0].toUpperCase()}</span>}
+                                </UserAvatar>
+                                <UserInfo>
+                                  <UserName>{user.username}</UserName>
+                                  {user.email && <UserEmail>{user.email}</UserEmail>}
+                                </UserInfo>
+                                {!allowedUserIds.includes(user.id) && <IoPersonAdd size={20} />}
+                              </UserItem>
+                            ))}
                           </UsersList>
                         )}
-                      </>
+                        {allowedUserIds.length > 0 && (
+                          <>
+                            <Label style={{ marginTop: '1rem' }}>Выбранные пользователи:</Label>
+                            <UsersList>
+                              {allowedUserIds.map((userId) => {
+                                const user = searchUsersData?.find((u) => u.id === userId)
+                                if (!user) return null
+                                return (
+                                  <UserItem
+                                    key={userId}
+                                    onClick={() => {
+                                      setAllowedUserIds(allowedUserIds.filter((id) => id !== userId))
+                                    }}
+                                  >
+                                    <UserAvatar $avatarUrl={user.avatar_url || ''}>
+                                      {!user.avatar_url && <span>{user.username[0].toUpperCase()}</span>}
+                                    </UserAvatar>
+                                    <UserInfo>
+                                      <UserName>{user.username}</UserName>
+                                      {user.email && <UserEmail>{user.email}</UserEmail>}
+                                    </UserInfo>
+                                    <IoPersonRemove size={20} style={{ color: '#ef4444' }} />
+                                  </UserItem>
+                                )
+                              })}
+                            </UsersList>
+                          </>
+                        )}
+                      </PrivacySection>
                     )}
-                  </PrivacySection>
-                  </ScrollableContent>
-                </ModalContent>
+                  </form>
+                </ScrollableContent>
 
                 <ModalActions>
                   <Button
@@ -755,32 +799,53 @@ export function CreateCategoryModal({ isOpen, onClose, onSuccess, category }: Cr
                     Отмена
                   </Button>
                   <Button
-                    type="submit"
+                    type="button"
                     variant="primary"
                     size="md"
-                  disabled={
-                    isLoading ||
-                    !name.trim() ||
-                    name.trim().length < 3 ||
-                    (!isEditMode && !imageFile)
-                  }
+                    onClick={handleSubmit}
+                    disabled={
+                      isLoading ||
+                      !name.trim() ||
+                      name.trim().length < 3 ||
+                      (!isEditMode && !imageFile)
+                    }
                     style={{ flex: 1 }}
                   >
-                  {isLoading
-                    ? isEditMode
-                      ? 'Сохранение...'
-                      : 'Создание...'
-                    : isEditMode
-                      ? 'Сохранить'
-                      : 'Создать'}
+                    {isLoading
+                      ? isEditMode
+                        ? 'Сохранение...'
+                        : 'Создание...'
+                      : isEditMode
+                        ? 'Сохранить'
+                        : 'Создать'}
                   </Button>
                 </ModalActions>
-              </form>
-              <ToastComponent />
-            </ModalContainer>
-          </ModalOverlay>
-        )}
-      </AnimatePresence>,
-    document.body
+                <ToastComponent />
+              </ModalContainer>
+            </ModalOverlay>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+      <ImageCropModal
+        isOpen={isCropModalOpen}
+        imageSrc={imageForCrop}
+        onClose={() => {
+          setIsCropModalOpen(false)
+          setImageForCrop(null)
+        }}
+        onCropComplete={(croppedBlob) => {
+          const croppedFile = new File([croppedBlob], 'cropped-image.jpg', { type: 'image/jpeg' })
+          setImageFile(croppedFile)
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            setImagePreview(reader.result as string)
+          }
+          reader.readAsDataURL(croppedFile)
+          setIsCropModalOpen(false)
+          setImageForCrop(null)
+        }}
+      />
+    </>
   )
 }

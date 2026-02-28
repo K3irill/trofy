@@ -48,6 +48,11 @@ import {
   NotFoundIconWrap,
   NotFoundText,
 } from '@/app/categories/[id]/[achievementId]/page.styled'
+import {
+  AchievementActionsContainer,
+  EditAchievementButton,
+  DeleteAchievementButton,
+} from './page.styled'
 
 export default function UserAchievementDetailPage() {
   const router = useRouter()
@@ -258,49 +263,27 @@ export default function UserAchievementDetailPage() {
         )}
 
         <AchievementHeader>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
+          <AchievementActionsContainer>
             {isAuthenticated && isAchievementCreator && (
               <>
-                <motion.button
+                <EditAchievementButton
                   onClick={() => setIsEditAchievementModalOpen(true)}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  style={{
-                    background: 'transparent',
-                    border: '2px solid rgba(0, 212, 255, 0.3)',
-                    color: '#00d4ff',
-                    cursor: 'pointer',
-                    padding: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '8px',
-                    transition: 'all 0.2s ease',
-                  }}
                   title="Редактировать достижение"
                 >
-                  <IoCreateOutline size={20} />
-                </motion.button>
-                <motion.button
+                  <IoCreateOutline size={18} />
+                  <span className="button-text">Редактировать</span>
+                </EditAchievementButton>
+                <DeleteAchievementButton
                   onClick={() => setIsDeleteAchievementModalOpen(true)}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
-                  style={{
-                    background: 'transparent',
-                    border: '2px solid rgba(239, 68, 68, 0.3)',
-                    color: '#ef4444',
-                    cursor: 'pointer',
-                    padding: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '8px',
-                    transition: 'all 0.2s ease',
-                  }}
                   title="Удалить достижение"
                 >
-                  <IoTrash size={20} />
-                </motion.button>
+                  <IoTrash size={18} />
+                  <span className="button-text">Удалить</span>
+                </DeleteAchievementButton>
               </>
             )}
             {isAuthenticated && (
@@ -371,7 +354,7 @@ export default function UserAchievementDetailPage() {
               }}
             />
             )}
-          </div>
+          </AchievementActionsContainer>
           <AchievementIcon
             $unlocked={achievement.unlocked}
             onClick={() => setIsPreviewOpen(true)}
