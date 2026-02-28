@@ -309,7 +309,15 @@ export const Header = () => {
               {isAuthenticated && user ? (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                    <Avatar style={{ width: '48px', height: '48px', fontSize: '1.5rem', flexShrink: 0 }}>
+                    <Avatar 
+                      style={{ width: '48px', height: '48px', fontSize: '1.5rem', flexShrink: 0, cursor: 'pointer' }}
+                      onClick={() => {
+                        if (user?.username) {
+                          router.push(`/user/${user.username}`)
+                          setIsMobileMenuOpen(false)
+                        }
+                      }}
+                    >
                       {user.avatar_url ? (
                         <img
                           src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'}${user.avatar_url}`}

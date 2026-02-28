@@ -127,6 +127,7 @@ export const FormTextarea = styled.textarea<{ $isComplete?: boolean }>`
 export const DifficultySelector = styled.div`
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 `
 
 export const DifficultyButton = styled.button<{ $active: boolean; $isComplete?: boolean }>`

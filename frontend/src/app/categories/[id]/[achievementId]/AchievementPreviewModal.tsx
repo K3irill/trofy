@@ -25,6 +25,7 @@ interface AchievementPreviewModalProps {
   name: string
   description: string
   unlocked: boolean
+  isOwner?: boolean
 }
 
 export const AchievementPreviewModal = ({
@@ -34,6 +35,7 @@ export const AchievementPreviewModal = ({
   name,
   description,
   unlocked,
+  isOwner = false,
 }: AchievementPreviewModalProps) => {
   const isIconImage = icon && isImageUrl(icon)
   const [transform, setTransform] = useState({ rotateX: 0, rotateY: 0, scale: 1 })
@@ -195,10 +197,12 @@ export const AchievementPreviewModal = ({
             <ModalContent>
               <ModalTitle>{name}</ModalTitle>
               <ModalDescription>{description}</ModalDescription>
-              <ActionButton onClick={handleShare} variant="primary">
-                <IoShareSocial />
-                Поделиться
-              </ActionButton>
+              {isOwner && (
+                <ActionButton onClick={handleShare} variant="primary">
+                  <IoShareSocial />
+                  Поделиться
+                </ActionButton>
+              )}
             </ModalContent>
           </ModalContainer>
         </ModalOverlay>

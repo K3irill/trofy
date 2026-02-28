@@ -441,6 +441,7 @@ export default function AchievementDetailPage() {
             name={achievementDetail.title}
             description={achievementDetail.description}
             unlocked={achievementDetail.unlocked}
+            isOwner={isOwner}
           />
         )}
 

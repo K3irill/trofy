@@ -162,6 +162,15 @@ const reactFlowStyles = `
       min-height: 32px !important;
     }
   }
+
+  /* Скрываем handles для чужих роадмапов */
+  .react-flow[data-is-owner="false"] {
+    pointer-events: none !important;
+  }   
+
+   .react-flow[data-is-owner="false"] .react-flow__handle{
+     opacity: 0 !important;
+  }
 `
 
 if (typeof document !== 'undefined') {
@@ -501,98 +510,95 @@ const CustomNode = ({
 
   return (
     <>
-      {isOwner && (
-        <>
-          <Handle
-            type="target"
-            position={Position.Top}
-            id="top-target"
-            style={{
-              background: handleColor,
-              border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '16px',
-              height: '16px',
-            }}
-          />
-          <Handle
-            type="source"
-            position={Position.Top}
-            id="top-source"
-            style={{
-              background: handleColor,
-              border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '16px',
-              height: '16px',
-            }}
-          />
-          <Handle
-            type="target"
-            position={Position.Bottom}
-            id="bottom-target"
-            style={{
-              background: handleColor,
-              border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '16px',
-              height: '16px',
-            }}
-          />
-          <Handle
-            type="source"
-            position={Position.Bottom}
-            id="bottom-source"
-            style={{
-              background: handleColor,
-              border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '16px',
-              height: '16px',
-            }}
-          />
-          <Handle
-            type="target"
-            position={Position.Left}
-            id="left-target"
-            style={{
-              background: handleColor,
-              border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '16px',
-              height: '16px',
-            }}
-          />
-          <Handle
-            type="source"
-            position={Position.Left}
-            id="left-source"
-            style={{
-              background: handleColor,
-              border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '16px',
-              height: '16px',
-            }}
-          />
-          <Handle
-            type="target"
-            position={Position.Right}
-            id="right-target"
-            style={{
-              background: handleColor,
-              border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '16px',
-              height: '16px',
-            }}
-          />
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="right-source"
-            style={{
-              background: handleColor,
-              border: '2px solid var(--bg-primary, #1a1a1a)',
-              width: '16px',
-              height: '16px',
-            }}
-          />
-        </>
-      )}
+      {/* Рендерим handles всегда, чтобы edges могли отображаться для всех пользователей */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top-target"
+        style={{
+          background: handleColor,
+          border: '2px solid var(--bg-primary, #1a1a1a)',
+          width: '16px',
+          height: '16px',
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        style={{
+          background: handleColor,
+          border: '2px solid var(--bg-primary, #1a1a1a)',
+          width: '16px',
+          height: '16px',
+        }}
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom-target"
+        style={{
+          background: handleColor,
+          border: '2px solid var(--bg-primary, #1a1a1a)',
+          width: '16px',
+          height: '16px',
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom-source"
+        style={{
+          background: handleColor,
+          border: '2px solid var(--bg-primary, #1a1a1a)',
+          width: '16px',
+          height: '16px',
+        }}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left-target"
+        style={{
+          background: handleColor,
+          border: '2px solid var(--bg-primary, #1a1a1a)',
+          width: '16px',
+          height: '16px',
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
+        style={{
+          background: handleColor,
+          border: '2px solid var(--bg-primary, #1a1a1a)',
+          width: '16px',
+          height: '16px',
+        }}
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right-target"
+        style={{
+          background: handleColor,
+          border: '2px solid var(--bg-primary, #1a1a1a)',
+          width: '16px',
+          height: '16px',
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right-source"
+        style={{
+          background: handleColor,
+          border: '2px solid var(--bg-primary, #1a1a1a)',
+          width: '16px',
+          height: '16px',
+        }}
+      />
       <div
         onDoubleClick={handleDoubleClick}
         style={{
@@ -657,13 +663,13 @@ const RoadmapFlowInner = ({
 }) => {
   const { screenToFlowPosition, fitView } = useReactFlow()
 
-  // Вызываем fitView только один раз при монтировании
+  // Вызываем fitView при изменении nodes или edges
   useEffect(() => {
     const timer = setTimeout(() => {
       fitView({ duration: 300, padding: 0.2 })
     }, 100)
     return () => clearTimeout(timer)
-  }, [fitView])
+  }, [fitView, nodes.length, edges.length])
 
   const addNode = useCallback(() => {
     const centerX = window.innerWidth / 2
@@ -687,17 +693,47 @@ const RoadmapFlowInner = ({
     addNodeRef.current = addNode
   }, [addNode, addNodeRef])
 
+  // Логируем edges перед рендером для отладки
+  useEffect(() => {
+    console.log('RoadmapFlowInner render:', { 
+      edgesCount: edges.length, 
+      edges: edges.map(e => ({ 
+        id: e.id, 
+        source: e.source, 
+        target: e.target, 
+        type: e.type,
+        sourceHandle: e.sourceHandle,
+        targetHandle: e.targetHandle,
+        style: e.style,
+        data: e.data
+      })),
+      nodesCount: nodes.length,
+      nodesIds: nodes.map(n => String(n.id)),
+      isOwner,
+      // Проверяем соответствие source/target узлам
+      edgesWithNodeCheck: edges.map(e => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        sourceNodeExists: nodes.some(n => String(n.id) === String(e.source)),
+        targetNodeExists: nodes.some(n => String(n.id) === String(e.target))
+      }))
+    })
+  }, [edges, nodes, isOwner])
+
   return (
     <ReactFlow
+      data-is-owner={isOwner ? 'true' : 'false'}
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={isOwner ? onConnect : undefined}
+      edgesUpdatable={isOwner}
       nodeTypes={nodeTypes}
       nodesDraggable={isOwner}
       nodesConnectable={isOwner}
-      elementsSelectable={isOwner}
+      elementsSelectable={true}
       deleteKeyCode={isOwner ? 'Delete' : null}
       connectionLineStyle={{ stroke: 'var(--primary-color, #6366f1)', strokeWidth: 2 }}
       connectionLineType={ConnectionLineType.SmoothStep}
@@ -758,16 +794,68 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const initialNodes: Node[] = roadmap?.data?.nodes || [
-    {
-      id: '1',
-      type: 'default',
-      position: { x: 250, y: 100 },
-      data: { label: 'Начало' },
-    },
-  ]
+  // Вычисляем начальные nodes и edges на основе roadmap
+  const initialNodes: Node[] = useMemo(() => {
+    if (roadmap?.data?.nodes) {
+      return (roadmap.data.nodes as Node[]).map((node) => {
+        const nodeColor = node.data?.color
+        if (nodeColor) {
+          return {
+            ...node,
+            style: {
+              backgroundColor: `${nodeColor}20`,
+              borderColor: nodeColor,
+            },
+          }
+        }
+        return node
+      })
+    }
+    return [
+      {
+        id: '1',
+        type: 'default',
+        position: { x: 250, y: 100 },
+        data: { label: 'Начало' },
+      },
+    ]
+  }, [roadmap?.data?.nodes])
 
-  const initialEdges: Edge[] = roadmap?.data?.edges || []
+  const initialEdges: Edge[] = useMemo(() => {
+    if (roadmap?.data?.edges && roadmap?.data?.nodes) {
+      const nodeIds = new Set((roadmap.data.nodes as Node[]).map(n => String(n.id)))
+      const validEdges: Edge[] = []
+      for (const edge of roadmap.data.edges as Edge[]) {
+        const sourceId = String(edge.source)
+        const targetId = String(edge.target)
+        // Проверяем, что source и target существуют в nodes
+        if (!nodeIds.has(sourceId) || !nodeIds.has(targetId)) {
+          console.warn('Edge references non-existent node, skipping:', {
+            edgeId: edge.id,
+            sourceId,
+            targetId,
+            availableNodeIds: Array.from(nodeIds)
+          })
+          continue
+        }
+        // Сохраняем sourceHandle и targetHandle, так как теперь handles рендерятся всегда
+        validEdges.push({
+          ...edge,
+          id: edge.id || `edge-${sourceId}-${targetId}`,
+          source: sourceId,
+          target: targetId,
+          type: edge.type || 'smoothstep',
+          style: edge.style || { stroke: edge.data?.color || 'var(--primary-color, #6366f1)', strokeWidth: 2 },
+          data: edge.data || {},
+          sourceHandle: edge.sourceHandle,
+          targetHandle: edge.targetHandle,
+          animated: false,
+        } as Edge)
+      }
+      return validEdges
+    }
+    return []
+  }, [roadmap?.data?.edges, roadmap?.data?.nodes])
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
@@ -777,9 +865,14 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
 
   // Кастомный обработчик изменений edges для правильной обработки удаления
   const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
-    // Обрабатываем удаление edges
+    // Для не-владельцев всегда используем стандартный обработчик
+    if (!isOwner) {
+      onEdgesChange(changes)
+      return
+    }
+    // Для владельца обрабатываем удаление edges
     const removeChanges = changes.filter((change) => change.type === 'remove')
-    if (removeChanges.length > 0 && isOwner) {
+    if (removeChanges.length > 0) {
       const edgeIds = removeChanges.map((change) => change.id)
       setEdges((eds) => eds.filter((edge) => !edgeIds.includes(edge.id)))
     } else {
@@ -787,6 +880,30 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
       onEdgesChange(changes)
     }
   }, [isOwner, setEdges, onEdgesChange])
+
+  // Принудительно синхронизируем edges при изменении initialEdges
+  useEffect(() => {
+    if (initialEdges.length > 0) {
+      setEdges((currentEdges) => {
+        const currentEdgeIds = new Set(currentEdges.map(e => e.id))
+        const initialEdgeIds = new Set(initialEdges.map(e => e.id))
+        const edgesMatch = initialEdges.length === currentEdges.length && 
+          initialEdges.every(e => currentEdgeIds.has(e.id)) &&
+          currentEdges.every(e => initialEdgeIds.has(e.id))
+        
+        if (!edgesMatch) {
+          console.log('Force syncing edges:', { 
+            initialEdgesCount: initialEdges.length, 
+            currentEdgesCount: currentEdges.length,
+            initialEdges: initialEdges.map(e => ({ id: e.id, source: e.source, target: e.target })),
+            currentEdges: currentEdges.map(e => ({ id: e.id, source: e.source, target: e.target }))
+          })
+          return initialEdges
+        }
+        return currentEdges
+      })
+    }
+  }, [initialEdges, setEdges])
 
   // Функция для обновления данных ноды
   const updateNodeData = useCallback((nodeId: string, newData: { label?: string; color?: string }) => {
@@ -839,30 +956,25 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
     ),
   }), [updateNodeData, isOwner])
 
+  // Обновляем nodes и edges при изменении roadmap
   useEffect(() => {
     if (roadmap?.data) {
-      const loadedNodes = (roadmap.data.nodes as Node[]).map((node) => {
-        const nodeColor = node.data?.color
-        if (nodeColor) {
-          return {
-            ...node,
-            style: {
-              backgroundColor: `${nodeColor}20`,
-              borderColor: nodeColor,
-            },
-          }
-        }
-        return node
+      console.log('Updating roadmap state:', { 
+        nodesCount: initialNodes.length, 
+        edgesCount: initialEdges.length, 
+        edges: initialEdges, 
+        isOwner,
+        edgesDetails: initialEdges.map(e => ({ id: e.id, source: e.source, target: e.target, type: e.type })),
+        nodesIds: initialNodes.map(n => String(n.id))
       })
-      const loadedEdges = roadmap.data.edges as Edge[]
-      console.log('Loading roadmap:', { nodesCount: loadedNodes.length, edgesCount: loadedEdges.length, edges: loadedEdges })
-      setNodes(loadedNodes)
-      setEdges(loadedEdges)
-      setSavedNodes(loadedNodes)
-      setSavedEdges(loadedEdges)
+      // Устанавливаем nodes и edges из вычисленных значений
+      setNodes(initialNodes)
+      setEdges(initialEdges)
+      setSavedNodes(initialNodes)
+      setSavedEdges(initialEdges)
       setHasUnsavedChanges(false)
     }
-  }, [roadmap, setNodes, setEdges])
+  }, [roadmap, initialNodes, initialEdges, setNodes, setEdges, isOwner])
 
   // Отслеживаем изменения для определения несохраненных изменений
   // Используем useMemo для оптимизации сравнения
@@ -1001,14 +1113,14 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
   }, [setNodes, setEdges, showToast])
 
   const handleClose = useCallback(() => {
-    if (hasUnsavedChanges) {
+    if (isOwner && hasUnsavedChanges) {
       if (window.confirm('У вас есть несохраненные изменения. Вы уверены, что хотите закрыть роадмап без сохранения?')) {
         onClose()
       }
     } else {
       onClose()
     }
-  }, [hasUnsavedChanges, onClose])
+  }, [isOwner, hasUnsavedChanges, onClose])
 
   if (isLoading) {
     return (
@@ -1029,7 +1141,7 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
           <ModalHeader>
             <ModalTitle>
               Роадмап достижения
-              {hasUnsavedChanges && (
+              {isOwner && hasUnsavedChanges && (
                 <span style={{ 
                   marginLeft: '0.5rem', 
                   fontSize: '0.875rem', 
@@ -1115,7 +1227,7 @@ export const RoadmapModal = ({ userAchievementId, achievementId, isOwner, onClos
               nodes={nodes}
               edges={edges}
               onNodesChange={onNodesChange}
-              onEdgesChange={handleEdgesChange}
+              onEdgesChange={isOwner ? handleEdgesChange : onEdgesChange}
               onConnect={isOwner ? onConnect : () => {}}
               nodeTypes={nodeTypes}
               isOwner={isOwner}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useAppSelector } from '@/store/hooks'
 import { useGetMeQuery, useGetUserByUsernameQuery } from '@/store/api/userApi'

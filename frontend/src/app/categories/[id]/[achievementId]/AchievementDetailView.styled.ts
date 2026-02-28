@@ -188,6 +188,7 @@ export const ErrorMessage = styled.span`
 export const DifficultySelector = styled.div`
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 `
 
 export const DifficultyButton = styled.button<{ $active: boolean }>`
