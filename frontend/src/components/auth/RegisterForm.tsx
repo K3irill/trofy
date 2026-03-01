@@ -44,11 +44,19 @@ export function RegisterForm({ onSubmit, isLoading, error: externalError }: Regi
   }>({})
 
   const validateEmail = (email: string) => {
+    // Проверка на русские буквы
+    if (/[а-яА-ЯёЁ]/.test(email)) {
+      return false
+    }
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   }
 
   const validatePhone = (phone: string) => {
     return /^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''))
+  }
+
+  const hasRussianLetters = (text: string) => {
+    return /[а-яА-ЯёЁ]/.test(text)
   }
 
   const validate = () => {
@@ -57,6 +65,8 @@ export function RegisterForm({ onSubmit, isLoading, error: externalError }: Regi
     if (authType === 'email') {
       if (!email.trim()) {
         newErrors.email = 'Введите email'
+      } else if (hasRussianLetters(email)) {
+        newErrors.email = 'Email может содержать только латинские буквы'
       } else if (!validateEmail(email)) {
         newErrors.email = 'Введите корректный email'
       }
@@ -70,12 +80,16 @@ export function RegisterForm({ onSubmit, isLoading, error: externalError }: Regi
 
     if (!username.trim()) {
       newErrors.username = 'Введите имя пользователя'
+    } else if (hasRussianLetters(username)) {
+      newErrors.username = 'Имя пользователя может содержать только латинские буквы, цифры и _'
     } else if (username.length < 3) {
       newErrors.username = 'Имя пользователя должно содержать минимум 3 символа'
     }
 
     if (!password) {
       newErrors.password = 'Введите пароль'
+    } else if (hasRussianLetters(password)) {
+      newErrors.password = 'Пароль может содержать только латинские буквы'
     } else if (password.length < 6) {
       newErrors.password = 'Пароль должен содержать минимум 6 символов'
     }
@@ -165,7 +179,7 @@ export function RegisterForm({ onSubmit, isLoading, error: externalError }: Regi
       )}
 
       <FormGroup>
-        <Label htmlFor="username">Имя пользователя</Label>
+        <Label htmlFor="username">Username</Label>
         <Input
           id="username"
           type="text"
@@ -174,7 +188,7 @@ export function RegisterForm({ onSubmit, isLoading, error: externalError }: Regi
             setUsername(e.target.value)
             if (errors.username) setErrors({ ...errors, username: undefined })
           }}
-          placeholder="Ваше имя"
+          placeholder="Ваш username"
           disabled={isLoading}
           $hasError={!!errors.username}
         />
@@ -240,7 +254,7 @@ export function RegisterForm({ onSubmit, isLoading, error: externalError }: Regi
       )}
 
       <SubmitButton>
-        <Button type="submit" variant="primary" size="lg" disabled={isLoading} onClick={() => { }}>
+        <Button variant="primary" size="lg" disabled={isLoading}>
           {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
         </Button>
       </SubmitButton>

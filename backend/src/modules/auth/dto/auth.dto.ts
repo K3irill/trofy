@@ -25,10 +25,16 @@ export class LoginDto {
 export class RegisterDto {
   @IsString()
   @MinLength(3)
+  @Matches(/^[a-zA-Z0-9_]+$/, {
+    message: 'Username может содержать только латинские буквы, цифры и _',
+  })
   username: string
 
   @IsOptional()
   @IsEmail()
+  @Matches(/^[^а-яА-ЯёЁ]*$/, {
+    message: 'Email может содержать только латинские буквы',
+  })
   email?: string
 
   @IsOptional()
@@ -39,6 +45,9 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(6)
+  @Matches(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/, {
+    message: 'Пароль может содержать только латинские буквы и специальные символы',
+  })
   password: string
 }
 

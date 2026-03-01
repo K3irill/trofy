@@ -68,7 +68,12 @@ export default function UsersPage() {
 
     switch (sortBy) {
       case 'level':
-        return sorted.sort((a, b) => (b.level || 0) - (a.level || 0))
+        return sorted.sort((a, b) => {
+          // Если уровень скрыт, ставим в конец
+          const aLevel = a.privacy_settings?.show_level === false ? -1 : (a.level || 0)
+          const bLevel = b.privacy_settings?.show_level === false ? -1 : (b.level || 0)
+          return bLevel - aLevel
+        })
       case 'achievements':
         // Нужно будет добавить статистику достижений
         return sorted
@@ -172,11 +177,19 @@ export default function UsersPage() {
                   </UserHeader>
                   <UserStats>
                     <StatBadge>
-                      <StatValue>{user.level || 1}</StatValue>
+                      <StatValue>
+                        {user.privacy_settings?.show_level === false 
+                          ? 'Скрыт' 
+                          : (user.level || 1)}
+                      </StatValue>
                       <StatLabel>Уровень</StatLabel>
                     </StatBadge>
                     <StatBadge>
-                      <StatValue>{user.xp || 0}</StatValue>
+                      <StatValue>
+                        {user.privacy_settings?.show_level === false 
+                          ? 'Скрыт' 
+                          : (user.xp || 0)}
+                      </StatValue>
                       <StatLabel>XP</StatLabel>
                     </StatBadge>
                     </UserStats>
@@ -229,11 +242,19 @@ export default function UsersPage() {
                     </UserHeader>
                     <UserStats>
                       <StatBadge>
-                        <StatValue>{user.level || 1}</StatValue>
+                        <StatValue>
+                          {user.privacy_settings?.show_level === false 
+                            ? 'Скрыт' 
+                            : (user.level || 1)}
+                        </StatValue>
                         <StatLabel>Уровень</StatLabel>
                       </StatBadge>
                       <StatBadge>
-                        <StatValue>{user.xp || 0}</StatValue>
+                        <StatValue>
+                          {user.privacy_settings?.show_level === false 
+                            ? 'Скрыт' 
+                            : (user.xp || 0)}
+                        </StatValue>
                         <StatLabel>XP</StatLabel>
                       </StatBadge>
                     </UserStats>
