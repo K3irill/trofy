@@ -79,4 +79,14 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   avatar_url?: string
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(50)
+  username?: string
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(100)
+  nickname?: string
 }

@@ -20,8 +20,11 @@ router.get('/me/stats', authenticate, userController.getStats.bind(userControlle
 router.get('/stats/global', userController.getGlobalStats.bind(userController))
 router.get('/me/achievements/recent', authenticate, userController.getRecentAchievements.bind(userController))
 router.post('/me/avatar', authenticate, upload.single('avatar'), userController.uploadAvatar.bind(userController))
+router.post('/me/change-password', authenticate, userController.changePassword.bind(userController))
 
 // Публичные роуты для поиска и получения данных пользователя (опциональная авторизация)
+// Важно: специфичные роуты должны быть перед параметризованными
+router.get('/check-username', userController.checkUsername.bind(userController))
 router.get('/stats/global', userController.getGlobalStats.bind(userController))
 router.get('/search', optionalAuthenticate, userController.searchUsers.bind(userController))
 router.get('/top', optionalAuthenticate, userController.getTopUsers.bind(userController))

@@ -99,9 +99,17 @@ export const SettingsModalCloseButton = styled.button`
   border-radius: 8px;
   transition: all 0.2s ease;
 
+  svg {
+    color: ${(props) => props.theme.colors.light[300]};
+  }
+
   &:hover {
     background: ${(props) => props.theme.colors.dark.glassLight};
     color: ${(props) => props.theme.colors.light[100]};
+
+    svg {
+      color: ${(props) => props.theme.colors.light[100]};
+    }
   }
 
   @media (max-width: 768px) {
@@ -126,6 +134,10 @@ export const SettingsBackButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.25rem;
+
+  svg {
+    color: ${(props) => props.theme.colors.primary};
+  }
 
   &:hover {
     background: ${(props) => props.theme.colors.dark.glassLight};
@@ -187,6 +199,11 @@ export const SettingsCategoryIcon = styled.span`
   justify-content: center;
   background: ${(props) => props.theme.colors.dark.glass};
   border-radius: 10px;
+  color: ${(props) => props.theme.colors.primary};
+
+  svg {
+    color: ${(props) => props.theme.colors.primary};
+  }
 
   @media (max-width: 768px) {
     font-size: 1.25rem;
@@ -210,6 +227,10 @@ export const SettingsCategoryArrow = styled.span`
   color: ${(props) => props.theme.colors.light[300]};
   font-size: 1.25rem;
   transition: transform 0.2s ease;
+
+  svg {
+    color: ${(props) => props.theme.colors.light[300]};
+  }
 
   ${SettingsCategoryItem}:hover & {
     transform: translateX(4px);
@@ -271,5 +292,132 @@ export const SettingsToggle = styled.button<{ $active?: boolean }>`
     opacity: 0.6;
     cursor: default;
     transform: none;
+  }
+`
+
+export const AccountForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`
+
+export const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`
+
+export const Label = styled.label`
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: ${(props) => props.theme.colors.light[100]};
+`
+
+export const Input = styled.input<{ $hasError?: boolean }>`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: ${(props) => props.theme.colors.dark.glassLight};
+  border: 1px solid ${(props) => (props.$hasError ? (props.theme.colors.danger || '#ef4444') : props.theme.colors.dark[700])};
+  border-radius: 12px;
+  color: ${(props) => props.theme.colors.light[100]};
+  font-size: 1rem;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${(props) => (props.$hasError ? (props.theme.colors.danger || '#ef4444') : props.theme.colors.primary)};
+    box-shadow: ${(props) => (props.$hasError ? `0 0 0 3px ${(props.theme.colors.danger || '#ef4444')}33` : props.theme.shadows.glow.primary)};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme.colors.light[300]};
+  }
+`
+
+export const ErrorMessage = styled.div`
+  color: ${(props) => props.theme.colors.danger || '#ef4444'};
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+`
+
+export const SuccessMessage = styled.div`
+  color: ${(props) => props.theme.colors.success};
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  background: ${(props) => `${props.theme.colors.success}1a`};
+  border: 1px solid ${(props) => `${props.theme.colors.success}4d`};
+  border-radius: 8px;
+  margin-bottom: 1rem;
+`
+
+export const Button = styled.button`
+  padding: 0.875rem 1.5rem;
+  background: ${(props) => props.theme.colors.primary};
+  border: none;
+  border-radius: 12px;
+  color: ${(props) => props.theme.colors.light[100]};
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: ${(props) => props.theme.shadows.glow.primary};
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: ${(props) => props.theme.shadows.glow.secondary};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`
+
+export const TogglePasswordButton = styled.button`
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: ${(props) => props.theme.colors.light[300]};
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: ${(props) => props.theme.colors.primary};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`
+
+export const UsernameStatus = styled.span<{ $available: boolean }>`
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${(props) => (props.$available ? (props.theme.colors.success || '#10b981') : (props.theme.colors.danger || '#ef4444'))};
+  font-size: 1.25rem;
+  font-weight: bold;
+`
+
+export const LoadingSpinner = styled.div`
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 `

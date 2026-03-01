@@ -1,8 +1,10 @@
 import { prisma } from '../../../shared/database'
 import { ApiError } from '../../../core/errors/ApiError'
 import { UpdateUserDto } from '../dto/user.dto'
+import { ChangePasswordDto } from '../dto/change-password.dto'
 import { formatUser } from '../../auth/service/auth.service'
 import { calculateLevel } from '../../../shared/utils/levelCalculator'
+import { comparePassword, hashPassword } from '../../../core/utils/password'
 
 export class UserService {
   /**
@@ -185,6 +187,36 @@ export class UserService {
       updateData.avatar_url = dto.avatar_url
     }
 
+    if (dto.username !== undefined) {
+      // Проверяем, что username состоит только из английских символов, цифр и подчеркиваний
+      if (!/^[a-zA-Z0-9_]+$/.test(dto.username)) {
+        throw ApiError.badRequest('Username может содержать только английские буквы, цифры и подчеркивания')
+      }
+
+      // Проверяем минимальную длину
+      if (dto.username.length < 3) {
+        throw ApiError.badRequest('Username должен содержать минимум 3 символа')
+      }
+
+      // Проверяем уникальность username (исключая текущего пользователя)
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          username: dto.username,
+          NOT: { id: userId },
+        },
+      })
+
+      if (existingUser) {
+        throw ApiError.conflict('Username уже занят')
+      }
+
+      updateData.username = dto.username
+    }
+
+    if (dto.nickname !== undefined) {
+      updateData.nickname = dto.nickname
+    }
+
     const user = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -195,6 +227,50 @@ export class UserService {
     })
 
     return formatUser(user, true)
+  }
+
+  /**
+   * Смена пароля пользователя
+   */
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { password_hash: true },
+    })
+
+    if (!user || !user.password_hash) {
+      throw ApiError.badRequest('Пользователь не найден или не имеет пароля')
+    }
+
+    // Проверяем текущий пароль
+    const isPasswordValid = await comparePassword(dto.current_password, user.password_hash)
+    if (!isPasswordValid) {
+      throw ApiError.unauthorized('Неверный текущий пароль')
+    }
+
+    // Хешируем новый пароль
+    const newPasswordHash = await hashPassword(dto.new_password)
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password_hash: newPasswordHash },
+    })
+
+    return { message: 'Пароль успешно изменен' }
+  }
+
+  /**
+   * Проверка доступности username
+   */
+  async checkUsernameAvailability(username: string, currentUserId?: string) {
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        username: username,
+        NOT: currentUserId ? { id: currentUserId } : undefined,
+      },
+    })
+
+    return { available: !existingUser, message: existingUser ? 'Username уже занят' : 'Username доступен' }
   }
 
   /**

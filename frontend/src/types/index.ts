@@ -14,6 +14,7 @@ export interface User {
   id: string
   vk_id?: string
   username: string
+  nickname?: string | null
   email?: string
   phone?: string
   xp: number

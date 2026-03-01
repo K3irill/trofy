@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { IoColorPalette, IoLockClosed, IoPerson, IoClose, IoChevronForward, IoChevronBack } from 'react-icons/io5'
 import {
   SettingsModalOverlay,
   SettingsModalContainer,
@@ -23,10 +24,11 @@ import {
   SettingsToggle,
 } from './SettingsModal.styled'
 import { ThemeSelector } from '@/components/ThemeSelector'
+import { AccountSettings } from './AccountSettings'
 import { useGetMeQuery, useUpdateMeMutation } from '@/store/api/userApi'
 import type { PrivacySettings } from '@/types'
 
-type SettingsView = 'categories' | 'theme' | 'privacy'
+type SettingsView = 'categories' | 'theme' | 'privacy' | 'account'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -84,7 +86,6 @@ export const SettingsModal = ({ isOpen, onClose, initialView = 'categories' }: S
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={handleClose}
         >
           <SettingsModalContainer
             initial={{ y: 50, opacity: 0 }}
@@ -95,15 +96,19 @@ export const SettingsModal = ({ isOpen, onClose, initialView = 'categories' }: S
             <SettingsModalHeader>
               {currentView !== 'categories' && (
                 <SettingsBackButton onClick={handleBack}>
-                  ← Назад
+                  <IoChevronBack size={20} style={{ marginRight: '0.5rem' }} />
+                  Назад
                 </SettingsBackButton>
               )}
               <SettingsModalTitle $hasBackButton={currentView !== 'categories'}>
                 {currentView === 'categories' && 'Настройки'}
                 {currentView === 'theme' && 'Тема оформления'}
                 {currentView === 'privacy' && 'Приватность профиля'}
+                {currentView === 'account' && 'Настройки аккаунта'}
               </SettingsModalTitle>
-              <SettingsModalCloseButton onClick={handleClose}>✕</SettingsModalCloseButton>
+              <SettingsModalCloseButton onClick={handleClose}>
+                <IoClose size={20} />
+              </SettingsModalCloseButton>
             </SettingsModalHeader>
 
             <SettingsContent>
@@ -116,14 +121,31 @@ export const SettingsModal = ({ isOpen, onClose, initialView = 'categories' }: S
                     exit={{ opacity: 0, x: 20 }}
                   >
                     <SettingsCategoryItem onClick={() => handleCategoryClick('theme')}>
-                      <SettingsCategoryIcon>🎨</SettingsCategoryIcon>
+                      <SettingsCategoryIcon>
+                        <IoColorPalette size={24} />
+                      </SettingsCategoryIcon>
                       <SettingsCategoryText>Тема оформления</SettingsCategoryText>
-                      <SettingsCategoryArrow>→</SettingsCategoryArrow>
+                      <SettingsCategoryArrow>
+                        <IoChevronForward size={20} />
+                      </SettingsCategoryArrow>
                     </SettingsCategoryItem>
                     <SettingsCategoryItem onClick={() => handleCategoryClick('privacy')}>
-                      <SettingsCategoryIcon>🔒</SettingsCategoryIcon>
+                      <SettingsCategoryIcon>
+                        <IoLockClosed size={24} />
+                      </SettingsCategoryIcon>
                       <SettingsCategoryText>Приватность профиля</SettingsCategoryText>
-                      <SettingsCategoryArrow>→</SettingsCategoryArrow>
+                      <SettingsCategoryArrow>
+                        <IoChevronForward size={20} />
+                      </SettingsCategoryArrow>
+                    </SettingsCategoryItem>
+                    <SettingsCategoryItem onClick={() => handleCategoryClick('account')}>
+                      <SettingsCategoryIcon>
+                        <IoPerson size={24} />
+                      </SettingsCategoryIcon>
+                      <SettingsCategoryText>Настройки аккаунта</SettingsCategoryText>
+                      <SettingsCategoryArrow>
+                        <IoChevronForward size={20} />
+                      </SettingsCategoryArrow>
                     </SettingsCategoryItem>
                   </SettingsCategoryList>
                 ) : currentView === 'theme' ? (
@@ -135,7 +157,7 @@ export const SettingsModal = ({ isOpen, onClose, initialView = 'categories' }: S
                   >
                     <ThemeSelector />
                   </motion.div>
-                ) : (
+                ) : currentView === 'privacy' ? (
                   <motion.div
                     key="privacy"
                     initial={{ opacity: 0, x: 20 }}
@@ -194,6 +216,15 @@ export const SettingsModal = ({ isOpen, onClose, initialView = 'categories' }: S
                         </SettingsToggle>
                       </SettingsRow>
                     </SettingsSection>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="account"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                  >
+                    <AccountSettings />
                   </motion.div>
                 )}
               </AnimatePresence>

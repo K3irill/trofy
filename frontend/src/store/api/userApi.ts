@@ -13,6 +13,8 @@ export interface UpdateUserRequest {
   priority_achievements?: string[]
   main_info_theme?: string | null
   background_icons?: string[]
+  username?: string
+  nickname?: string
 }
 
 export interface UserStats {
@@ -167,6 +169,16 @@ export const userApi = baseApi.injectEndpoints({
       query: () => '/users/stats/global',
       providesTags: ['User'],
     }),
+    checkUsername: builder.query<{ available: boolean; message?: string }, string>({
+      query: (username) => `/users/check-username?username=${encodeURIComponent(username)}`,
+    }),
+    changePassword: builder.mutation<{ success: boolean; message: string }, { current_password: string; new_password: string }>({
+      query: (data) => ({
+        url: '/users/me/change-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 })
 
@@ -183,4 +195,6 @@ export const {
   useSearchUsersQuery,
   useGetTopUsersQuery,
   useGetGlobalStatsQuery,
+  useLazyCheckUsernameQuery,
+  useChangePasswordMutation,
 } = userApi

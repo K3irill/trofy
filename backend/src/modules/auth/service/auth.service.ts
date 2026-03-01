@@ -21,6 +21,7 @@ interface UserResponse {
   id: string
   vk_id?: string | null
   username: string
+  nickname?: string | null
   email?: string | null
   phone?: string | null
   xp: number
@@ -62,6 +63,7 @@ export function formatUser(
       id: user.id,
       vk_id: user.vk_id,
       username: user.username,
+      nickname: user.nickname || null,
       email: user.email,
       phone: user.phone,
       xp: user.xp,
@@ -142,6 +144,7 @@ export function formatUser(
     id: user.id,
     vk_id: privacy.show_profile ? user.vk_id : null,
     username: user.username,
+    nickname: privacy.show_profile ? (user.nickname || null) : null,
     email: null, // Email никогда не показываем другим пользователям
     phone: null, // Phone никогда не показываем другим пользователям
     xp: privacy.show_level ? user.xp : 0,

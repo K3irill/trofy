@@ -4,6 +4,7 @@ import { validate } from 'class-validator'
 import { plainToInstance } from 'class-transformer'
 import { userService } from '../service/user.service'
 import { UpdateUserDto } from '../dto/user.dto'
+import { ChangePasswordDto } from '../dto/change-password.dto'
 import { ApiError } from '../../../core/errors/ApiError'
 import { AuthRequest } from '../../auth/middleware/auth.middleware'
 import { saveAvatar, validateFile } from '../../../shared/utils/fileUpload'
@@ -257,6 +258,45 @@ export class UserController {
     try {
       const stats = await userService.getGlobalStats()
       res.json(stats)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * POST /api/users/me/change-password - Смена пароля
+   */
+  async changePassword(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw ApiError.unauthorized()
+      }
+
+      const dto = plainToInstance(ChangePasswordDto, req.body)
+      const isValid = await validateDto(dto, res, next)
+      if (!isValid) return
+
+      const result = await userService.changePassword(req.user.userId, dto)
+      res.json(result)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  /**
+   * GET /api/users/check-username?username=test - Проверка доступности username
+   */
+  async checkUsername(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { username } = req.query
+      const currentUserId = (req as any).user?.userId
+
+      if (!username || typeof username !== 'string') {
+        throw ApiError.badRequest('Username обязателен')
+      }
+
+      const result = await userService.checkUsernameAvailability(username, currentUserId)
+      res.json(result)
     } catch (error) {
       next(error)
     }
