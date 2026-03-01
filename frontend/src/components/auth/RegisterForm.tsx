@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
 import { Button } from '@/components/ui/Button'
 import {
   Form,
@@ -200,7 +201,7 @@ export function RegisterForm({ onSubmit, isLoading, error: externalError }: Regi
             onClick={() => setShowPassword(!showPassword)}
             disabled={isLoading}
           >
-            {showPassword ? '👁️' : '👁️‍🗨️'}
+            {showPassword ? <IoEye /> : <IoEyeOff />}
           </TogglePasswordButton>
         </div>
         {errors.password && <ErrorMessage>{errors.password}</ErrorMessage>}
@@ -226,7 +227,7 @@ export function RegisterForm({ onSubmit, isLoading, error: externalError }: Regi
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             disabled={isLoading}
           >
-            {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+            {showConfirmPassword ? <IoEye /> : <IoEyeOff />}
           </TogglePasswordButton>
         </div>
         {errors.confirmPassword && <ErrorMessage>{errors.confirmPassword}</ErrorMessage>}

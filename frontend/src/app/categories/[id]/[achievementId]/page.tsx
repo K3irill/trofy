@@ -362,7 +362,7 @@ export default function AchievementDetailPage() {
               )}
             </div>
             <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <div style={{ color: '#9ca3af', fontSize: '0.875rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ color: '#9ca3af', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <div style={{ 
                   width: '30px', 
                   height: '30px', 

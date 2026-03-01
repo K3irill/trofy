@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { User } from '@/types'
 import type { UserAchievement } from '@/store/api/userApi'
+import { useGetMeQuery } from '@/store/api/userApi'
 import {
   Avatar,
   Username,
@@ -67,7 +68,7 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({
-  user,
+  user: userProp,
   isAuthenticated,
   isOwnProfile = false,
   progress,
@@ -76,6 +77,14 @@ export function ProfileHeader({
   mainAchievement,
   hideLevelAndXp = false,
 }: ProfileHeaderProps) {
+  // Для собственного профиля используем данные из useGetMeQuery, чтобы они обновлялись автоматически
+  const { data: currentUser } = useGetMeQuery(undefined, {
+    skip: !isOwnProfile,
+  })
+  
+  // Используем актуальные данные пользователя: для собственного профиля - из useGetMeQuery, иначе - из пропсов
+  const user = isOwnProfile && currentUser ? currentUser : userProp
+
   const {
     status,
     setStatus,
@@ -90,6 +99,27 @@ export function ProfileHeader({
 
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false)
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
+  const [avatarTimestamp, setAvatarTimestamp] = useState(() => Date.now())
+
+  // Слушаем событие обновления аватарки и обновляем timestamp
+  useEffect(() => {
+    const handleAvatarUpdate = () => {
+      setAvatarTimestamp(Date.now())
+    }
+
+    window.addEventListener('avatar-updated', handleAvatarUpdate)
+    return () => {
+      window.removeEventListener('avatar-updated', handleAvatarUpdate)
+    }
+  }, [])
+
+  // Обновляем timestamp при изменении avatar_url пользователя (используем useMemo для вычисления)
+  const avatarKey = useMemo(() => {
+    if (user?.avatar_url) {
+      return `${user.avatar_url}-${avatarTimestamp}`
+    }
+    return `no-avatar-${avatarTimestamp}`
+  }, [user?.avatar_url, avatarTimestamp])
 
   // Используем main_info_theme если есть, иначе fallback на profile_theme.profile_color
   const currentTheme = user.main_info_theme
@@ -119,8 +149,8 @@ export function ProfileHeader({
             {user.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                key={user.avatar_url}
-                src={user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}
+                key={avatarKey}
+                src={`${user.avatar_url.startsWith('http') ? user.avatar_url : `${process.env.NEXT_PUBLIC_BACK_URL || 'http://localhost:3333'}${user.avatar_url}`}?t=${avatarTimestamp}`}
                 alt={user.username}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute' }}
                 onError={(e) => {

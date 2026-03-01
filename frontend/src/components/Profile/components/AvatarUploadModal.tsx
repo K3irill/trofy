@@ -372,18 +372,26 @@ export function AvatarUploadModal({ isOpen, onClose }: AvatarUploadModalProps) {
 
       await response.json()
 
-      // Обновляем данные пользователя
-      await refetch()
+      // Обновляем данные пользователя - это обновит RTK Query кэш
+      const { data: updatedUser } = await refetch()
 
-      // Показываем уведомление об успехе перед закрытием
+      // Отправляем событие обновления аватарки для обновления timestamp
+      if (typeof window !== 'undefined' && updatedUser?.avatar_url) {
+        window.dispatchEvent(new Event('avatar-updated'))
+      }
+
+      // Показываем уведомление об успехе
       showToast('Аватарка успешно загружена!', 'success')
 
-      // Закрываем модалку и сбрасываем состояние
-      onClose()
-      setImageSrc(null)
-      setCrop({ x: 0, y: 0 })
-      setZoom(1)
-      setCroppedAreaPixels(null)
+      // Небольшая задержка перед закрытием, чтобы пользователь увидел уведомление
+      setTimeout(() => {
+        // Закрываем модалку и сбрасываем состояние
+        onClose()
+        setImageSrc(null)
+        setCrop({ x: 0, y: 0 })
+        setZoom(1)
+        setCroppedAreaPixels(null)
+      }, 500)
     } catch (error: any) {
       console.error('Error uploading avatar:', error)
       showToast(error.message || 'Не удалось загрузить аватарку', 'error')

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { IoTrophy, IoList, IoDiamond, IoDocumentText, } from 'react-icons/io5'
+import { IoTrophy, IoDocumentText } from 'react-icons/io5'
 import {
   QuickActionsSection,
   QuickActionButton,
@@ -25,18 +25,7 @@ export function ProfileActions({ isAuthenticated, username, isOwnProfile = false
   }
 
   const handleNotesClick = () => {
-    // TODO: Добавить страницу заданий
     router.push(`/journal`)
-  }
-
-  const handleCollectionsClick = () => {
-    // TODO: Добавить страницу коллекций
-    console.log('Collections clicked')
-  }
-
-  const handleHistoryClick = () => {
-    // TODO: Добавить страницу истории
-    console.log('History clicked')
   }
 
   return (
@@ -68,34 +57,6 @@ export function ProfileActions({ isAuthenticated, username, isOwnProfile = false
           <IoDocumentText />
         </ButtonIcon>
         <ButtonText>Заметки</ButtonText>
-      </QuickActionButton>
-      <QuickActionButton
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9 }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handleCollectionsClick}
-        style={{ cursor: 'pointer' }}
-      >
-        <ButtonIcon>
-          <IoDiamond />
-        </ButtonIcon>
-        <ButtonText>Коллекции</ButtonText>
-      </QuickActionButton>
-      <QuickActionButton
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.95 }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={handleHistoryClick}
-        style={{ cursor: 'pointer' }}
-      >
-        <ButtonIcon>
-          <IoList />
-        </ButtonIcon>
-        <ButtonText>История</ButtonText>
       </QuickActionButton>
     </QuickActionsSection>
   )

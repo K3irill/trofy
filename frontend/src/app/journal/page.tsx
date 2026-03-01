@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAppSelector } from '@/store/hooks'
 import Container from '@/components/Container/Container'
 import { BlockLoader } from '@/components/Loader/BlockLoader'
 import { JournalEntryCard } from '@/components/Journal/JournalEntryCard'
@@ -31,6 +33,24 @@ import {
 } from './page.styled'
 
 export default function JournalPage() {
+	const router = useRouter()
+	const { isAuthenticated } = useAppSelector((state) => state.auth)
+
+	// Редирект неавторизованных пользователей
+	useEffect(() => {
+		if (!isAuthenticated) {
+			router.push('/auth/login')
+		}
+	}, [isAuthenticated, router])
+
+	// Показываем загрузку пока проверяем авторизацию
+	if (!isAuthenticated) {
+		return (
+			<Container>
+				<BlockLoader text='Проверка авторизации...' />
+			</Container>
+		)
+	}
 	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null)
 	const [viewMode, setViewMode] = useState(false)
