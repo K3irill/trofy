@@ -161,7 +161,7 @@ export const AchievementName = styled.h3`
   color: ${(props) => props.theme.colors.light[100]};
   font-weight: 600;
   margin: 0;
-  word-break: break-all;
+  word-break: normal;
 
   @media (max-width: 768px) {
     font-size: 0.875rem;

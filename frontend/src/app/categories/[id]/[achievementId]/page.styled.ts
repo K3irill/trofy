@@ -256,7 +256,7 @@ export const AchievementTitle = styled.h1`
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 1.2;
-  word-break: break-all;
+  word-break: normal;
 
   @media (max-width: 768px) {
     font-size: 2.25rem;

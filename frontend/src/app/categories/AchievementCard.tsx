@@ -219,7 +219,7 @@ const AchievementName = styled.h3`
   color: ${(props) => props.theme.colors.light[100]};
   font-weight: 700;
   margin-bottom: 0.5rem;
-  word-break: break-all;
+  word-break: normal;
 
   @media (max-width: 768px) {
     max-width: 80%;

@@ -694,6 +694,7 @@ export class AchievementsService {
           select: {
             id: true,
             username: true,
+            privacy_settings: true,
           },
         },
       },
@@ -715,6 +716,19 @@ export class AchievementsService {
       // Проверяем доступ к достижению (должно быть публичным, но для надежности проверяем)
       if (!this.canAccessByPrivacy(achievement, currentUserId)) {
         return false
+      }
+
+      // Фильтруем достижения приватных пользователей
+      const isOwnAchievement = currentUserId && ua.user_id === currentUserId
+      if (!isOwnAchievement && ua.user.privacy_settings) {
+        const privacy = typeof ua.user.privacy_settings === 'string' 
+          ? JSON.parse(ua.user.privacy_settings) 
+          : ua.user.privacy_settings
+        
+        // Если профиль скрыт или достижения скрыты, не показываем
+        if (privacy.show_profile === false || privacy.show_achievements === false) {
+          return false
+        }
       }
 
       return true
@@ -750,6 +764,11 @@ export class AchievementsService {
         owner: {
           id: ua.user.id,
           username: ua.user.username,
+          privacy_settings: ua.user.privacy_settings 
+            ? (typeof ua.user.privacy_settings === 'string' 
+                ? JSON.parse(ua.user.privacy_settings) 
+                : ua.user.privacy_settings)
+            : null,
         },
         is_current_user: isCurrentUser,
       }
