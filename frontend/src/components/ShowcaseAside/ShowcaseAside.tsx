@@ -6,7 +6,7 @@ import { IoTrophy, IoTime, IoPerson } from 'react-icons/io5'
 import { useGetShowcaseAchievementsQuery } from '@/store/api/achievementsApi'
 import { useGetRecentAchievementsQuery } from '@/store/api/userApi'
 import { useGetMeQuery } from '@/store/api/userApi'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, format, isToday } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { renderIcon } from '@/lib/utils/iconUtils'
 import {
@@ -66,6 +66,19 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
   // Для десктопа показываем 5, для планшета 10 (как сейчас)
   const limit = isDesktop ? 5 : 10
 
+  // Функция форматирования даты: если сегодня - время, иначе - дата
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Недавно'
+    const date = new Date(dateString)
+    if (isToday(date)) {
+      // Если сегодня - показываем относительное время
+      return formatDistanceToNow(date, { addSuffix: true, locale: ru })
+    } else {
+      // Если не сегодня - показываем дату
+      return format(date, 'd MMMM yyyy', { locale: ru })
+    }
+  }
+
   // Получаем лучшие достижения (глобальные, среди всех пользователей)
   const { data: bestAchievementsData, isLoading: isLoadingBest } = useGetShowcaseAchievementsQuery(
     {
@@ -111,9 +124,7 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
         rarity: achievement.rarity,
         owner: achievement.is_current_user ? 'Вы' : achievement.owner.username,
         ownerUsername: achievement.is_current_user ? (currentUser?.username || '') : achievement.owner.username,
-        date: achievement.unlocked_at
-          ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
-          : 'Недавно',
+        date: formatDate(achievement.completion_date || achievement.unlocked_at),
         icon: achievement.icon_url || '🏆',
         categoryId: achievement.category.id,
       }))
@@ -146,14 +157,10 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
       rarity: achievement.rarity,
       owner: achievement.is_current_user ? 'Вы' : achievement.owner.username,
       ownerUsername: achievement.is_current_user ? (currentUser?.username || '') : achievement.owner.username,
-      date: achievement.completion_date
-        ? formatDistanceToNow(new Date(achievement.completion_date), { addSuffix: true, locale: ru })
-        : achievement.unlocked_at
-          ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
-          : 'Недавно',
+      date: formatDate(achievement.completion_date || achievement.unlocked_at),
       icon: achievement.icon_url || '🏆',
-        categoryId: achievement.category.id,
-      }))
+      categoryId: achievement.category.id,
+    }))
   }, [recentAchievementsData, currentUser])
 
   const myTrophies = useMemo(() => {
@@ -173,9 +180,7 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
         rarity: achievement.rarity,
         owner: 'Вы',
         ownerUsername: currentUser?.username || '',
-        date: achievement.unlocked_at
-          ? formatDistanceToNow(new Date(achievement.unlocked_at), { addSuffix: true, locale: ru })
-          : 'Недавно',
+        date: formatDate(achievement.unlocked_at),
         icon: achievement.icon_url || '🏆',
         categoryId: achievement.category.id,
       }))
