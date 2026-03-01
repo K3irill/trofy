@@ -135,6 +135,16 @@ export default function UserAchievementDetailPage() {
   const isOwner = profileUser?.id === currentUser?.id && !!achievementDetail?.userAchievement
   const isAchievementCreator = achievementDetail?.creator_id === currentUser?.id && achievementDetail?.is_custom
 
+  // Убираем горизонтальный скролл
+  useEffect(() => {
+    document.body.style.overflowX = 'hidden'
+    document.documentElement.style.overflowX = 'hidden'
+    return () => {
+      document.body.style.overflowX = ''
+      document.documentElement.style.overflowX = ''
+    }
+  }, [])
+
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!achievement) return
 
@@ -192,6 +202,9 @@ export default function UserAchievementDetailPage() {
     )
   }
 
+  // Проверяем, закрыт ли профиль пользователя
+  const isProfileHidden = profileUser && !profileUser.privacy_settings?.show_profile && !isOwner
+
   if (error || !achievementDetail || !achievement) {
     const checkError = (err: unknown): number | null => {
       if (!err || typeof err !== 'object') return null
@@ -224,6 +237,20 @@ export default function UserAchievementDetailPage() {
             <Icon style={{ color: '#9ca3af', fontSize: '4rem', width: '4rem', height: '4rem' }} />
           </NotFoundIconWrap>
           <NotFoundText>{message}</NotFoundText>
+        </NotFoundState>
+      </Container>
+    )
+  }
+
+  // Если профиль закрыт и это не владелец, показываем только сообщение
+  if (isProfileHidden) {
+    return (
+      <Container>
+        <NotFoundState>
+          <NotFoundIconWrap>
+            <IoLockClosed style={{ color: '#9ca3af', fontSize: '4rem', width: '4rem', height: '4rem' }} />
+          </NotFoundIconWrap>
+          <NotFoundText>Это приватное достижение.</NotFoundText>
         </NotFoundState>
       </Container>
     )

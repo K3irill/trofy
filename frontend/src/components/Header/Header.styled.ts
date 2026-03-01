@@ -13,6 +13,9 @@ export const HeaderContainer = styled(motion.header)`
   border-bottom: ${(props) => props.theme.glass.border};
   box-shadow: ${(props) => props.theme.shadows.glass.light};
   padding: 0;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
 `
 
 export const HeaderContent = styled.div`
@@ -23,6 +26,9 @@ export const HeaderContent = styled.div`
   align-items: center;
   padding: 0.75rem 2rem;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 
   @media (max-width: 768px) {
     padding: 0.75rem 1rem;
@@ -33,6 +39,9 @@ export const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
 
   @media (max-width: 768px) {
     gap: 0.25rem;
@@ -43,6 +52,8 @@ export const HeaderRight = styled.div`
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex-shrink: 0;
+  min-width: 0;
 
   @media (max-width: 768px) {
     gap: 1rem;
@@ -93,6 +104,9 @@ export const NavLinks = styled.div`
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
 
   @media (max-width: 1024px) {
     display: none;

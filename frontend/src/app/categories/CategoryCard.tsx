@@ -14,7 +14,7 @@ import {
   PreviewItem,
   AchievementCount,
 } from './page.styled'
-import { CategoryTypeBadge, EditButton, CreatorInfo, CreatorLink, CategoryActions, LikeButton, FavoriteButton } from './CategoryCard.styled'
+import { CategoryTypeBadge, EditButton, CreatorInfo, CreatorLink, CategoryActions, LikeButton, FavoriteButton, LikesCount } from './CategoryCard.styled'
 import { isImageUrl } from '@/lib/utils/iconUtils'
 import { IoPerson, IoGlobe, IoCreateOutline, IoLockClosed, IoPeople, IoHeart, IoHeartOutline, IoStar, IoStarOutline } from 'react-icons/io5'
 import { useToggleCategoryLikeMutation, useToggleCategoryFavoriteMutation } from '@/store/api/achievementsApi'
@@ -30,6 +30,7 @@ export interface Category {
   creator_id?: string
   creator_username?: string
   is_public?: boolean
+  likes_count?: number
   achievements: Array<{
     id: string
     icon: string
@@ -151,6 +152,9 @@ export const CategoryCardComponent = ({
               title={isLiked ? 'Убрать лайк' : 'Поставить лайк'}
             >
               {isLiked ? <IoHeart /> : <IoHeartOutline />}
+              {category.likes_count !== undefined && category.likes_count > 0 && (
+                <LikesCount>{category.likes_count}</LikesCount>
+              )}
             </LikeButton>
           )}
           <FavoriteButton

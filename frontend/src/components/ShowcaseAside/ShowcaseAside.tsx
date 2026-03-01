@@ -98,6 +98,11 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
       .filter((achievement) => {
         if (seen.has(achievement.id)) return false
         seen.add(achievement.id)
+        // Фильтруем достижения закрытых пользователей (если owner имеет privacy_settings)
+        if (!achievement.is_current_user && achievement.owner && (achievement.owner as any).privacy_settings) {
+          const privacy = (achievement.owner as any).privacy_settings
+          if (privacy.show_profile === false) return false
+        }
         return true
       })
       .map((achievement) => ({
@@ -121,6 +126,11 @@ export const ShowcaseAside = ({ filter = 'best', onFilterChange, isAuthenticated
     const unique = recentAchievementsData.filter((achievement) => {
       if (seen.has(achievement.id)) return false
       seen.add(achievement.id)
+      // Фильтруем достижения закрытых пользователей (если owner имеет privacy_settings)
+      if (!achievement.is_current_user && achievement.owner && (achievement.owner as any).privacy_settings) {
+        const privacy = (achievement.owner as any).privacy_settings
+        if (privacy.show_profile === false) return false
+      }
       return true
     })
     // Сортируем по completion_date (самые новые первыми)

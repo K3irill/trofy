@@ -120,11 +120,13 @@ export const CategoryActions = styled.div`
 `
 
 export const LikeButton = styled.button<{ $isLiked: boolean }>`
-  width: 36px;
+  min-width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
   background: ${(props) =>
     props.$isLiked
       ? `linear-gradient(135deg, ${props.theme.colors.danger}33 0%, ${props.theme.colors.danger}1a 100%)`
@@ -213,4 +215,11 @@ export const FavoriteButton = styled.button<{ $isFavorite: boolean }>`
       font-size: 1rem;
     }
   }
+`
+
+export const LikesCount = styled.span`
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.colors.light[300]};
+  font-weight: 500;
+  margin-left: 0.25rem;
 `

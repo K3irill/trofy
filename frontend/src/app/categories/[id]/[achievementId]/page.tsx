@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useAppSelector } from '@/store/hooks'
@@ -120,6 +120,16 @@ export default function AchievementDetailPage() {
   // На странице категорий isOwner = true, если у текущего пользователя есть userAchievement для этого достижения
   const isOwner = !!achievementDetail?.userAchievement && !!currentUser?.id
   const isAchievementCreator = achievementDetail?.creator_id === currentUser?.id && achievementDetail?.is_custom
+
+  // Убираем горизонтальный скролл
+  useEffect(() => {
+    document.body.style.overflowX = 'hidden'
+    document.documentElement.style.overflowX = 'hidden'
+    return () => {
+      document.body.style.overflowX = ''
+      document.documentElement.style.overflowX = ''
+    }
+  }, [])
 
   const handleIconMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!achievement) return

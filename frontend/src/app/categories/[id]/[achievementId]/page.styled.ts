@@ -6,6 +6,7 @@ export const PageContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
+  overflow-x: hidden;
 `
 
 export const BackButton = styled(motion.button)`
@@ -123,7 +124,10 @@ export const AchievementHeader = styled.div`
   border: 2px solid ${(props) => props.theme.colors.dark[600]}60;
   box-shadow: ${(props) => props.theme.shadows.glass.medium};
   position: relative;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 100%;
+  box-sizing: border-box;
 
   &::before {
     content: '';
@@ -368,6 +372,9 @@ export const ContentSection = styled.div`
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 `
 
 export const NotFoundState = styled.div`

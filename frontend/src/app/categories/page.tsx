@@ -194,6 +194,7 @@ export default function CategoriesPage() {
       is_public?: boolean
       is_liked?: boolean
       is_favorite?: boolean
+      likes_count?: number
       achievements: Array<{
         id: string
         icon: string
@@ -219,6 +220,7 @@ export default function CategoriesPage() {
           is_public: cat.is_public,
           is_liked: Boolean(cat.is_liked),
           is_favorite: Boolean(cat.is_favorite),
+          likes_count: cat.likes_count,
           achievements: cat.achievements_preview.map((ach) => ({
             id: ach.id,
             icon: ach.icon_url || '',
@@ -243,6 +245,7 @@ export default function CategoriesPage() {
           is_public: cat.is_public,
           is_liked: Boolean(cat.is_liked),
           is_favorite: Boolean(cat.is_favorite),
+          likes_count: cat.likes_count,
           achievements: [],
         }))
       }
@@ -316,6 +319,10 @@ export default function CategoriesPage() {
         const progressB = b.total > 0 ? (b.unlocked / b.total) * 100 : 0
         return progressB - progressA
       })
+    } else if (sortBy === 'likes-desc') {
+      sorted.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0))
+    } else if (sortBy === 'likes-asc') {
+      sorted.sort((a, b) => (a.likes_count || 0) - (b.likes_count || 0))
     }
 
     return sorted

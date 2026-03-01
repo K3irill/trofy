@@ -148,6 +148,8 @@ export const CategorySearchAndFilters = ({
     { value: 'total-desc', label: 'По количеству (больше)' },
     { value: 'progress-asc', label: 'По прогрессу (меньше)' },
     { value: 'progress-desc', label: 'По прогрессу (больше)' },
+    { value: 'likes-desc', label: 'По лайкам (больше)' },
+    { value: 'likes-asc', label: 'По лайкам (меньше)' },
   ]
 
   const privacyOptions: ThemedSelectOption[] = [
