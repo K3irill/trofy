@@ -161,7 +161,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
     props.variant === 'primary'
       ? `
     background: ${props.theme.colors.primary};
-    color: ${props.theme.colors.light[100]};
+    color: ${props.theme.colors.dark[600]};
     
     &:hover {
       background: ${props.theme.colors.secondary};

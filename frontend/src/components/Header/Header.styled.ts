@@ -78,8 +78,21 @@ position: relative;
     text-shadow: ${(props) => props.theme.shadows.glow.primary};
   }
 
+  svg{
+    color: ${(props) => props.theme.colors.primary};
+    filter: drop-shadow(${(props) => props.theme.shadows.glow.primary});
+    opacity: 0.9;
+    width: 36px;
+    height: 36px;
+  }
+
   @media (max-width: 768px) {
     font-size: 1.25rem;
+
+    svg{
+      width: 30px;
+      height: 30px;
+    }
   }
 `
 

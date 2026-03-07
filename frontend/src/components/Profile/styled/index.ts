@@ -323,7 +323,7 @@ export const Avatar = styled.div`
 	align-items: center;
 	justify-content: center;
 	font-size: 3.5rem;
-	border: 4px solid ${props => props.theme.colors.dark.neomorphLight};
+
 	box-shadow: ${props => props.theme.shadows.glow.primary},
 		inset 0 0 20px ${props => props.theme.colors.dark.neomorphLight};
 	position: relative;

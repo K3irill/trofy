@@ -44,7 +44,7 @@ export function ProfileActions({ isAuthenticated, username, isOwnProfile = false
         </ButtonIcon>
         <ButtonText>{isOwnProfile ? 'Мои достижения' : 'Достижения'}</ButtonText>
       </QuickActionButton>
-      <QuickActionButton
+     {isOwnProfile && <QuickActionButton
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.85 }}
@@ -57,7 +57,7 @@ export function ProfileActions({ isAuthenticated, username, isOwnProfile = false
           <IoDocumentText />
         </ButtonIcon>
         <ButtonText>Заметки</ButtonText>
-      </QuickActionButton>
+      </QuickActionButton>}
     </QuickActionsSection>
   )
 }
