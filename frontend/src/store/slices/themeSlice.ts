@@ -10,7 +10,7 @@ const getInitialTheme = (): ThemeName => {
 
   try {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as ThemeName | null
-    const validThemes: ThemeName[] = ['NEON', 'STOIC', 'MINIMAL', 'FOREST', 'DARK_GLASS', 'SUNSET', 'MYTHOLOGY', 'BERSERK', 'CYBERPUNK', 'OCEAN', 'BLACK_GLOSS']
+    const validThemes: ThemeName[] = ['NEON', 'STOIC', 'MINIMAL', 'FOREST', 'DARK_GLASS', 'SUNSET', 'MYTHOLOGY', 'BERSERK', 'CYBERPUNK', 'OCEAN', 'BLACK_GLOSS', 'OBSIDIAN', 'BASALT', 'TWILIGHT', 'AMBITION']
     if (savedTheme && validThemes.includes(savedTheme)) {
       return savedTheme
     }

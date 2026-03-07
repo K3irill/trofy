@@ -109,7 +109,7 @@ export default function RootLayout({
               (function() {
                 try {
                   const theme = localStorage.getItem('trofy-theme');
-                  const validThemes = ['NEON', 'STOIC', 'MINIMAL', 'FOREST', 'DARK_GLASS', 'SUNSET', 'MYTHOLOGY', 'BERSERK', 'CYBERPUNK', 'OCEAN', 'BLACK_GLOSS'];
+                  const validThemes = ['NEON', 'STOIC', 'MINIMAL', 'FOREST', 'DARK_GLASS', 'SUNSET', 'MYTHOLOGY', 'BERSERK', 'CYBERPUNK', 'OCEAN', 'BLACK_GLOSS', 'OBSIDIAN', 'BASALT', 'TWILIGHT', 'AMBITION'];
                   if (theme && validThemes.includes(theme)) {
                     document.documentElement.setAttribute('data-theme', theme.toLowerCase().replace('_', '-'));
                   } else {
